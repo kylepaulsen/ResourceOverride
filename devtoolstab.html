@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Resource Override</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="on-off-switch.css">
+<link rel="stylesheet" href="lib/codemirror.css">
+</head>
+<body>
+<template id="onOffSwitchTemplate">
+    <style>@import "on-off-switch.css";</style>
+    <div class="onoffswitch">
+        <input type="checkbox" class="onoffswitch-checkbox" checked>
+        <label class="onoffswitch-label">
+            <span class="onoffswitch-inner">
+                <div class="onoffswitch-on"></div>
+                <div class="onoffswitch-off"></div>
+            </span>
+            <span class="onoffswitch-switch"></span>
+        </label>
+    </div>
+</template>
+
+<template id="domainTemplate">
+    <div class="domainContainer">
+        <div class="domainHeader">
+            <div class="expand">
+                <button class="expandBtn btn sym-btn expanded">&ndash;</button>
+            </div>
+            <div class="domainText">
+                Tab URL:
+            </div>
+            <div class="domain">
+                <input type="input" class="domainMatchInput" placeholder="Tab Match URL">
+            </div>
+            <div class="addRule">
+                <button class="btn addRuleBtn">Add Web Rule</button>
+            </div>
+            <div class="addFileRule">
+                <button class="btn addFileRuleBtn">Add File Rule</button>
+            </div>
+            <div class="addInjectRule">
+                <button class="btn addInjectRuleBtn">Add Inject Rule</button>
+            </div>
+            <div class="switch">
+                <on-off-switch class="domainOnOff"></on-off-switch>
+            </div>
+            <div class="delete">
+                <button class="deleteBtn btn sym-btn">&#215</button>
+            </div>
+        </div>
+        <div class="overrideRules">
+
+        </div>
+    </div>
+</template>
+
+<template id="overrideTemplate">
+    <div class="ruleContainer normalOverride">
+        <div class="match">
+            From:
+        </div>
+        <div class="rule">
+            <input type="input" class="matchInput" placeholder="Match URL">
+        </div>
+        <div class="arrow">
+            To:
+        </div>
+        <div class="rule">
+            <input type="input" class="replaceInput" placeholder="Replace URL">
+        </div>
+        <div class="switch">
+            <on-off-switch class="ruleOnOff"></on-off-switch>
+        </div>
+        <div class="delete">
+            <button class="btn sym-btn">&#215</button>
+        </div>
+    </div>
+</template>
+
+<template id="fileOverrideTemplate">
+    <div class="ruleContainer fileOverride">
+        <div class="match">
+            From:
+        </div>
+        <div class="rule">
+            <input type="input" class="matchInput" placeholder="Match URL">
+        </div>
+        <div class="arrow">
+            To:
+        </div>
+        <div class="edit">
+            <button class="btn edit-btn">Edit File</button>
+        </div>
+        <div class="switch">
+            <on-off-switch class="ruleOnOff"></on-off-switch>
+        </div>
+        <div class="delete">
+            <button class="btn sym-btn">&#215</button>
+        </div>
+    </div>
+</template>
+
+<template id="fileInjectTemplate">
+    <div class="ruleContainer fileInject">
+        <div class="match">
+            Name:
+        </div>
+        <div class="rule">
+            <input type="input" class="fileName" placeholder="File Name (Optional)">
+        </div>
+        <div class="typeText">
+            File Type:
+        </div>
+        <div class="fileType">
+            <select class="fileTypeSelect">
+                <option value="js">JS</option>
+                <option value="css">CSS</option>
+            </select>
+        </div>
+        <div class="injectText">
+            Inject into:
+        </div>
+        <div class="injectLocation">
+            <select class="injectLocationSelect">
+                <option value="head">Head</option>
+                <option value="body">Body</option>
+            </select>
+        </div>
+        <div class="edit">
+            <button class="btn edit-btn">Edit File</button>
+        </div>
+        <div class="switch">
+            <on-off-switch class="ruleOnOff"></on-off-switch>
+        </div>
+        <div class="delete">
+            <button class="btn sym-btn">&#215</button>
+        </div>
+    </div>
+</template>
+
+<div id="title">
+    <h1>Resource Override</h1>
+</div>
+
+<div id="helpAndOptions">
+    <div class="devToolsText">Show DevTools Tab:</div>
+    <div class="devToolsCheckbox"><input type="checkbox" id="showDevTools"></div>
+    <div class="helpBtnContainer"><button id="helpBtn" class="btn">Help</button></div>
+</div>
+<div class="clearfix"></div>
+
+<div id="domainDefs"></div>
+
+<div id="addDomain">
+    <button id="addDomainBtn" class="btn">Add Tab Group</button>
+</div>
+
+<div id="editorOverlay">
+    <div id="editorOptions">
+        <div class="editorHeader">
+            <div class="titleContainer">
+                <span id="editLabel">Editing file for match:</span> <span id="matchSpan"></span>
+            </div>
+            <div class="settingsContainer">
+                Syntax:
+                <select id="syntaxSelect">
+                    <option value="htmlmixed">HTML</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="css">CSS</option>
+                    <option value="xml">XML</option>
+                </select>
+            </div>
+            <div class="beautifyContainer">
+                <button id="beautifyJS" class="btn">Beautify JS</button>
+            </div>
+        </div>
+        <div class="loadContainer">
+            <select id="loadSelect"></select>
+        </div>
+    </div>
+    <div id="editor"></div>
+    <div id="editorFooter">
+        <div class="left"><button id="fileCancelBtn" class="btn">Cancel</button></div>
+        <div class="right"><button id="fileSaveBtn" class="btn">Save &amp; Close</button></div>
+    </div>
+</div>
+
+<div id="helpOverlay">
+    <div id="helpContent">
+        <h1>Help</h1>
+        <p>This extension exists to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content. It does this by comparing url "match rules" to the current tab url and then individual resource urls. If the urls match, then the rules are applied.</p>
+        <p>Rules are put into "Tab Groups". A Tab Group has a URL text field that acts as the match pattern for the current tab. Rules inside the Tab Group wont apply unless the match is successful.</p>
+        <h3>Example Tab URL Matches:</h3>
+        <table>
+        <tr><td><b>Tab Match URL</b></td><td></td><td><b>Browser Tab URL</b></td></tr>
+        <tr><td>http://www.example.com/</td><td>matches</td><td>http://www.example.com/</td></tr>
+        <tr><td>http://www.example.com/*</td><td>matches</td><td>http://www.example.com/some/path/info.txt</td></tr>
+        <tr><td>*://www.example*/other/*</td><td>matches</td><td>https://www.example.org/some/other/path</td></tr>
+        <tr><td>*</td><td>matches</td><td>&lt;Any URL Here></td></tr>
+        </table>
+        <p>A <b>Rule</b> can come in three different types:</p>
+        <ul>
+            <li><b>Web Rule</b>: Every request url is compared with the <i>Match URL</i> and then transformed into the <i>Replace URL</i> if the match is successful.</li>
+            <li><b>File Rule</b>: Every request url is compared with the <i>Match URL</i>. If the match succeeds, a file you create is supplied as the response.</li>
+            <li><b>Inject Rule</b>: A file you create will be injected into the page as a JS or CSS document.</li>
+        </ul>
+        <h3>Example Replace URL Patterns:</h3>
+        <table>
+        <tr><td><b>Match URL</b></td><td><b>Replace URL</b></td><td><b>Resource URL</b></td><td></td><td><b>Result URL</b></td></tr>
+        <tr><td>http://www.ex.com/neat.js</td><td>http://local:8080/cool.js</td><td>http://www.ex.com/neat.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/cool.js</td></tr>
+        <tr><td>http://www.ex.com/js/*</td><td>http://local:8080/all.js</td><td>http://www.ex.com/js/some.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/all.js</td></tr>
+        <tr><td>http://www.ex.com/*.js</td><td>http://local:8080/*.js</td><td>http://www.ex.com/captured_in_star.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/captured_in_star.js</td></tr>
+        </table>
+        <p>When using <i>Web Rules</i>, you can "store" parts of the resource URL in stars (*) and then reuse the stored part in the replace url with another star. An example of this can be seen above.</p>
+    </div>
+    <div id="helpFooter">
+        <div class="right"><button id="helpCloseBtn" class="btn">Close</button></div>
+    </div>
+</div>
+
+<script src="lib/jquery-2.1.1.min.js"></script>
+<script src="lib/codemirror-compressed.js"></script>
+<script src="lib/beautify.min.js"></script>
+
+<script src="devtoolstab.js"></script>
+</body>
+</html>

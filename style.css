@@ -1,0 +1,333 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Trebuchet, Arial, sans-serif;
+    min-width: 650px;
+    overflow: auto;
+}
+
+input {
+    height: 25px;
+}
+
+input[readonly] {
+    cursor: pointer;
+}
+
+#title {
+    background-image: url("icons/icon-48x48.png");
+    background-repeat: no-repeat;
+    float: left;
+    padding-left: 35px;
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+#title h1 {
+    margin-left: 20px;
+    font-style: italic;
+    color: #007182;
+    margin-top: 10px;
+}
+
+#helpAndOptions {
+    margin-top: 16px;
+    float: right;
+}
+
+#helpAndOptions .devToolsText {
+    float: left;
+    margin-top: 8px;
+}
+
+#helpAndOptions .devToolsCheckbox {
+    float: left;
+    margin-right: 20px;
+}
+
+#helpAndOptions .helpBtnContainer {
+    float: left;
+}
+
+#domainDefs {
+    margin-top: 30px;
+}
+
+#addDomain {
+    margin-top: 24px;
+}
+
+#helpOverlay {
+    background-color: #ffffff;
+    position: fixed;
+    top: 64px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    display: none;
+    overflow: auto;
+}
+
+#helpContent {
+    width: 100%;
+    height: calc(100% - 50px);
+    font-size: 14px;
+    padding: 10px;
+}
+
+#helpContent table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#helpContent .rarrow {
+    width: 50px;
+    text-align: center;
+}
+
+#helpContent h1 {
+    margin-top: 0;
+}
+
+#helpFooter {
+    border-top: 1px solid #000000;
+    text-align: right;
+    padding: 7px 16px;
+    width: 100%;
+    height: 50px;
+}
+
+#editorOverlay {
+    background-color: #ffffff;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    display: none;
+}
+
+#editorOptions {
+    width: 100%;
+    height: 80px;
+    border-bottom: 1px solid #000000;
+}
+
+#editor {
+    width: 100%;
+    height: calc(100% - 130px);
+    font-size: 12px;
+}
+
+#editorFooter {
+    border-top: 1px solid #000000;
+    text-align: right;
+    padding: 7px 16px;
+    width: 100%;
+    height: 50px;
+}
+
+.editorHeader {
+    display: flex;
+}
+
+.editorHeader .titleContainer {
+    padding: 20px 0 0 12px;
+    flex: 1 1 200px;
+}
+
+.editorHeader .settingsContainer {
+    text-align: center;
+    padding: 17px 0 0 0;
+    flex: 1 1 200px;
+}
+
+.editorHeader .beautifyContainer {
+    padding: 10px 16px 0 0;
+    flex: 1 1 200px;
+    text-align: right;
+}
+
+.loadContainer {
+    padding: 4px 0 2px 6px;
+}
+
+.loadContainer select {
+    max-width: 100%;
+    cursor: pointer;
+}
+
+.domainContainer {
+    margin-bottom: 30px;
+}
+
+.header-inputs {
+    margin-left: 10px;
+    float: left;
+}
+
+.domainHeader {
+    display: flex;
+}
+
+.domainHeader input {
+    width: 100%;
+}
+
+.domainHeader .expand {
+    flex: 0 0 44px;
+    text-align: left;
+}
+
+.domainHeader .domainText {
+    flex: 0 0 55px;
+    padding-top: 8px;
+    text-align: center;
+}
+
+.domainHeader .domain {
+    flex: 1 1 auto;
+    margin: 4px;
+}
+
+.domainHeader .addRule {
+    flex: 0 0 112px;
+    text-align: center;
+}
+
+.domainHeader .addFileRule {
+    flex: 0 0 102px;
+    text-align: center;
+}
+
+.domainHeader .addInjectRule {
+    flex: 0 0 122px;
+    text-align: center;
+}
+
+.domainHeader .switch {
+    flex: 0 0 90px;
+    text-align: center;
+}
+
+.domainHeader .delete {
+    flex: 0 0 36px;
+    text-align: right;
+}
+
+.overrideRules {
+    margin: 16px 0 0 40px;
+}
+
+.ruleContainer {
+    display: flex;
+    margin: 4px 0;
+}
+
+.ruleContainer input {
+    width: 100%;
+}
+
+.ruleContainer .match {
+    flex: 0 0 50px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.ruleContainer .rule {
+    flex: 1 1 auto;
+    margin: 6px;
+}
+
+.ruleContainer .arrow {
+    flex: 0 0 24px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.ruleContainer .injectText {
+    flex: 0 0 60px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.ruleContainer .typeText {
+    flex: 0 0 55px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.ruleContainer .fileType {
+    flex: 0 0 75px;
+    padding-top: 8px;
+    text-align: center;
+}
+
+.ruleContainer .injectLocation {
+    flex: 0 0 75px;
+    padding-top: 8px;
+    text-align: center;
+}
+
+.ruleContainer .edit {
+    flex: 0 0 80px;
+    text-align: center;
+}
+
+.ruleContainer .switch {
+    flex: 0 0 90px;
+    text-align: center;
+}
+
+.ruleContainer .delete {
+    flex: 0 0 36px;
+    text-align: right;
+}
+
+.ruleContainer .onoffswitch {
+    display: inline-block;
+}
+
+.fileInput {
+    display: none;
+}
+
+.btn {
+    border: 2px solid #999999;
+    border-radius: 5px;
+    background-color: #EEEEEE;
+    cursor: pointer;
+    outline-width: 0;
+    height: 34px;
+}
+
+.sym-btn {
+    font-size: 28px;
+    width: 34px;
+    line-height: 30px;
+}
+
+.expanded {
+    line-height: 28px;
+}
+
+.btn:hover {
+    background-color: #DDDDDD;
+}
+
+.right {
+    float: right;
+}
+
+.left {
+    float: left;
+}
+
+.clearfix {
+    clear: both;
+}
