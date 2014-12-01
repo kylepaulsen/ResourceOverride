@@ -87,7 +87,7 @@
             editor.setSize("100%", "100%");
         }
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
-        $("#matchSpan").text(match || "<Not defined yet&gt;");
+        $("#matchSpan").text(match || "<Not defined yet>");
 
         if (type) {
             $("#syntaxSelect").val(type === "js" ? "javascript" : "css");
