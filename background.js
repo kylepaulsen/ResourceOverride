@@ -160,8 +160,7 @@
                         } else if (ruleObj.type === "fileOverride" &&
                             match(ruleObj.match, requestUrl).matched) {
 
-                            return {redirectUrl: "data:text/plain," +
-                                encodeURIComponent(ruleObj.file)};
+                            return {redirectUrl: "data:text/plain;base64," + btoa(ruleObj.file)};
                         }
                     }
                 }
