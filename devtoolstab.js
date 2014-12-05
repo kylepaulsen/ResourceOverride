@@ -189,6 +189,7 @@
         deleteBtn.on("click", function() {
             override.fadeOut(function() {
                 override.remove();
+                delete files[override[0].id];
                 saveFunc();
             });
         });
@@ -232,6 +233,7 @@
         deleteBtn.on("click", function() {
             override.fadeOut(function() {
                 override.remove();
+                delete files[override[0].id];
                 saveFunc();
             });
         });
