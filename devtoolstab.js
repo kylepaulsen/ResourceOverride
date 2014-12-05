@@ -152,7 +152,7 @@
         replaceInput.val(savedData.replace || "");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
-        if (!savedData.on) {
+        if (savedData.on === false) {
             override.addClass("disabled");
         }
 
@@ -188,7 +188,7 @@
         matchInput.val(savedData.match || "");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
-        if (!savedData.on) {
+        if (savedData.on === false) {
             override.addClass("disabled");
         }
 
@@ -240,7 +240,7 @@
         fileType.val(savedData.fileType || "js");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
-        if (!savedData.on) {
+        if (savedData.on === false) {
             override.addClass("disabled");
         }
 
@@ -312,7 +312,7 @@
         domainMatchInput.val(savedData.matchUrl || "");
         onOffBtn[0].isOn = savedData.on === false ? false : true;
 
-        if (!savedData.on) {
+        if (savedData.on === false) {
             domain.addClass("disabled");
         }
 
