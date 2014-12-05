@@ -122,7 +122,7 @@ function moveableRules(parent, handleSelector) {
             currentMovingEl.style.position = "";
             currentMovingEl.style.width = "";
             currentMovingEl.style.height = "";
-            currentMovingEl.style.opacity = 1;
+            currentMovingEl.style.opacity = "";
             currentMovingEl = null;
             setBorders();
             onMove();

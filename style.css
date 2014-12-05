@@ -165,6 +165,7 @@ input[readonly] {
 
 .domainContainer {
     margin-bottom: 30px;
+    transition: opacity 0.5s;
 }
 
 .header-inputs {
@@ -257,6 +258,8 @@ input[readonly] {
 .ruleContainer {
     display: flex;
     margin: 4px 0;
+    opacity: 1;
+    transition: opacity 0.5s;
 }
 
 .ruleContainer input {
@@ -321,6 +324,10 @@ input[readonly] {
 
 .ruleContainer .onoffswitch {
     display: inline-block;
+}
+
+.disabled {
+    opacity: 0.7;
 }
 
 .fileInput {

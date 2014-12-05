@@ -152,7 +152,12 @@
         replaceInput.val(savedData.replace || "");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
+        if (!savedData.on) {
+            override.addClass("disabled");
+        }
+
         deleteBtn.on("click", function() {
+            override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 saveFunc();
@@ -162,7 +167,10 @@
 
         matchInput.on("keyup", saveFunc);
         replaceInput.on("keyup", saveFunc);
-        ruleOnOff.on("click change", saveFunc);
+        ruleOnOff.on("click change", function() {
+            override.toggleClass("disabled", !ruleOnOff[0].isOn);
+            saveFunc();
+        });
 
         return override;
     }
@@ -180,6 +188,10 @@
         matchInput.val(savedData.match || "");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
+        if (!savedData.on) {
+            override.addClass("disabled");
+        }
+
         editBtn.on("click", function() {
             editingFile = override[0].id;
             openEditor(editingFile, matchInput.val());
@@ -187,6 +199,7 @@
         });
 
         deleteBtn.on("click", function() {
+            override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 delete files[override[0].id];
@@ -195,7 +208,10 @@
         });
 
         matchInput.on("keyup", saveFunc);
-        ruleOnOff.on("click change", saveFunc);
+        ruleOnOff.on("click change", function() {
+            override.toggleClass("disabled", !ruleOnOff[0].isOn);
+            saveFunc();
+        });
 
         var id = savedData.fileId || getNextId($(".ruleContainer"), "f");
         override[0].id = id;
@@ -224,6 +240,10 @@
         fileType.val(savedData.fileType || "js");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
+        if (!savedData.on) {
+            override.addClass("disabled");
+        }
+
         editBtn.on("click", function() {
             editingFile = override[0].id;
             openEditor(editingFile, fileName.val(), true, fileType.val());
@@ -231,6 +251,7 @@
         });
 
         deleteBtn.on("click", function() {
+            override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 delete files[override[0].id];
@@ -239,7 +260,10 @@
         });
 
         fileName.on("keyup", saveFunc);
-        ruleOnOff.on("click change", saveFunc);
+        ruleOnOff.on("click change", function() {
+            override.toggleClass("disabled", !ruleOnOff[0].isOn);
+            saveFunc();
+        });
         injectLocation.on("change", saveFunc);
         fileType.on("change", saveFunc);
 
@@ -288,6 +312,10 @@
         domainMatchInput.val(savedData.matchUrl || "");
         onOffBtn[0].isOn = savedData.on === false ? false : true;
 
+        if (!savedData.on) {
+            domain.addClass("disabled");
+        }
+
         var expandToggle = function() {
             if (expandBtn.html() === "+") {
                 expandBtn.html("&ndash;");
@@ -310,7 +338,10 @@
         });
 
         domainMatchInput.on("keyup", saveFunc);
-        onOffBtn.on("click change", saveFunc);
+        onOffBtn.on("click change", function() {
+            domain.toggleClass("disabled", !onOffBtn[0].isOn);
+            saveFunc();
+        });
 
         addFileRuleBtn.on("click", function() {
             if (!expandBtn.hasClass("expanded")) {
@@ -333,6 +364,7 @@
         expandBtn.on("click", expandToggle);
         deleteBtn.on("click", function() {
             chrome.extension.sendMessage({action: "deleteDomain", id: id});
+            domain.css("transition", "none");
             domain.fadeOut(function() {
                 domain.remove();
             });
