@@ -225,6 +225,35 @@ input[readonly] {
     margin: 16px 0 0 40px;
 }
 
+.handle {
+    flex: 0 0 25px;
+    padding-top: 10px;
+    padding-left: 8px;
+    cursor: ns-resize;
+}
+
+.arrow-up {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid black;
+    margin-bottom: 5px;
+}
+
+.arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid black;
+}
+
+.sortable-placeholder {
+    height: 37px;
+    width: 100%;
+}
+
 .ruleContainer {
     display: flex;
     margin: 4px 0;

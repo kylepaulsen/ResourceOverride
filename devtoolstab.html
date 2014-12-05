@@ -59,6 +59,9 @@
 
 <template id="overrideTemplate">
     <div class="ruleContainer normalOverride">
+        <div class="handle">
+            <div class="arrow-up"></div><div class="arrow-down"></div>
+        </div>
         <div class="match">
             From:
         </div>
@@ -82,6 +85,9 @@
 
 <template id="fileOverrideTemplate">
     <div class="ruleContainer fileOverride">
+        <div class="handle">
+            <div class="arrow-up"></div><div class="arrow-down"></div>
+        </div>
         <div class="match">
             From:
         </div>
@@ -105,6 +111,9 @@
 
 <template id="fileInjectTemplate">
     <div class="ruleContainer fileInject">
+        <div class="handle">
+            <div class="arrow-up"></div><div class="arrow-down"></div>
+        </div>
         <div class="match">
             Name:
         </div>
@@ -207,6 +216,7 @@
             <li><b>File Rule</b>: Every request url is compared with the <i>Match URL</i>. If the match succeeds, a file you create is supplied as the response.</li>
             <li><b>Inject Rule</b>: A file you create will be injected into the page as a JS or CSS document.</li>
         </ul>
+        <p>Each resource can only be changed by the first rule that matches it, so rules higher on the page have more precedence. You can rearrange rules by dragging on the up and down triangles.</p>
         <h3>Example Replace URL Patterns:</h3>
         <table>
         <tr><td><b>Match URL</b></td><td><b>Replace URL</b></td><td><b>Resource URL</b></td><td></td><td><b>Result URL</b></td></tr>
@@ -224,6 +234,7 @@
 <script src="lib/jquery-2.1.1.min.js"></script>
 <script src="lib/codemirror-compressed.js"></script>
 <script src="lib/beautify.min.js"></script>
+<script src="moveableRules.js"></script>
 
 <script src="devtoolstab.js"></script>
 </body>

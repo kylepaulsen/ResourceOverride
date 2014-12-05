@@ -280,6 +280,9 @@
             });
         }
 
+        var mvRules = moveableRules(overrideRulesContainer[0], ".handle");
+        mvRules.onMove(saveFunc);
+
         domainMatchInput.val(savedData.matchUrl || "");
         onOffBtn[0].isOn = savedData.on === false ? false : true;
 
@@ -299,7 +302,9 @@
             if (!expandBtn.hasClass("expanded")) {
                 expandToggle();
             }
-            overrideRulesContainer.append(createWebOverrideMarkup({}, saveFunc));
+            var markup = createWebOverrideMarkup({}, saveFunc);
+            mvRules.assignHandleListener(markup.find(".handle")[0]);
+            overrideRulesContainer.append(markup);
         });
 
         domainMatchInput.on("keyup", saveFunc);
@@ -309,14 +314,18 @@
             if (!expandBtn.hasClass("expanded")) {
                 expandToggle();
             }
-            overrideRulesContainer.append(createFileOverrideMarkup({}, saveFunc));
+            var markup = createFileOverrideMarkup({}, saveFunc);
+            mvRules.assignHandleListener(markup.find(".handle")[0]);
+            overrideRulesContainer.append(markup);
         });
 
         addInjectRuleBtn.on("click", function() {
             if (!expandBtn.hasClass("expanded")) {
                 expandToggle();
             }
-            overrideRulesContainer.append(createFileInjectMarkup({}, saveFunc));
+            var markup = createFileInjectMarkup({}, saveFunc);
+            mvRules.assignHandleListener(markup.find(".handle")[0]);
+            overrideRulesContainer.append(markup);
         });
 
         expandBtn.on("click", expandToggle);
