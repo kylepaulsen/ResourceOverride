@@ -53,7 +53,7 @@
     })();
 
     var domainStorage = (function() {
-        var db = keyvalDB("OverrideDB", [{store: "domains", key:"id"}], 1);
+        var db = keyvalDB("OverrideDB", [{store: "domains", key: "id"}], 1);
         var domainStore = db.usingStore("domains");
 
         var put = function(domainData, cb) {
@@ -144,6 +144,47 @@
         syncFunctions = [];
     };
 
+    // This function will try to guess the mime type.
+    // The goal is to use the highest ranking mime type that it gets from these sources (highest
+    // ranking sources first): The user provided mime type on the first line of the file, the url
+    // file extension, the file looks like html, the file looks like JavaScript, the file looks
+    // like CSS, can't tell what the file is so default to text/plain.
+    var extractMimeType = function(requestUrl, file) {
+        var possibleExt = (requestUrl.match(/\.[A-Za-z]{2,4}$/) || [""])[0];
+        var looksLikeCSSRegex = /[#.]\w+\s*\{/;
+        var looksLikeJSRegex = /var\s+.+\s*[,=;]/;
+        var looksLikeHTMLRegex = /<html(\s+.+\s*)?>/i;
+        var mimeInFileRegex = /\/\* *mime: *([-\w\/]+) *\*\//i;
+        var firstLine = (file.match(/.*/) || [""])[0];
+        var userMime = firstLine.match(mimeInFileRegex);
+        userMime = userMime ? userMime[1] : null;
+        var extToMime = {
+            ".js": "text/javascript",
+            ".html": "text/html",
+            ".css": "text/css"
+        };
+        var mime = extToMime[possibleExt];
+        if (!mime) {
+            if (looksLikeCSSRegex.test(file)) {
+                mime = "text/css";
+            }
+            if (looksLikeJSRegex.test(file)) {
+                mime = "text/javascript";
+            }
+            if (looksLikeHTMLRegex.test(file)) {
+                mime = "text/html";
+            }
+        }
+        if (userMime) {
+            mime = userMime;
+            file = file.replace(mimeInFileRegex, "");
+        }
+        if (!mime) {
+            mime = "text/plain";
+        }
+        return {mime: mime, file: file};
+    };
+
     var handleRequest = function(requestUrl, tabUrl) {
         for (var key in ruleDomains) {
             var domainObj = ruleDomains[key];
@@ -160,7 +201,9 @@
                         } else if (ruleObj.type === "fileOverride" &&
                             match(ruleObj.match, requestUrl).matched) {
 
-                            return {redirectUrl: "data:text/plain;base64," + btoa(ruleObj.file)};
+                            var mimeAndFile = extractMimeType(requestUrl, ruleObj.file);
+                            return {redirectUrl: "data:" + mimeAndFile.mime +
+                                ";base64," + btoa(mimeAndFile.file)};
                         }
                     }
                 }
@@ -197,9 +240,9 @@
             localStorage[request.setting] = request.value;
         } else if (request.action === "getSetting") {
             sendResponse(localStorage[request.setting]);
-        } else if(request.action === "syncMe") {
+        } else if (request.action === "syncMe") {
             syncFunctions.push(sendResponse);
-        } else if(request.action === "match") {
+        } else if (request.action === "match") {
             sendResponse(match(request.domainUrl, request.windowUrl).matched);
         }
 

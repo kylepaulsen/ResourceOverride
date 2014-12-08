@@ -217,6 +217,7 @@
             <li><b>Inject Rule</b>: A file you create will be injected into the page as a JS or CSS document.</li>
         </ul>
         <p>Each resource can only be changed by the first rule that matches it, so rules higher on the page have more precedence. You can rearrange rules by dragging on the up and down triangles.</p>
+        <p>A File Rule needs to be paired with a mime type. This extension tries to guess the correct mime type based off of the resource url and the content you supply. If your files aren't loading and Chrome is giving you trouble about content arriving with the wrong mime type, it means that this extension couldn't automatically detect the correct mime type and you may need to provide it yourself. Here is an example of how to do this: If you have a JavaScript file, you would put <span style="font-family: courier">/* mime: text/javascript */</span> on the very first line of the file. You can force any mime type you want as long as it's on the very first line of the file and in that format.</p>
         <h3>Example Replace URL Patterns:</h3>
         <table>
         <tr><td><b>Match URL</b></td><td><b>Replace URL</b></td><td><b>Resource URL</b></td><td></td><td><b>Result URL</b></td></tr>
