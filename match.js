@@ -1,13 +1,15 @@
 function tokenize(str) {
     "use strict";
+    var starGroups = str.match(/\*+/g) || [];
     while (str.indexOf("**") > -1) {
         str = str.replace(/\*\*/g, "*");
     }
     var tokens = str.split("*");
     var ans = [];
+    var x = 0;
     tokens.forEach(function(token) {
         ans.push(token);
-        ans.push("*");
+        ans.push(starGroups[x++]);
     });
     ans.pop();
     if (ans[0] === "") {
@@ -22,12 +24,15 @@ function tokenize(str) {
 function match(pattern, str) {
     "use strict";
     var patternTokens = tokenize(pattern);
-    var freeVars = [];
+    var freeVars = {};
+    var varGroup;
     var strParts = str;
     var matchAnything = false;
     var completeMatch = patternTokens.every(function(token) {
-        if (token === "*") {
+        if (token.charAt(0) === "*") {
             matchAnything = true;
+            varGroup = token.length;
+            freeVars[varGroup] = freeVars[varGroup] || [];
         } else {
             var matches = strParts.split(token);
             if (matches.length > 1) {
@@ -40,7 +45,7 @@ function match(pattern, str) {
                         // the string doesnt match the pattern.
                         return false;
                     }
-                    freeVars.push(possibleFreeVar);
+                    freeVars[varGroup].push(possibleFreeVar);
                 }
                 matchAnything = false;
                 // We matched up part of the pattern to the string
@@ -61,7 +66,7 @@ function match(pattern, str) {
         } else {
             // If we still need to match a string part up to a star,
             // match the rest of the string.
-            freeVars.push(strParts);
+            freeVars[varGroup].push(strParts);
         }
     }
 
@@ -69,6 +74,10 @@ function match(pattern, str) {
         matched: completeMatch,
         freeVars: freeVars
     };
+}
+
+function replaceAfter(str, idx, match, replace) {
+    return str.substring(0, idx) + str.substring(idx).replace(match, replace);
 }
 
 function matchReplace(pattern, replacePattern, str) {
@@ -81,8 +90,13 @@ function matchReplace(pattern, replacePattern, str) {
     }
 
     // Plug in the freevars in place of the stars.
-    matchData.freeVars.forEach(function(freeVar) {
-        replacePattern = replacePattern.replace("*", freeVar);
+    var starGroups = replacePattern.match(/\*+/g) || [];
+    var currentStarGroupIdx = 0;
+    starGroups.forEach(function(starGroup) {
+        var freeVarGroup = matchData.freeVars[starGroup.length] || [];
+        var freeVar = freeVarGroup.shift() || starGroup;
+        replacePattern = replaceAfter(replacePattern, currentStarGroupIdx, starGroup, freeVar);
+        currentStarGroupIdx = replacePattern.indexOf(freeVar) + freeVar.length;
     });
 
     return replacePattern;

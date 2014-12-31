@@ -224,8 +224,10 @@
         <tr><td>http://www.ex.com/neat.js</td><td>http://local:8080/cool.js</td><td>http://www.ex.com/neat.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/cool.js</td></tr>
         <tr><td>http://www.ex.com/js/*</td><td>http://local:8080/all.js</td><td>http://www.ex.com/js/some.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/all.js</td></tr>
         <tr><td>http://www.ex.com/*.js</td><td>http://local:8080/*.js</td><td>http://www.ex.com/captured_in_star.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/captured_in_star.js</td></tr>
+        <tr><td>*/js/**.js</td><td>http://local:8080/code/**.js</td><td>http://any.com/js/2stars.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/code/2stars.js</td></tr>
+        <tr><td>http://ex.com/*/**/***.js</td><td>http://local:8080/**/*/***.js</td><td>http://ex.com/a/b/c.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/b/a/c.js</td></tr>
         </table>
-        <p>When using <i>Web Rules</i>, you can "store" parts of the resource URL in stars (*) and then reuse the stored part in the replace url with another star. An example of this can be seen above.</p>
+        <p>When using <i>Web Rules</i>, you can "store" parts of the resource URL in stars (*) and then reuse the stored part in the replace url with the same number of stars. If you need to be specific where stored parts of the url are placed, you can use multiple stars together (**) to 'create another variable'. You can also use this technique to throw away parts of a url you don't care about (you don't have to use the corresponding stars in the replace url). Examples of these can be seen in the above table.</p>
     </div>
     <div id="helpFooter">
         <div class="right"><button id="helpCloseBtn" class="btn">Close</button></div>
