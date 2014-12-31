@@ -147,12 +147,14 @@
     // This function will try to guess the mime type.
     // The goal is to use the highest ranking mime type that it gets from these sources (highest
     // ranking sources first): The user provided mime type on the first line of the file, the url
-    // file extension, the file looks like html, the file looks like JavaScript, the file looks
-    // like CSS, can't tell what the file is so default to text/plain.
+    // file extension, the file looks like html, the file looks like xml, the file looks like,
+    // JavaScript, the file looks like CSS, can't tell what the file is so default to text/plain.
     var extractMimeType = function(requestUrl, file) {
+        file = file || "";
         var possibleExt = (requestUrl.match(/\.[A-Za-z]{2,4}$/) || [""])[0];
         var looksLikeCSSRegex = /[#.]\w+\s*\{/;
         var looksLikeJSRegex = /var\s+.+\s*[,=;]/;
+        var looksLikeXMLRegex = /<\?xml(\s+.+\s*)?\?>/i;
         var looksLikeHTMLRegex = /<html(\s+.+\s*)?>/i;
         var mimeInFileRegex = /\/\* *mime: *([-\w\/]+) *\*\//i;
         var firstLine = (file.match(/.*/) || [""])[0];
@@ -161,26 +163,26 @@
         var extToMime = {
             ".js": "text/javascript",
             ".html": "text/html",
-            ".css": "text/css"
+            ".css": "text/css",
+            ".xml": "text/xml"
         };
         var mime = extToMime[possibleExt];
         if (!mime) {
-            if (looksLikeCSSRegex.test(file)) {
-                mime = "text/css";
-            }
-            if (looksLikeJSRegex.test(file)) {
-                mime = "text/javascript";
-            }
             if (looksLikeHTMLRegex.test(file)) {
                 mime = "text/html";
+            } else if (looksLikeXMLRegex.test(file)) {
+                mime = "text/xml";
+            } else if (looksLikeJSRegex.test(file)) {
+                mime = "text/javascript";
+            } else if (looksLikeCSSRegex.test(file)) {
+                mime = "text/css";
+            } else {
+                mime = "text/plain";
             }
         }
         if (userMime) {
             mime = userMime;
             file = file.replace(mimeInFileRegex, "");
-        }
-        if (!mime) {
-            mime = "text/plain";
         }
         return {mime: mime, file: file};
     };
@@ -244,6 +246,8 @@
             syncFunctions.push(sendResponse);
         } else if (request.action === "match") {
             sendResponse(match(request.domainUrl, request.windowUrl).matched);
+        } else if (request.action === "extractMimeType") {
+            sendResponse(extractMimeType(request.fileName, request.file));
         }
 
         // !!!Important!!! Need to return true for sendResponse to work.

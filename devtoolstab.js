@@ -73,7 +73,7 @@
         return prefix.charAt(0) + (maxId + 1);
     }
 
-    function openEditor(fileId, match, isInjectFile, type) {
+    function openEditor(fileId, match, isInjectFile) {
         $("#editorOverlay").show();
         if (!editor) {
             editor = CodeMirror($("#editor")[0], {
@@ -86,12 +86,25 @@
             });
             editor.setSize("100%", "100%");
         }
+        match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
-        $("#matchSpan").text(match || "<Not defined yet>");
+        $("#matchSpan").text(match);
 
-        if (type) {
-            $("#syntaxSelect").val(type === "js" ? "javascript" : "css");
-        }
+        chrome.extension.sendMessage({
+            action: "extractMimeType",
+            file: files[fileId],
+            fileName: match
+        }, function(data) {
+            var mimeToEditorSyntax = {
+                "text/javascript": "javascript",
+                "text/html": "htmlmixed",
+                "text/css": "css",
+                "text/xml": "xml"
+            };
+            var mode = mimeToEditorSyntax[data.mime] || "javascript";
+            $("#syntaxSelect").val(mode);
+            editor.setOption("mode", mode);
+        });
 
         var loadSelect = $("#loadSelect");
 
@@ -246,7 +259,7 @@
 
         editBtn.on("click", function() {
             editingFile = override[0].id;
-            openEditor(editingFile, fileName.val(), true, fileType.val());
+            openEditor(editingFile, fileName.val(), true);
             lastSaveFunc = saveFunc;
         });
 

@@ -99,7 +99,7 @@ function moveableRules(parent, handleSelector) {
             if (dropTarget !== lastDropTarget) {
                 setBorders();
                 if (dropTarget) {
-                    dropTarget.style.background = "#eeeeee";
+                    dropTarget.style.background = "#dddddd";
                 }
                 lastDropTarget = dropTarget;
             }
