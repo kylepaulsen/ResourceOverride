@@ -1,0 +1,5 @@
+Make tokenize in match.js suck less. ( str.split(/(\*+)/g) then check for "" on front and end )
+Remove ability to fold rules under tab urls. Add ability to drag tab url groups.
+Make help section suck less. No one understands how *s work.
+Make new tab url auto populate to have a *
+Consider making youtube help vid.
