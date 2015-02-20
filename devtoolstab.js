@@ -479,6 +479,7 @@
         $("#addDomainBtn").on("click", function() {
             var domainList = $("#domainDefs");
             var newDomain = createDomainMarkup();
+            newDomain.find(".domainMatchInput").val("*");
             domainList.append(newDomain);
             chrome.extension.sendMessage({action: "saveDomain", data: getDomainData(newDomain)});
             skipNextSync = true;

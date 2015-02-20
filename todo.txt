@@ -1,4 +1,3 @@
 Remove ability to fold rules under tab urls. Add ability to drag tab url groups.
 Make help section suck less. No one understands how *s work.
-Make new tab url auto populate to have a *
 Consider making youtube help vid.
