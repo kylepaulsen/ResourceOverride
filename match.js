@@ -1,17 +1,6 @@
 function tokenize(str) {
     "use strict";
-    var starGroups = str.match(/\*+/g) || [];
-    while (str.indexOf("**") > -1) {
-        str = str.replace(/\*\*/g, "*");
-    }
-    var tokens = str.split("*");
-    var ans = [];
-    var x = 0;
-    tokens.forEach(function(token) {
-        ans.push(token);
-        ans.push(starGroups[x++]);
-    });
-    ans.pop();
+    var ans = str.split(/(\*+)/g);
     if (ans[0] === "") {
         ans.shift();
     }
@@ -38,15 +27,17 @@ function match(pattern, str) {
             if (matches.length > 1) {
                 // The token was found in the string.
                 var possibleFreeVar = matches.shift();
-                if (possibleFreeVar !== "") {
+                if (matchAnything) {
                     // Found a possible candidate for the *.
-                    if (!matchAnything) {
+                    freeVars[varGroup].push(possibleFreeVar);
+                } else {
+                    if (possibleFreeVar !== "") {
                         // But if we haven't seen a * for this freeVar,
                         // the string doesnt match the pattern.
                         return false;
                     }
-                    freeVars[varGroup].push(possibleFreeVar);
                 }
+
                 matchAnything = false;
                 // We matched up part of the pattern to the string
                 // prepare to look at the next part of the string.
@@ -59,14 +50,14 @@ function match(pattern, str) {
         return true;
     });
 
-    if (strParts !== "") {
-        if (!matchAnything) {
+    if (matchAnything) {
+        // If we still need to match a string part up to a star,
+        // match the rest of the string.
+        freeVars[varGroup].push(strParts);
+    } else {
+        if (strParts !== "") {
             // There is still some string part that didn't match up to the pattern.
             completeMatch = false;
-        } else {
-            // If we still need to match a string part up to a star,
-            // match the rest of the string.
-            freeVars[varGroup].push(strParts);
         }
     }
 
@@ -77,6 +68,7 @@ function match(pattern, str) {
 }
 
 function replaceAfter(str, idx, match, replace) {
+    "use strict";
     return str.substring(0, idx) + str.substring(idx).replace(match, replace);
 }
 
@@ -92,12 +84,19 @@ function matchReplace(pattern, replacePattern, str) {
     // Plug in the freevars in place of the stars.
     var starGroups = replacePattern.match(/\*+/g) || [];
     var currentStarGroupIdx = 0;
+    var freeVar;
+    var freeVarGroup;
     starGroups.forEach(function(starGroup) {
-        var freeVarGroup = matchData.freeVars[starGroup.length] || [];
-        var freeVar = freeVarGroup.shift() || starGroup;
+        freeVarGroup = matchData.freeVars[starGroup.length] || [];
+        freeVar = freeVarGroup.shift();
+        freeVar = freeVar === undefined ? starGroup : freeVar;
         replacePattern = replaceAfter(replacePattern, currentStarGroupIdx, starGroup, freeVar);
         currentStarGroupIdx = replacePattern.indexOf(freeVar) + freeVar.length;
     });
 
     return replacePattern;
+}
+
+if (typeof module === "object" && module.exports) {
+    module.exports = matchReplace;
 }
