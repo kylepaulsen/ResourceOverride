@@ -189,11 +189,6 @@ input[readonly] {
     width: 100%;
 }
 
-.domainHeader .expand {
-    flex: 0 0 44px;
-    text-align: left;
-}
-
 .domainHeader .domainText {
     flex: 0 0 55px;
     padding-top: 8px;
@@ -355,10 +350,6 @@ input[readonly] {
     font-size: 28px;
     width: 34px;
     line-height: 30px;
-}
-
-.expanded {
-    line-height: 28px;
 }
 
 .btn:hover {

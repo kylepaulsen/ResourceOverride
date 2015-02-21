@@ -306,7 +306,6 @@
         var addRuleBtn = domain.find(".addRuleBtn");
         var addFileRuleBtn = domain.find(".addFileRuleBtn");
         var addInjectRuleBtn = domain.find(".addInjectRuleBtn");
-        var expandBtn = domain.find(".expandBtn");
         var domainMatchInput = domain.find(".domainMatchInput");
         var onOffBtn = domain.find(".domainOnOff");
         var deleteBtn = domain.find(".deleteBtn");
@@ -338,22 +337,7 @@
             domain.addClass("disabled");
         }
 
-        var expandToggle = function() {
-            if (expandBtn.html() === "+") {
-                expandBtn.html("&ndash;");
-                expandBtn.addClass("expanded");
-                overrideRulesContainer.slideDown();
-            } else {
-                expandBtn.html("+");
-                expandBtn.removeClass("expanded");
-                overrideRulesContainer.slideUp();
-            }
-        };
-
         addRuleBtn.on("click", function() {
-            if (!expandBtn.hasClass("expanded")) {
-                expandToggle();
-            }
             var markup = createWebOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
@@ -366,24 +350,17 @@
         });
 
         addFileRuleBtn.on("click", function() {
-            if (!expandBtn.hasClass("expanded")) {
-                expandToggle();
-            }
             var markup = createFileOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
         });
 
         addInjectRuleBtn.on("click", function() {
-            if (!expandBtn.hasClass("expanded")) {
-                expandToggle();
-            }
             var markup = createFileInjectMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
         });
 
-        expandBtn.on("click", expandToggle);
         deleteBtn.on("click", function() {
             chrome.extension.sendMessage({action: "deleteDomain", id: id});
             domain.css("transition", "none");
