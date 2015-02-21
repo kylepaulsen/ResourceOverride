@@ -102,6 +102,14 @@ input[readonly] {
     height: 50px;
 }
 
+#findInEditor {
+    margin-right: 20px;
+}
+
+#fileSaveBtn {
+    margin-right: 20px;
+}
+
 #editorOverlay {
     background-color: #ffffff;
     position: fixed;

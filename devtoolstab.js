@@ -76,7 +76,8 @@
     function openEditor(fileId, match, isInjectFile) {
         $("#editorOverlay").show();
         if (!editor) {
-            editor = CodeMirror($("#editor")[0], {
+            var editorElement = $("#editor");
+            editor = CodeMirror(editorElement[0], {
                 lineNumbers: true,
                 styleActiveLine: true,
                 matchBrackets: true,
@@ -85,6 +86,14 @@
                 indentWithTabs: true
             });
             editor.setSize("100%", "100%");
+            editorElement.on("keydown", function(e) {
+                var code = e.which;
+                if (code < 14 || code === 32 || (code > 45 && code < 91) ||
+                    (code > 95 && code < 112) || code > 185) {
+                    $("#fileSaveAndCloseBtn").css("color", "#ff0000");
+                    $("#fileSaveBtn").css("color", "#ff0000");
+                }
+            });
         }
         match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
@@ -485,8 +494,17 @@
             skipNextSync = true;
         });
 
-        $("#fileSaveBtn").on("click", function() {
+        $("#fileSaveAndCloseBtn").on("click", function() {
             $("#editorOverlay").hide();
+            $(this).css("color", "#000000");
+            $("#fileSaveBtn").css("color", "#000000");
+            files[editingFile] = editor.doc.getValue();
+            lastSaveFunc();
+        });
+
+        $("#fileSaveBtn").on("click", function() {
+            $(this).css("color", "#000000");
+            $("#fileSaveAndCloseBtn").css("color", "#000000");
             files[editingFile] = editor.doc.getValue();
             lastSaveFunc();
         });
@@ -527,6 +545,11 @@
 
         $("#syntaxSelect").on("change", function() {
             editor.setOption("mode", $(this).val());
+        });
+
+        $("#findInEditor").on("click", function() {
+            CodeMirror.commands.find(editor);
+            $(editor.display.wrapper).find(".CodeMirror-search-field").focus();
         });
 
         $("#beautifyJS").on("click", function() {
