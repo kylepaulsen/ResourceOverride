@@ -73,7 +73,34 @@
         return prefix.charAt(0) + (maxId + 1);
     }
 
+    function getTabResources(cb) {
+        if (!window.isNormalTab) {
+            chrome.devtools.inspectedWindow.getResources(function(resourceList) {
+                if (resourceList) {
+                    var filteredList = resourceList.filter(function(resource) {
+                        var url = resource.url;
+                        url = url.trim();
+                        if (url) {
+                            var validStart = (/^http/).test(url);
+                            var invalidFormat = (/\.jpg$|\.jpeg$|\.gif$|\.png$/).test(url);
+                            return validStart && !invalidFormat;
+                        }
+                        return false;
+                    });
+                    filteredList = filteredList.map(function(resource) {
+                        return resource.url;
+                    });
+                    cb(filteredList.sort());
+                }
+            });
+        } else {
+            window.suggest.setShouldSuggest(false);
+        }
+    }
+
     function openEditor(fileId, match, isInjectFile) {
+        $("#fileSaveAndCloseBtn").css("color", "#000000");
+        $("#fileSaveBtn").css("color", "#000000");
         $("#editorOverlay").show();
         if (!editor) {
             var editorElement = $("#editor");
@@ -121,28 +148,15 @@
         // Look there for the reason why it exists.
         if (!window.isNormalTab) {
             loadSelect.show();
-            chrome.devtools.inspectedWindow.getResources(function(resourceList) {
-                if (resourceList) {
-                    var filteredList = resourceList.filter(function(resource) {
-                        var url = resource.url;
-                        url = url.trim();
-                        if (url) {
-                            var validStart = (/^http/).test(url);
-                            var invalidFormat = (/\.jpg$|\.jpeg$|\.gif$|\.png$/).test(url);
-                            return validStart && !invalidFormat;
-                        }
-                        return false;
-                    });
-                    loadSelect.html("<option value=''>Load content from resource...</option>");
-                    filteredList.forEach(function(resource) {
-                        var url = resource.url;
-                        var newOpt = $("<option></option>");
-                        newOpt.attr("value", url);
-                        newOpt.text(url);
-                        loadSelect.append(newOpt);
-                    });
-                    loadSelect.val("");
-                }
+            getTabResources(function(filteredList) {
+                loadSelect.html("<option value=''>Load content from resource...</option>");
+                filteredList.forEach(function(url) {
+                    var newOpt = $("<option>");
+                    newOpt.attr("value", url);
+                    newOpt.text(url);
+                    loadSelect.append(newOpt);
+                });
+                loadSelect.val("");
             });
         } else {
             loadSelect.hide();
@@ -341,6 +355,7 @@
             var markup = createWebOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
+            window.suggest.init();
         });
 
         domainMatchInput.on("keyup", saveFunc);
@@ -353,6 +368,7 @@
             var markup = createFileOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
+            window.suggest.init();
         });
 
         addInjectRuleBtn.on("click", function() {
@@ -433,6 +449,10 @@
                 });
                 skipNextSync = true;
             }
+            window.suggest.init();
+            getTabResources(function(res) {
+                window.suggest.fillOptions(res);
+            });
         });
     }
 
@@ -468,13 +488,12 @@
             newDomain.find(".domainMatchInput").val("*");
             domainList.append(newDomain);
             chrome.extension.sendMessage({action: "saveDomain", data: getDomainData(newDomain)});
+            window.suggest.init();
             skipNextSync = true;
         });
 
         $("#fileSaveAndCloseBtn").on("click", function() {
             $("#editorOverlay").hide();
-            $(this).css("color", "#000000");
-            $("#fileSaveBtn").css("color", "#000000");
             files[editingFile] = editor.doc.getValue();
             lastSaveFunc();
         });
@@ -512,6 +531,8 @@
                 var mode = fileTypes[ext];
                 chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
                     editor.doc.setValue(data);
+                    $("#fileSaveAndCloseBtn").css("color", "#ff0000");
+                    $("#fileSaveBtn").css("color", "#ff0000");
                     if (mode) {
                         $("#syntaxSelect").val(mode);
                         editor.setOption("mode", mode);
@@ -533,6 +554,33 @@
             editor.doc.setValue(js_beautify(editor.doc.getValue()));
         });
 
+        if (window.isNormalTab) {
+            $(".suggestCheckbox").hide();
+            $(".suggestText").hide();
+            chrome.extension.sendMessage({
+                action: "getSetting",
+                setting: "tabPageNotice"
+            }, function(data) {
+
+                if (data !== "true") {
+                    var tabPageNotice = $("#tabPageNotice");
+                    tabPageNotice.find("a").on("click", function(e) {
+                        e.preventDefault();
+                        chrome.extension.sendMessage({
+                            action: "setSetting",
+                            setting: "tabPageNotice",
+                            value: "true"
+                        });
+                        tabPageNotice.fadeOut();
+                    });
+                    tabPageNotice.fadeIn();
+                    setTimeout(function() {
+                        tabPageNotice.fadeOut();
+                    }, 6000);
+                }
+            });
+        }
+
         var showDevToolsCB = $("#showDevTools");
         showDevToolsCB.on("click", function() {
             chrome.extension.sendMessage({
@@ -542,8 +590,31 @@
             });
         });
 
-        chrome.extension.sendMessage({action: "getSetting", setting: "devTools"}, function(data) {
+        var showSuggestions = $("#showSuggestions");
+        showSuggestions.on("click", function() {
+            chrome.extension.sendMessage({
+                action: "setSetting",
+                setting: "showSuggestions",
+                value: showSuggestions.prop("checked")
+            });
+            window.suggest.setShouldSuggest(showSuggestions.prop("checked"));
+        });
+
+        chrome.extension.sendMessage({
+            action: "getSetting",
+            setting: "devTools"
+        }, function(data) {
+
             showDevToolsCB.prop("checked", data === "true");
+        });
+
+        chrome.extension.sendMessage({
+            action: "getSetting",
+            setting: "showSuggestions"
+        }, function(data) {
+
+            showSuggestions.prop("checked", data !== "false");
+            window.suggest.setShouldSuggest(data !== "false");
         });
     }
 

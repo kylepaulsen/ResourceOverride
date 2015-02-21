@@ -19,7 +19,7 @@
 
             document.head.innerHTML = html.substring(headStart, headEnd);
             document.body.innerHTML = html.substring(bodyStart, bodyEnd);
-            window.init();
+            setTimeout(window.init, 0);
         }
     };
 

@@ -30,7 +30,7 @@
                 Tab URL:
             </div>
             <div class="domain">
-                <input type="input" class="domainMatchInput" placeholder="Tab Match URL">
+                <input type="input" class="domainMatchInput" placeholder="Tab Match URL" data-suggest>
             </div>
             <div class="addRule">
                 <button class="btn addRuleBtn">Add Web Rule</button>
@@ -63,13 +63,13 @@
             From:
         </div>
         <div class="rule">
-            <input type="input" class="matchInput" placeholder="Match URL">
+            <input type="input" class="matchInput" placeholder="Match URL" data-suggest>
         </div>
         <div class="arrow">
             To:
         </div>
         <div class="rule">
-            <input type="input" class="replaceInput" placeholder="Replace URL">
+            <input type="input" class="replaceInput" placeholder="Replace URL" data-suggest>
         </div>
         <div class="switch">
             <on-off-switch class="ruleOnOff"></on-off-switch>
@@ -89,7 +89,7 @@
             From:
         </div>
         <div class="rule">
-            <input type="input" class="matchInput" placeholder="Match URL">
+            <input type="input" class="matchInput" placeholder="Match URL" data-suggest>
         </div>
         <div class="arrow">
             To:
@@ -152,6 +152,8 @@
 </div>
 
 <div id="helpAndOptions">
+    <div class="suggestText">Show Suggestions:</div>
+    <div class="suggestCheckbox"><input type="checkbox" id="showSuggestions"></div>
     <div class="devToolsText">Show DevTools Tab:</div>
     <div class="devToolsCheckbox"><input type="checkbox" id="showDevTools"></div>
     <div class="helpBtnContainer"><button id="helpBtn" class="btn">Help</button></div>
@@ -233,10 +235,15 @@
     </div>
 </div>
 
+<div id="tabPageNotice">
+The devtools tab has more features that aren't avilable on the options page. <a href="#">OK</a>
+</div>
+
 <script src="lib/jquery-2.1.1.min.js"></script>
 <script src="lib/codemirror-compressed.js"></script>
 <script src="lib/beautify.min.js"></script>
 <script src="moveableRules.js"></script>
+<script src="suggest.js"></script>
 
 <script src="devtoolstab.js"></script>
 </body>
