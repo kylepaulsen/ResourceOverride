@@ -1,3 +1,2 @@
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
-Consider making youtube help vid.

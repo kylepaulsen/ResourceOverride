@@ -73,7 +73,7 @@
                     e.preventDefault();
                     selectDown(true);
                 }
-                if (code === 13) { // Enter
+                if (code === 13 || code === 9) { // Enter or Tab
                     completeInput($(this));
                     suggestBox.hide();
                 }
@@ -87,13 +87,22 @@
 
         inputs.on("keyup", keyUpFunc);
 
-        inputs.on("blur", function() {
-            suggestBox.hide();
-        });
-
         if (!appended) {
             $("body").append(suggestBox);
             appended = true;
+
+            $(window).on("mousedown", function(e) {
+                var target = $(e.target);
+                if (target.hasClass("suggestOption") || target.closest(".suggestBox").length === 0) {
+                    suggestBox.hide();
+                }
+            });
+
+            suggestBox.on("mouseup", function() {
+                var scrollTop = suggestBox.scrollTop();
+                currentInput.focus();
+                suggestBox.scrollTop(scrollTop);
+            });
         }
     };
 
@@ -110,7 +119,12 @@
         var inputParts = input.val().split("*");
         var lastPart = inputParts[inputParts.length - 1];
         var lastIndex = selectedText.lastIndexOf(lastPart);
-        input.val(input.val() + selectedText.substring(lastIndex + lastPart.length));
+        if (inputParts.length > 1) {
+            input.val(input.val() + selectedText.substring(lastIndex + lastPart.length));
+        } else {
+            input.val(selectedText);
+        }
+        input.data("saveFunc")();
     }
 
     function filterOptions(inputVal) {

@@ -202,6 +202,7 @@
         });
 
         matchInput.on("keyup", saveFunc);
+        matchInput.data("saveFunc", saveFunc);
         replaceInput.on("keyup", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
@@ -244,6 +245,7 @@
         });
 
         matchInput.on("keyup", saveFunc);
+        matchInput.data("saveFunc", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
             saveFunc();
@@ -359,6 +361,7 @@
         });
 
         domainMatchInput.on("keyup", saveFunc);
+        domainMatchInput.data("saveFunc", saveFunc);
         onOffBtn.on("click change", function() {
             domain.toggleClass("disabled", !onOffBtn[0].isOn);
             saveFunc();
