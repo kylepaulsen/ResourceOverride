@@ -17,7 +17,7 @@
             var newEl = $("<div class='suggestOption'>");
             newEl.text(option);
             newEl.on("mousedown", function() {
-                currentInput.val($(this).text());
+                completeInput(currentInput, $(this));
             });
             suggestBox.append(newEl);
             options = suggestBox.find("div");
@@ -74,7 +74,7 @@
                     selectDown(true);
                 }
                 if (code === 13) { // Enter
-                    $(this).val(options.eq(selectedIndex).text());
+                    completeInput($(this));
                     suggestBox.hide();
                 }
                 if (code === 27) { // ESC
@@ -101,6 +101,16 @@
         if (!hideTillNextFocus) {
             suggestBox.show();
         }
+    }
+
+
+
+    function completeInput(input, option) {
+        var selectedText = option ? option.text() : options.eq(selectedIndex).text();
+        var inputParts = input.val().split("*");
+        var lastPart = inputParts[inputParts.length - 1];
+        var lastIndex = selectedText.lastIndexOf(lastPart);
+        input.val(input.val() + selectedText.substring(lastIndex + lastPart.length));
     }
 
     function filterOptions(inputVal) {
