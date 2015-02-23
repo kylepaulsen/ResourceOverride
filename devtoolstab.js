@@ -361,7 +361,6 @@
         });
 
         domainMatchInput.on("keyup", saveFunc);
-        domainMatchInput.data("saveFunc", saveFunc);
         onOffBtn.on("click change", function() {
             domain.toggleClass("disabled", !onOffBtn[0].isOn);
             saveFunc();

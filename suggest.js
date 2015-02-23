@@ -112,15 +112,19 @@
         }
     }
 
-
-
     function completeInput(input, option) {
         var selectedText = option ? option.text() : options.eq(selectedIndex).text();
-        var inputParts = input.val().split("*");
-        var lastPart = inputParts[inputParts.length - 1];
+        var val = input.val().replace(/\*+$/g, "");
+        var inputParts = val.split("*");
+        var x = inputParts.length - 1;
+        var lastPart = inputParts[x];
+        while (lastPart === "" && x > 0) {
+            --x;
+            lastPart = inputParts[x];
+        }
         var lastIndex = selectedText.lastIndexOf(lastPart);
         if (inputParts.length > 1) {
-            input.val(input.val() + selectedText.substring(lastIndex + lastPart.length));
+            input.val(val + selectedText.substring(lastIndex + lastPart.length));
         } else {
             input.val(selectedText);
         }
