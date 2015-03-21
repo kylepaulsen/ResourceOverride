@@ -515,6 +515,18 @@
             $("#helpOverlay").toggle();
         });
 
+        $(window).on("click", function(e) {
+            var popOver = $("#optionsPopOver");
+            var target = $(e.target);
+            if (e.target.id === "optionsBtn") {
+                popOver.toggle();
+            } else {
+                if (target.closest("#optionsPopOver").length === 0) {
+                    popOver.hide();
+                }
+            }
+        });
+
         $("#helpCloseBtn").on("click", function() {
             $("#helpOverlay").hide();
         });
@@ -557,8 +569,8 @@
         });
 
         if (window.isNormalTab) {
-            $(".suggestCheckbox").hide();
-            $(".suggestText").hide();
+            $("#showSuggestions").hide();
+            $("#showSuggestionsText").hide();
             chrome.extension.sendMessage({
                 action: "getSetting",
                 setting: "tabPageNotice"
@@ -602,6 +614,15 @@
             window.suggest.setShouldSuggest(showSuggestions.prop("checked"));
         });
 
+        var showLogs = $("#showLogs");
+        showLogs.on("click", function() {
+            chrome.extension.sendMessage({
+                action: "setSetting",
+                setting: "showLogs",
+                value: showLogs.prop("checked")
+            });
+        });
+
         chrome.extension.sendMessage({
             action: "getSetting",
             setting: "devTools"
@@ -617,6 +638,14 @@
 
             showSuggestions.prop("checked", data !== "false");
             window.suggest.setShouldSuggest(data !== "false");
+        });
+
+        chrome.extension.sendMessage({
+            action: "getSetting",
+            setting: "showLogs"
+        }, function(data) {
+
+            showLogs.prop("checked", data === "true");
         });
     }
 

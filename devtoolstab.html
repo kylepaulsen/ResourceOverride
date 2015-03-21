@@ -152,11 +152,23 @@
 </div>
 
 <div id="helpAndOptions">
-    <div class="suggestText">Show Suggestions:</div>
-    <div class="suggestCheckbox"><input type="checkbox" id="showSuggestions"></div>
-    <div class="devToolsText">Show DevTools Tab:</div>
-    <div class="devToolsCheckbox"><input type="checkbox" id="showDevTools"></div>
+    <div class="optionsBtnContainer"><button id="optionsBtn" class="btn">Options</button></div>
     <div class="helpBtnContainer"><button id="helpBtn" class="btn">Help</button></div>
+
+    <div id="optionsPopOver">
+        <div class="optionRow">
+            <div class="optionText">Show DevTools Tab:</div>
+            <div class="optionCheckbox"><input type="checkbox" id="showDevTools"></div>
+        </div>
+        <div class="optionRow">
+            <div class="optionText" id="showSuggestionsText">Show Suggestions:</div>
+            <div class="optionCheckbox"><input type="checkbox" id="showSuggestions"></div>
+        </div>
+        <div class="optionRow">
+            <div class="optionText">Show Logs:</div>
+            <div class="optionCheckbox"><input type="checkbox" id="showLogs"></div>
+        </div>
+    </div>
 </div>
 <div class="clearfix"></div>
 

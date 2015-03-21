@@ -48,4 +48,14 @@
             }
         });
     });
+
+    chrome.extension.onMessage.addListener(function(msg) {
+        if (msg.action === 'log') {
+            var logStyle = "color: #007182; font-weight: bold;";
+            if (msg.important) {
+                logStyle += "background: #AAFFFF;";
+            }
+            console.log("%c[Resource Override] " + msg.message, logStyle);
+        }
+    });
 })();

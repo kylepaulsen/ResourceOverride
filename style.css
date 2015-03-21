@@ -17,6 +17,11 @@ input[readonly] {
     cursor: pointer;
 }
 
+input[type=checkbox] {
+    display: block;
+    height: 14px;
+}
+
 #title {
     background-image: url("icons/icon-48x48.png");
     background-repeat: no-repeat;
@@ -36,26 +41,40 @@ input[readonly] {
 #helpAndOptions {
     margin-top: 16px;
     float: right;
+    position: relative;
 }
 
-#helpAndOptions .suggestText {
-    float: left;
-    margin-top: 8px;
+#optionsPopOver {
+    display: none;
+    width: 180px;
+    padding: 6px;
+    background: #EEEEEE;
+    position: absolute;
+    top: 0px;
+    z-index: 50;
+    left: -192px;
+    border-radius: 5px;
+    border: 2px solid #999999;
 }
 
-#helpAndOptions .suggestCheckbox {
+#optionsPopOver .optionRow {
     float: left;
-    margin-right: 20px;
+    width: 100%;
+    margin-bottom: 2px;
 }
 
-#helpAndOptions .devToolsText {
+#optionsPopOver .optionText {
     float: left;
-    margin-top: 8px;
+    margin-top: 2px;
 }
 
-#helpAndOptions .devToolsCheckbox {
+#optionsPopOver .optionCheckbox {
+    float: right;
+}
+
+#helpAndOptions .optionsBtnContainer {
     float: left;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 #helpAndOptions .helpBtnContainer {

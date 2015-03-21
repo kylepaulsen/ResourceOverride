@@ -5,6 +5,17 @@
     var ruleDomains = {};
     var syncFunctions = [];
 
+    var logOnTab = function(tabId, message, important) {
+        if (localStorage.showLogs === "true") {
+            important = !!important;
+            chrome.tabs.sendMessage(tabId, {
+                action: "log",
+                message: message,
+                important: important
+            });
+        }
+    };
+
     // http://stackoverflow.com/questions/15124995/how-to-wait-for-an-asynchronous-methods-callback-return-value
     var tabUrlTracker = (function() {
         // All opened urls
@@ -187,21 +198,27 @@
         return {mime: mime, file: file};
     };
 
-    var handleRequest = function(requestUrl, tabUrl) {
+    var handleRequest = function(requestUrl, tabUrl, tabId) {
         for (var key in ruleDomains) {
             var domainObj = ruleDomains[key];
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
                 var rules = domainObj.rules || [];
                 for (var x = 0, len = rules.length; x < len; ++x) {
+                    var row = x + 1;
                     var ruleObj = rules[x];
                     if (ruleObj.on) {
                         if (ruleObj.type === "normalOverride") {
                             var newUrl = matchReplace(ruleObj.match, ruleObj.replace, requestUrl);
                             if (requestUrl !== newUrl) {
+                                logOnTab(tabId, "URL Override Matched: " + requestUrl +
+                                    "   to:   " + newUrl + "   match url: " + ruleObj.match, true);
                                 return {redirectUrl: newUrl};
                             }
                         } else if (ruleObj.type === "fileOverride" &&
                             match(ruleObj.match, requestUrl).matched) {
+
+                            logOnTab(tabId, "File Override Matched: " + requestUrl + "   match url: " +
+                                ruleObj.match, true);
 
                             var mimeAndFile = extractMimeType(requestUrl, ruleObj.file);
                             return {redirectUrl: "data:" + mimeAndFile.mime +
@@ -209,6 +226,9 @@
                         }
                     }
                 }
+                logOnTab(tabId, "No override match for: " + requestUrl);
+            } else {
+                logOnTab(tabId, "Rule is off or tab URL does not match: " + domainObj.matchUrl);
             }
         }
     };
@@ -260,7 +280,7 @@
             if (details.tabId > -1) {
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
                 if (tabUrl) {
-                    return handleRequest(details.url, tabUrl);
+                    return handleRequest(details.url, tabUrl, details.tabId);
                 }
             }
         }
@@ -271,6 +291,12 @@
     //init settings
     if (localStorage.devTools === undefined) {
         localStorage.devTools = "true";
+    }
+    if (localStorage.showSuggestions === undefined) {
+        localStorage.showSuggestions = "true";
+    }
+    if (localStorage.showLogs === undefined) {
+        localStorage.showLogs = "false";
     }
 
     // init domain storage
