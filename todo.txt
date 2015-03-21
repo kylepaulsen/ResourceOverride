@@ -1,6 +1,4 @@
-Make background.js use UTF-8 charset:
-    return {redirectUrl: "data:" + mimeAndFile.mime +
-        ";charset=UTF-8;base64," + btoa(unescape(encodeURIComponent(mimeAndFile.file)))};
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
 Allow horizontal scrolling in suggestion box.
+Clean up this disgusting project

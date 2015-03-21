@@ -221,8 +221,8 @@
                                 ruleObj.match, true);
 
                             var mimeAndFile = extractMimeType(requestUrl, ruleObj.file);
-                            return {redirectUrl: "data:" + mimeAndFile.mime +
-                                ";base64," + btoa(mimeAndFile.file)};
+                            return {redirectUrl: "data:" + mimeAndFile.mime + ";charset=UTF-8;base64," +
+                                btoa(unescape(encodeURIComponent(mimeAndFile.file)))};
                         }
                     }
                 }
