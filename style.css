@@ -385,13 +385,16 @@ input[type=checkbox] {
     border: 1px solid #aaaaaa;
     border-top: 0;
     max-height: 100px;
-    overflow: hidden;
-    overflow-y: auto;
+    overflow: auto;
+}
+
+.suggestTable {
+    border-collapse: collapse;
 }
 
 .suggestOption {
     white-space: nowrap;
-    padding: 4px 24px 4px 6px;
+    padding: 4px 8px 4px 6px;
     cursor: pointer;
 }
 

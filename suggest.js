@@ -2,6 +2,8 @@
     "use strict";
 
     var suggestBox;
+    var suggestTable;
+    var suggestTableMaxHeight = 100;
     var appended = false;
     var selectedIndex = 0;
     var numOptions = 0;
@@ -11,23 +13,26 @@
     var shouldSuggest = true;
 
     function fillOptions(opts) {
-        suggestBox.html("");
+        suggestTable.html("");
         numOptions = 0;
         opts.forEach(function(option) {
-            var newEl = $("<div class='suggestOption'>");
-            newEl.text(option);
-            newEl.on("mousedown", function() {
+            var newRow = $("<tr>");
+            var newRowContent = $("<td class='suggestOption'>");
+            newRow.append(newRowContent);
+            newRowContent.text(option);
+            newRowContent.on("mousedown", function() {
                 completeInput(currentInput, $(this));
             });
-            suggestBox.append(newEl);
-            options = suggestBox.find("div");
+            suggestTable.append(newRow);
+            options = suggestTable.find("tr");
             ++numOptions;
         });
     };
 
     function init() {
         if (!suggestBox) {
-            suggestBox = $("<div class='suggestBox'>");
+            suggestBox = $("<div class='suggestBox'><table class='suggestTable'></table></div>");
+            suggestTable = suggestBox.find("table");
         }
 
         var inputs = $("input[data-suggest]");
@@ -100,7 +105,11 @@
 
             suggestBox.on("mouseup", function() {
                 var scrollTop = suggestBox.scrollTop();
+                var lastShouldSuggest = shouldSuggest;
+                // dont call the focus event handler... just focus the field.
+                shouldSuggest = false;
                 currentInput.focus();
+                shouldSuggest = lastShouldSuggest;
                 suggestBox.scrollTop(scrollTop);
             });
         }
@@ -178,6 +187,11 @@
             selectUp();
         }
         highlightOption();
+        if (suggestTable.height() > suggestTableMaxHeight) {
+            suggestTable.css("margin-right", "18px");
+        } else {
+            suggestTable.css("margin-right", "0px");
+        }
     }
 
     function selectDown(dontTryAgain) {
@@ -211,19 +225,23 @@
     }
 
     function highlightOption() {
-        var divToHighlight = options.eq(selectedIndex);
+        var optionToHighlight = options.eq(selectedIndex);
         options.css("background", "#ffffff");
-        divToHighlight.css("background", "#aaaaaa");
-        fixScroll(divToHighlight);
+        optionToHighlight.css("background", "#aaaaaa");
+        fixScroll(optionToHighlight);
     }
 
-    function fixScroll(divToHighlight) {
+    function fixScroll(optionToHighlight) {
         var suggestBoxScrollTop = suggestBox.scrollTop();
-        var divToHighlightHeight = divToHighlight.height();
+        var optionToHighlightHeight = optionToHighlight.height();
         var suggestBoxHeight = suggestBox.height();
-        var heightInDiv = divToHighlight.offset().top - suggestBox.offset().top + suggestBoxScrollTop;
-        if (heightInDiv + divToHighlightHeight > suggestBoxScrollTop + suggestBoxHeight) {
-            suggestBox.scrollTop(heightInDiv - suggestBoxHeight + divToHighlightHeight + 8);
+        var heightInDiv = optionToHighlight.offset().top - suggestBox.offset().top + suggestBoxScrollTop;
+        if (heightInDiv + optionToHighlightHeight > suggestBoxScrollTop + suggestBoxHeight) {
+            var scrollBarOffset = 0;
+            if (suggestTable.width() > suggestBox.width()) {
+                scrollBarOffset = 8;
+            }
+            suggestBox.scrollTop(heightInDiv - suggestBoxHeight + optionToHighlightHeight + scrollBarOffset + 8);
         }
         if (heightInDiv < suggestBoxScrollTop) {
             suggestBox.scrollTop(heightInDiv);
