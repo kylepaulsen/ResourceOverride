@@ -1,6 +1,6 @@
 {
   "name": "Resource Override",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "An extension to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content.",
   "icons": {
     "16": "icons/icon-16x16.png",
