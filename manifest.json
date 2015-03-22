@@ -12,14 +12,14 @@
       "16": "icons/icon-16x16.png"
     }
   },
-  "devtools_page": "devtools.html",
-  "options_page": "options.html",
+  "devtools_page": "src/ui/devtools.html",
+  "options_page": "src/ui/options.html",
   "background": {
-    "page": "background.html"
+    "page": "src/background/background.html"
   },
   "content_scripts": [{
       "matches" : ["*://*/*"],
-      "js": ["scriptInjector.js"],
+      "js": ["src/inject/scriptInjector.js"],
       "all_frames": true,
       "run_at": "document_start"
   }],

@@ -23,7 +23,7 @@ input[type=checkbox] {
 }
 
 #title {
-    background-image: url("icons/icon-48x48.png");
+    background-image: url("../../../icons/icon-48x48.png");
     background-repeat: no-repeat;
     float: left;
     padding-left: 35px;
