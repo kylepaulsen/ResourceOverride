@@ -583,6 +583,7 @@
             var target = $(e.target);
             if (e.target.id === "optionsBtn") {
                 popOver.toggle();
+                $("#helpOverlay").hide();
             } else {
                 if (target.closest("#optionsPopOver").length === 0) {
                     popOver.hide();
