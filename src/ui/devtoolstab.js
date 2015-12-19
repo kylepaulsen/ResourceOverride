@@ -9,6 +9,7 @@
 
     var editor;
     var editingFile;
+    var oldFileHash;
     var lastSaveFunc;
     var files = {};
     var skipNextSync = false;
@@ -62,6 +63,17 @@
         };
     }
 
+    // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+    function simpleHash(str) {
+        var hash = 0;
+        for (var i = 0, len = str.length; i < len; i++) {
+            var chr = str.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    }
+
     function getNextId(jqResults, prefix) {
         var maxId = 0;
         jqResults.each(function(idx, el) {
@@ -113,14 +125,19 @@
                 indentWithTabs: true
             });
             editor.setSize("100%", "100%");
-            editorElement.on("keydown", function(e) {
-                var code = e.which;
-                if (code < 14 || code === 32 || (code > 45 && code < 91) ||
-                    (code > 95 && code < 112) || code > 185) {
+
+            var checkFileForDiffs = debounce(function() {
+                var fileStr = editor.doc.getValue();
+                var newFileHash = simpleHash(fileStr);
+                if (newFileHash !== oldFileHash) {
+                    oldFileHash = newFileHash;
                     $("#fileSaveAndCloseBtn").css("color", "#ff0000");
                     $("#fileSaveBtn").css("color", "#ff0000");
                 }
-            });
+            }, 100);
+
+            editorElement.on("keydown", checkFileForDiffs);
+            editorElement.on("paste", checkFileForDiffs);
         }
         match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
@@ -162,7 +179,9 @@
             loadSelect.hide();
         }
 
-        editor.doc.setValue(files[fileId] || "");
+        var fileStr = files[fileId] || "";
+        oldFileHash = simpleHash(fileStr);
+        editor.doc.setValue(fileStr);
     }
 
     function createSaveFunction(id) {
