@@ -281,6 +281,9 @@
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
                 if (tabUrl) {
                     return handleRequest(details.url, tabUrl, details.tabId);
+                } else if (!tabUrl && details.type === "main_frame") {
+                    // a new tab must have just been created.
+                    return handleRequest(details.url, details.url, details.tabId);
                 }
             }
         }
