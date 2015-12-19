@@ -408,6 +408,7 @@ input[type=checkbox] {
 }
 
 .sym-btn {
+    padding: 0;
     font-size: 28px;
     width: 34px;
     line-height: 30px;

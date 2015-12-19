@@ -193,6 +193,22 @@
         };
     }
 
+    function deleteButtonIsSure(deleteBtn) {
+        if (!deleteBtn.data("isSure")) {
+            deleteBtn.data("isSure", 1);
+            deleteBtn.css("font-size", "10px");
+            deleteBtn.text("Sure?");
+            return false;
+        }
+        return true;
+    }
+
+    function deleteButtonIsSureReset(deleteBtn) {
+        deleteBtn.text("\u00d7");
+        deleteBtn.css("font-size", "28px");
+        deleteBtn.data("isSure", 0);
+    }
+
     function createWebOverrideMarkup(savedData, saveFunc) {
         savedData = savedData || {};
         saveFunc = saveFunc || function() {};
@@ -212,12 +228,19 @@
         }
 
         deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
             override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 saveFunc();
                 skipNextSync = true;
             });
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
         });
 
         matchInput.on("keyup", saveFunc);
@@ -255,12 +278,19 @@
         });
 
         deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
             override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 delete files[override[0].id];
                 saveFunc();
             });
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
         });
 
         matchInput.on("keyup", saveFunc);
@@ -308,12 +338,19 @@
         });
 
         deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
             override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
                 delete files[override[0].id];
                 saveFunc();
             });
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
         });
 
         fileName.on("keyup", saveFunc);
@@ -399,12 +436,19 @@
         });
 
         deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
             chrome.extension.sendMessage({action: "deleteDomain", id: id});
             domain.css("transition", "none");
             domain.fadeOut(function() {
                 domain.remove();
             });
             skipNextSync = true;
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
         });
 
         return domain;
