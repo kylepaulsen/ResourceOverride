@@ -115,19 +115,11 @@
         $("#fileSaveBtn").css("color", "#000000");
         $("#editorOverlay").show();
         if (!editor) {
-            var editorElement = $("#editor");
-            editor = CodeMirror(editorElement[0], {
-                lineNumbers: true,
-                styleActiveLine: true,
-                matchBrackets: true,
-                indentUnit: 4,
-                tabSize: 4,
-                indentWithTabs: true
-            });
-            editor.setSize("100%", "100%");
+            editor = ace.edit("editor");
+            editor.setTheme("ace/theme/monokai");
 
             var checkFileForDiffs = debounce(function() {
-                var fileStr = editor.doc.getValue();
+                var fileStr = editor.getValue();
                 var newFileHash = simpleHash(fileStr);
                 if (newFileHash !== oldFileHash) {
                     oldFileHash = newFileHash;
@@ -136,8 +128,18 @@
                 }
             }, 100);
 
-            editorElement.on("keydown", checkFileForDiffs);
-            editorElement.on("paste", checkFileForDiffs);
+            editor.on("change", checkFileForDiffs);
+            editor.commands.addCommand({
+                name: "multiEdit",
+                bindKey: {
+                    win: "Ctrl-D",
+                    mac: "Command-D"
+                },
+                exec: function(editor, line) {
+                    editor.selectMore(1)
+                },
+                readOnly: true
+            })
         }
         match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
@@ -150,13 +152,13 @@
         }, function(data) {
             var mimeToEditorSyntax = {
                 "text/javascript": "javascript",
-                "text/html": "htmlmixed",
+                "text/html": "html",
                 "text/css": "css",
                 "text/xml": "xml"
             };
             var mode = mimeToEditorSyntax[data.mime] || "javascript";
             $("#syntaxSelect").val(mode);
-            editor.setOption("mode", mode);
+            editor.getSession().setMode("ace/mode/" + mode);
         });
 
         var loadSelect = $("#loadSelect");
@@ -181,7 +183,7 @@
 
         var fileStr = files[fileId] || "";
         oldFileHash = simpleHash(fileStr);
-        editor.doc.setValue(fileStr);
+        editor.setValue(fileStr, 1);
     }
 
     function createSaveFunction(id) {
@@ -620,14 +622,14 @@
 
         $("#fileSaveAndCloseBtn").on("click", function() {
             $("#editorOverlay").hide();
-            files[editingFile] = editor.doc.getValue();
+            files[editingFile] = editor.getValue();
             lastSaveFunc();
         });
 
         $("#fileSaveBtn").on("click", function() {
             $(this).css("color", "#000000");
             $("#fileSaveAndCloseBtn").css("color", "#000000");
-            files[editingFile] = editor.doc.getValue();
+            files[editingFile] = editor.getValue();
             lastSaveFunc();
         });
 
@@ -663,34 +665,33 @@
                 var ext = (url.match(/\.[^\.]+$/) || [""])[0];
                 var fileTypes = {
                     ".js": "javascript",
-                    ".html": "htmlmixed",
+                    ".html": "html",
                     ".css": "css",
                     ".xml": "xml"
                 };
                 var mode = fileTypes[ext];
                 chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
-                    editor.doc.setValue(data);
+                    editor.setValue(data, 1);
                     $("#fileSaveAndCloseBtn").css("color", "#ff0000");
                     $("#fileSaveBtn").css("color", "#ff0000");
                     if (mode) {
                         $("#syntaxSelect").val(mode);
-                        editor.setOption("mode", mode);
+                        editor.getSession().setMode("ace/mode/" + mode);
                     }
                 });
             }
         });
 
         $("#syntaxSelect").on("change", function() {
-            editor.setOption("mode", $(this).val());
+            editor.getSession().setMode("ace/mode/" + $(this).val());
         });
 
         $("#findInEditor").on("click", function() {
-            CodeMirror.commands.find(editor);
-            $(editor.display.wrapper).find(".CodeMirror-search-field").focus();
+            editor.execCommand("find");
         });
 
         $("#beautifyJS").on("click", function() {
-            editor.doc.setValue(js_beautify(editor.doc.getValue()));
+            editor.setValue(js_beautify(editor.getValue()), 1);
         });
 
         if (window.isNormalTab) {

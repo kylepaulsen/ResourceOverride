@@ -1,3 +1,5 @@
+Investigate if checking for chrome.devtools crashes chrome anymore. Sooo need to get rid of importContent.js.
+    - Apparently it has been fixed??? https://code.google.com/p/chromium/issues/detail?id=356133
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
 Clean up this disgusting project
