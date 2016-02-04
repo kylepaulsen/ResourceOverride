@@ -1,4 +1,3 @@
-Add import / export ability.
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
 Clean up this disgusting project

@@ -170,7 +170,7 @@ input[type=checkbox] {
     height: 50px;
 }
 
-#tabPageNotice {
+.toast {
     position: absolute;
     background: rgba(255, 220, 150, 0.85);
     padding: 6px;

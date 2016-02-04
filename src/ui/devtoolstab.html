@@ -168,6 +168,11 @@
             <div class="optionText">Show Logs:</div>
             <div class="optionCheckbox"><input type="checkbox" id="showLogs"></div>
         </div>
+        <div class="optionRow">
+            <div class="left"><a id="saveRulesLink" href="#">Save Rules</a></div>
+            <div class="right"><a id="loadRulesLink" href="#">Load Rules</a></div>
+            <input type="file" class="fileInput" id="loadRulesInput">
+        </div>
     </div>
 </div>
 <div class="clearfix"></div>
@@ -248,9 +253,11 @@
     </div>
 </div>
 
-<div id="tabPageNotice">
+<div id="tabPageNotice" class="toast">
 The devtools tab has more features that aren't avilable on the options page. <a href="#">OK</a>
 </div>
+
+<div id="generalToast" class="toast"></div>
 
 <script src="../../lib/jquery-2.1.1.min.js"></script>
 <script src="../../lib/codemirror-compressed.js"></script>

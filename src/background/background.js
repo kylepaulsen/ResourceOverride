@@ -63,59 +63,75 @@
         };
     })();
 
+    var simpleError = function(err) {
+        if (err.stack) {
+            console.error("=== Printing Stack ===");
+            console.error(err.stack);
+        }
+        console.error(err);
+    };
+
     var domainStorage = (function() {
         var db = keyvalDB("OverrideDB", [{store: "domains", key: "id"}], 1);
         var domainStore = db.usingStore("domains");
 
-        var put = function(domainData, cb) {
-            cb = cb || function() {};
-            db.open(function(err) {
-                if (err) {
-                    console.error(err);
-                    cb(err);
-                } else {
-                    domainStore.upsert(domainData.id, domainData, function(err) {
-                        if (err) {
-                            console.error(err);
-                            cb(err);
-                        } else {
-                            cb();
-                        }
-                    });
-                }
+        var put = function(domainData) {
+            return new Promise(function(res, rej) {
+                db.open(function(err) {
+                    if (err) {
+                        console.error(err);
+                        rej(err);
+                    } else {
+                        domainStore.upsert(domainData.id, domainData, function(err) {
+                            if (err) {
+                                console.error(err);
+                                rej(err);
+                            } else {
+                                res();
+                            }
+                        });
+                    }
+                });
             });
         };
 
-        var getDomains = function(cb) {
-            db.open(function(err) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    domainStore.getAll(function(err, ans) {
-                        if (err) {
-                            console.error(err);
-                        } else {
-                            cb(ans);
-                        }
-                    });
-                }
+        var getDomains = function() {
+            return new Promise(function(res, rej) {
+                db.open(function(err) {
+                    if (err) {
+                        console.error(err);
+                        rej(err);
+                    } else {
+                        domainStore.getAll(function(err, ans) {
+                            if (err) {
+                                console.error(err);
+                                rej(err);
+                            } else {
+                                res(ans);
+                            }
+                        });
+                    }
+                });
             });
         };
 
-        var deleteDomain = function(id, cb) {
-            cb = cb || function() {};
-            db.open(function(err) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    domainStore.delete(id, function(err) {
-                        if (err) {
-                            console.error(err);
-                        } else {
-                            cb();
-                        }
-                    });
-                }
+        var deleteDomain = function(id) {
+            return new Promise(function(res, rej) {
+                db.open(function(err) {
+                    if (err) {
+                        console.error(err);
+                        rej(err);
+                    } else {
+                        domainStore.delete(id, function(err) {
+                            if (err) {
+                                console.error(err);
+                                rej(err);
+                            } else {
+                                res();
+                            }
+                        });
+                    }
+                });
             });
         };
 
@@ -240,15 +256,27 @@
 
     chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.action === "saveDomain") {
-            domainStorage.put(request.data, syncAllInstances);
+            domainStorage.put(request.data)
+                .then(syncAllInstances)
+                .catch(simpleError);
             ruleDomains[request.data.id] = request.data;
         } else if (request.action === "getDomains") {
-            domainStorage.getAll(function(domains) {
+            domainStorage.getAll().then(function(domains) {
                 sendResponse(domains || []);
-            });
+            }).catch(simpleError);
         } else if (request.action === "deleteDomain") {
-            domainStorage.delete(request.id, syncAllInstances);
+            domainStorage.delete(request.id)
+                .then(syncAllInstances)
+                .catch(simpleError);
             delete ruleDomains[request.id];
+        } else if (request.action === "import") {
+            ruleDomains = {};
+            Promise.all(request.data.map(function(domainData) {
+                ruleDomains[domainData.id] = domainData;
+                return domainStorage.put(domainData);
+            }))
+            .then(syncAllInstances)
+            .catch(simpleError);
         } else if (request.action === "makeGetRequest") {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", request.url, true);
@@ -303,12 +331,12 @@
     }
 
     // init domain storage
-    domainStorage.getAll(function(domains) {
+    domainStorage.getAll().then(function(domains) {
         if (domains) {
             domains.forEach(function(domainObj) {
                 ruleDomains[domainObj.id] = domainObj;
             });
         }
-    });
+    }).catch(simpleError);
 
 })(); // end script-wide closure

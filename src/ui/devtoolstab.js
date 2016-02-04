@@ -521,6 +521,67 @@
         });
     }
 
+    function showToast(message) {
+        var toastBox = $("#generalToast");
+        toastBox.html(message);
+        toastBox.fadeIn();
+        setTimeout(function() {
+            toastBox.fadeOut();
+        }, 3500);
+    }
+
+    function checkDomain(domain) {
+        var valid = (/^d[0-9]+$/).test(domain.id);
+        valid = valid && domain.matchUrl !== undefined;
+        valid = valid && domain.on !== undefined;
+        valid = valid && $.isArray(domain.rules);
+        valid = valid && domain.rules.every(checkRule);
+        return valid;
+    }
+
+    function checkRule(rule) {
+        var valid = true;
+        if (rule.type === "normalOverride") {
+            valid = valid && rule.match !== undefined;
+            valid = valid && rule.replace !== undefined;
+            valid = valid && rule.on !== undefined;
+        } else if (rule.type === "fileOverride") {
+            valid = valid && rule.match !== undefined;
+            valid = valid && rule.file !== undefined;
+            valid = valid && (/^f[0-9]+$/).test(rule.fileId);
+            valid = valid && rule.on !== undefined;
+        } else if (rule.type === "fileInject") {
+            valid = valid && rule.fileName !== undefined;
+            valid = valid && rule.file !== undefined;
+            valid = valid && (/^f[0-9]+$/).test(rule.fileId);
+            valid = valid && rule.fileType !== undefined;
+            valid = valid && rule.injectLocation !== undefined;
+            valid = valid && rule.on !== undefined;
+        } else {
+            return false;
+        }
+        return valid;
+    }
+
+    function importData(data, version) {
+        // check data first.
+        if ($.isArray(data) && data.every(checkDomain)) {
+            // this will call the sync function so stuff will get re-rendered.
+            chrome.extension.sendMessage({action: "import", data: data});
+            showToast("Load Succeeded!");
+        } else {
+            showToast("Load Failed: Invalid Resource Override JSON.");
+        }
+    }
+
+    function exportData() {
+        var allData = [];
+        $(".domainContainer").each(function(idx, domain) {
+            allData.push(getDomainData($(domain)));
+        });
+        return {v: 1, data: allData};
+    }
+
     function setupSynchronizeConnection() {
         chrome.extension.sendMessage({action: "syncMe"}, function() {
             if (!skipNextSync) {
@@ -685,6 +746,41 @@
                 setting: "showLogs",
                 value: showLogs.prop("checked")
             });
+        });
+
+        $("#saveRulesLink").on("click", function(e) {
+            e.preventDefault();
+            var data = exportData();
+            var json = JSON.stringify(data);
+            var blob = new Blob([json], {type: "text/plain"});
+            var downloadLink = document.createElement("a");
+            downloadLink.download = "resource_override_rules.json";
+            downloadLink.href = window.URL.createObjectURL(blob);
+            downloadLink.click();
+            $("#optionsPopOver").hide();
+        });
+
+
+        var loadRulesInput = $("#loadRulesInput");
+        $("#loadRulesLink").on("click", function(e) {
+            e.preventDefault();
+            loadRulesInput.click();
+            $("#optionsPopOver").hide();
+        });
+
+        loadRulesInput.on("change", function(e) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var text = reader.result;
+                try {
+                    var importedObj = JSON.parse(text);
+                    importData(importedObj.data, importedObj.v);
+                } catch(e) {
+                    showToast("Load Failed: Invalid JSON in file.");
+                }
+            };
+            reader.readAsText(loadRulesInput[0].files[0]);
+            loadRulesInput.val("");
         });
 
         chrome.extension.sendMessage({
