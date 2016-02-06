@@ -183,7 +183,8 @@
 
         var fileStr = files[fileId] || "";
         oldFileHash = simpleHash(fileStr);
-        editor.setValue(fileStr, 1);
+        editor.setValue(fileStr);
+        editor.gotoLine(0, 0, false);
     }
 
     function createSaveFunction(id) {
@@ -671,7 +672,8 @@
                 };
                 var mode = fileTypes[ext];
                 chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
-                    editor.setValue(data, 1);
+                    editor.setValue(data);
+                    editor.gotoLine(0, 0, false);
                     $("#fileSaveAndCloseBtn").css("color", "#ff0000");
                     $("#fileSaveBtn").css("color", "#ff0000");
                     if (mode) {
@@ -691,7 +693,8 @@
         });
 
         $("#beautifyJS").on("click", function() {
-            editor.setValue(js_beautify(editor.getValue()), 1);
+            editor.setValue(js_beautify(editor.getValue()));
+            editor.gotoLine(0, 0, false);
         });
 
         if (window.isNormalTab) {
