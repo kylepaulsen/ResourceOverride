@@ -220,15 +220,17 @@
         <h1>Help</h1>
         <p>View youtube help video <a href="https://www.youtube.com/watch?v=62QIWAP9mMM" target="_blank">HERE</a>.
         <p>This extension exists to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content. It does this by comparing url "match rules" to the current tab url and then individual resource urls. If the urls match, then the rules are applied.</p>
-        <p>Rules are put into "Tab Groups". A Tab Group has a URL text field that acts as the match pattern for the current tab. Rules inside the Tab Group wont apply unless the match is successful.</p>
+        <p>Rules are put into "Tab Groups". A Tab Group has a URL text field that acts as the match pattern for Chrome's current tab. Rules inside the Tab Group wont apply unless the match is successful. This is a good way to make sure overrides only happen on a certain website.</p>
         <h3>Example Tab URL Matches:</h3>
         <table>
         <tr><td><b>Tab Match URL</b></td><td></td><td><b>Browser Tab URL</b></td></tr>
         <tr><td>http://www.example.com/</td><td>matches</td><td>http://www.example.com/</td></tr>
         <tr><td>http://www.example.com/*</td><td>matches</td><td>http://www.example.com/some/path/info.txt</td></tr>
+        <tr><td>*example*</td><td>matches</td><td>https://www.something.com/example/in/path</td></tr>
         <tr><td>*://www.example*/other/*</td><td>matches</td><td>https://www.example.org/some/other/path</td></tr>
         <tr><td>*</td><td>matches</td><td>&lt;Any URL Here></td></tr>
         </table>
+        <p>Rules use the same star syntax. Web rules get an extra ability with stars (more on that below).</p>
         <p>A <b>Rule</b> can come in three different types:</p>
         <ul>
             <li><b>Web Rule</b>: Every request url is compared with the <i>Match URL</i> and then transformed into the <i>Replace URL</i> if the match is successful.</li>
@@ -236,17 +238,24 @@
             <li><b>Inject Rule</b>: A file you create will be injected into the page as a JS or CSS document.</li>
         </ul>
         <p>Each resource can only be changed by the first rule that matches it, so rules higher on the page have more precedence. You can rearrange rules by dragging on the up and down triangles.</p>
-        <p>A File Rule needs to be paired with a mime type. This extension tries to guess the correct mime type based off of the resource url and the content you supply. If your files aren't loading and Chrome is giving you trouble about content arriving with the wrong mime type, it means that this extension couldn't automatically detect the correct mime type and you may need to provide it yourself. Here is an example of how to do this: If you have a JavaScript file, you would put <span style="font-family: courier">/* mime: text/javascript */</span> on the very first line of the file. You can force any mime type you want as long as it's on the very first line of the file and in that format.</p>
-        <h3>Example Replace URL Patterns:</h3>
+        <h3>Example Web Rule Patterns:</h3>
+        <p>Text highlighted in <span class='blue-hl'>blue</span> is "captured" in *'s.</p>
         <table>
         <tr><td><b>Match URL</b></td><td><b>Replace URL</b></td><td><b>Resource URL</b></td><td></td><td><b>Result URL</b></td></tr>
         <tr><td>http://www.ex.com/neat.js</td><td>http://local:8080/cool.js</td><td>http://www.ex.com/neat.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/cool.js</td></tr>
-        <tr><td>http://www.ex.com/js/*</td><td>http://local:8080/all.js</td><td>http://www.ex.com/js/some.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/all.js</td></tr>
-        <tr><td>http://www.ex.com/*.js</td><td>http://local:8080/*.js</td><td>http://www.ex.com/captured_in_star.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/captured_in_star.js</td></tr>
-        <tr><td>*/js/**.js</td><td>http://local:8080/code/**.js</td><td>http://any.com/js/2stars.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/code/2stars.js</td></tr>
-        <tr><td>http://ex.com/*/**/***.js</td><td>http://local:8080/**/*/***.js</td><td>http://ex.com/a/b/c.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/b/a/c.js</td></tr>
+        <tr><td>http://www.ex.com/js/*</td><td>http://local:8080/all.js</td><td>http://www.ex.com/js/<span class='blue-hl'>some.js</span></td><td class="rarrow">&rarr;</td><td>http://local:8080/all.js</td></tr>
+        <tr><td>http://www.ex.com/*.js</td><td>http://local:8080/*.js</td><td>http://www.ex.com/<span class='blue-hl'>captured_in_star</span>.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/captured_in_star.js</td></tr>
+        <tr><td>http://*.ex.com/*</td><td>http://*.local:8080/*</td><td>http://<span class='blue-hl'>other</span>.ex.com/<span class='blue-hl'>second_capture.js</span></td><td class="rarrow">&rarr;</td><td>http://other.local:8080/second_capture.js</td></tr>
+        <tr><td>*/js/**.js</td><td>http://local:8080/code/**.js</td><td><span class='blue-hl'>http://any.com</span>/js/<span class='blue-hl'>2stars</span>.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/code/2stars.js</td></tr>
+        <tr><td>http://ex.com/*/**/***.js</td><td>http://local:8080/**/*/***.js</td><td>http://ex.com/<span class='blue-hl'>a</span>/<span class='blue-hl'>b</span>/<span class='blue-hl'>c</span>.js</td><td class="rarrow">&rarr;</td><td>http://local:8080/b/a/c.js</td></tr>
         </table>
-        <p>When using <i>Web Rules</i>, you can "store" parts of the resource URL in stars (*) and then reuse the stored part in the replace url with the same number of stars. If you need to be specific where stored parts of the url are placed, you can use multiple stars together (**) to 'create another variable'. You can also use this technique to throw away parts of a url you don't care about (you don't have to use the corresponding stars in the replace url). Examples of these can be seen in the above table.</p>
+        <p>When using <i>Web Rules</i>, you can "store" parts of the resource URL in stars (*) and then reuse the stored part in the replace url with the same number of stars. Stars can capture parts of the url more than once - each new capture is put into a "queue" (See the 3rd to last example). If you need to be specific where stored parts of the url are placed, you can use multiple stars together (**) to 'create another variable'. You can also use this technique to throw away parts of a url you don't care about (you don't have to use the corresponding stars in the replace url). Examples of these can be seen in the above table.</p>
+        <h3>Tips and Tricks</h3>
+        <p>I highly recommend that you use this extension through Chrome's dev tools panel (right click somewhere on a page and click "Inspect". Then go to the "Overrides" tab). The dev tools view can help you make your url match rules correctly with a suggest feature.</p>
+        <p>Do you need to override https content with web rules and content on your computer? Make sure you have an https server! Also make sure that if ajax calls are being used that your https server has CORS turned on. Finally, don't forget to check that you can browse to your https content and "Proceed Anyway" if chrome yells at you about an untrusted certificate (Or you can just add the certificate to your system's trusted certificates). I like to use <a target="_blank" href="https://github.com/kylepaulsen/http-server">this<a/> http(s) server (it auto generates ssl certificates and has CORS turned on by default).</p>
+        <p>If you are having trouble getting a rule to work, try turning on the logs (click the options button at the top of this page and check "Show Logs"). Then reload the page and look in Chrome's console for the url you are trying to match. If a match succeeds, the <span class="blue-hl">text highlight will be blue</span>. If all else fails, try to make your rule less strict: *something* &lt;-- In this case, "something" just has to show up somewhere in the url.</p>
+        <p>A File Rule needs to be paired with a mime type. This extension tries to guess the correct mime type based off of the resource url and the content you supply. If your files aren't loading and Chrome is giving you trouble about content arriving with the wrong mime type, it means that this extension couldn't automatically detect the correct mime type and you may need to provide it yourself. Here is an example of how to do this: If you have a JavaScript file, you would put <span style="font-family: courier">/* mime: text/javascript */</span> on the very first line of the file. You can force any mime type you want as long as it's on the very first line of the file and in that format.</p>
+        <p>If you think you've found a bug and want to report it, please create an issue on the github page here: <a target="_blank" href="https://github.com/kylepaulsen/ResourceOverride">https://github.com/kylepaulsen/ResourceOverride</a>. I am much, much more likely to see bug reports there than on the Web Store (they don't have email alerts). Also feel free to contribute if you'd like. :)</p>
     </div>
     <div id="helpFooter">
         <div class="right"><button id="helpCloseBtn" class="btn">Close</button></div>

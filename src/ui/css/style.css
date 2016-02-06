@@ -418,6 +418,10 @@ input[type=checkbox] {
     background-color: #DDDDDD;
 }
 
+.blue-hl {
+    background-color: #A1D7E6;
+}
+
 .right {
     float: right;
 }
