@@ -129,12 +129,31 @@
         editor.on("change", updateSaveButtons);
     }
 
+    function editorGuessMode(fileName, file) {
+        chrome.extension.sendMessage({
+            action: "extractMimeType",
+            file: file,
+            fileName: fileName
+        }, function(data) {
+            var mimeToEditorSyntax = {
+                "text/javascript": "javascript",
+                "text/html": "html",
+                "text/css": "css",
+                "text/xml": "xml"
+            };
+            var mode = mimeToEditorSyntax[data.mime] || "javascript";
+            $("#syntaxSelect").val(mode);
+            editor.getSession().setMode("ace/mode/" + mode);
+        });
+    }
+
     function openEditor(fileId, match, isInjectFile) {
         updateSaveButtons();
-        $("#editorOverlay").show();
+        $("#editorOverlay").css('display', 'flex');
         if (!editor) {
             editor = ace.edit("editor");
             editor.setTheme("ace/theme/monokai");
+            editor.setShowPrintMargin(false);
 
             editor.on("change", updateSaveButtons);
             editor.commands.addCommand({
@@ -151,23 +170,9 @@
         }
         match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
-        $("#matchSpan").text(match);
+        $("#matchContainer").text(match);
 
-        chrome.extension.sendMessage({
-            action: "extractMimeType",
-            file: files[fileId],
-            fileName: match
-        }, function(data) {
-            var mimeToEditorSyntax = {
-                "text/javascript": "javascript",
-                "text/html": "html",
-                "text/css": "css",
-                "text/xml": "xml"
-            };
-            var mode = mimeToEditorSyntax[data.mime] || "javascript";
-            $("#syntaxSelect").val(mode);
-            editor.getSession().setMode("ace/mode/" + mode);
-        });
+        editorGuessMode(match, files[fileId]);
 
         var $loadSelect = $("#loadSelect");
 
@@ -668,21 +673,10 @@
             var url = $(this).val();
             $(this).val("");
             if (url) {
-                var ext = (url.match(/\.[^\.]+$/) || [""])[0];
-                var fileTypes = {
-                    ".js": "javascript",
-                    ".html": "html",
-                    ".css": "css",
-                    ".xml": "xml"
-                };
-                var mode = fileTypes[ext];
                 chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
                     setEditorVal(data);
                     updateSaveButtons(true);
-                    if (mode) {
-                        $("#syntaxSelect").val(mode);
-                        editor.getSession().setMode("ace/mode/" + mode);
-                    }
+                    editorGuessMode(url, data);
                 });
             }
         });

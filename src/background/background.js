@@ -181,7 +181,7 @@
     var extractMimeType = function(requestUrl, file) {
         file = file || "";
         var possibleExt = (requestUrl.match(/\.[A-Za-z]{2,4}$/) || [""])[0];
-        var looksLikeCSSRegex = /[#.]\w+\s*\{/;
+        var looksLikeCSSRegex = /[#.@][^\s\{]+\s*\{/;
         var looksLikeJSRegex = /(var|const|let|function)\s+.+/;
         var looksLikeXMLRegex = /<\?xml(\s+.+\s*)?\?>/i;
         var looksLikeHTMLRegex = /<html(\s+.+\s*)?>/i;
