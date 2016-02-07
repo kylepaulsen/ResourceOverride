@@ -75,6 +75,18 @@
         return prefix.charAt(0) + (maxId + 1);
     }
 
+    function shortenString(str, limit) {
+        var over = str.length - limit;
+        if (over > 0) {
+            var halfPos = str.length / 2;
+            var firstOffset = Math.floor(over / 2 + 2);
+            var secondOffset = Math.ceil(over / 2 + 3);
+            return str.substring(0, halfPos - firstOffset) + " ... " +
+                str.substring(halfPos + secondOffset);
+        }
+        return str;
+    }
+
     function getTabResources(cb) {
         if (!window.isNormalTab) {
             chrome.devtools.inspectedWindow.getResources(function(resourceList) {
@@ -168,7 +180,7 @@
                 filteredList.forEach(function(url) {
                     var $newOpt = $("<option>");
                     $newOpt.attr("value", url);
-                    $newOpt.text(url);
+                    $newOpt.text(shortenString(url, 250));
                     $loadSelect.append($newOpt);
                 });
                 $loadSelect.val("");
