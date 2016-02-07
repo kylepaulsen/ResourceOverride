@@ -1,6 +1,8 @@
 (function() {
     "use strict";
 
+    /* globals chrome, unescape, keyvalDB, match, matchReplace */
+
     var lastRequestId;
     var ruleDomains = {};
     var syncFunctions = [];
@@ -149,7 +151,7 @@
             for (var i = 0, len = extensionTabs.length; i < len; i++) {
                 if (optionsUrl === extensionTabs[i].url) {
                     found = true;
-                    chrome.tabs.update(extensionTabs[i].id, {"selected": true});
+                    chrome.tabs.update(extensionTabs[i].id, {selected: true});
                     break;
                 }
             }
@@ -220,7 +222,6 @@
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
                 var rules = domainObj.rules || [];
                 for (var x = 0, len = rules.length; x < len; ++x) {
-                    var row = x + 1;
                     var ruleObj = rules[x];
                     if (ruleObj.on) {
                         if (ruleObj.type === "normalOverride") {
@@ -237,6 +238,8 @@
                                 ruleObj.match, true);
 
                             var mimeAndFile = extractMimeType(requestUrl, ruleObj.file);
+                            // unescape is a easy solution to the utf-8 problem:
+                            // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/btoa#Unicode_Strings
                             return {redirectUrl: "data:" + mimeAndFile.mime + ";charset=UTF-8;base64," +
                                 btoa(unescape(encodeURIComponent(mimeAndFile.file)))};
                         }

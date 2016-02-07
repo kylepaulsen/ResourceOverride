@@ -1,15 +1,16 @@
 (function() {
     "use strict";
 
-    var domainTemplate;
-    var overrideTemplate;
-    var fileOverrideTemplate;
-    var fileInjectTemplate;
-    var onOffSwitchTemplate;
+    /* globals $, chrome, ace, moveableRules, suggest, js_beautify */
+
+    var $domainTemplate;
+    var $overrideTemplate;
+    var $fileOverrideTemplate;
+    var $fileInjectTemplate;
+    var $onOffSwitchTemplate;
 
     var editor;
     var editingFile;
-    var oldFileHash;
     var lastSaveFunc;
     var files = {};
     var skipNextSync = false;
@@ -20,13 +21,13 @@
                 value: function() {
                     var self = this;
                     this.createShadowRoot().appendChild(document.importNode(
-                        onOffSwitchTemplate[0].content, true));
-                    var switchContainer = $(this.shadowRoot.children[1]);
-                    switchContainer.find(".onoffswitch-on").text(
+                        $onOffSwitchTemplate[0].content, true));
+                    var $switchContainer = $(this.shadowRoot.children[1]);
+                    $switchContainer.find(".onoffswitch-on").text(
                         this.getAttribute("onText") || "ON");
-                    switchContainer.find(".onoffswitch-off").text(
+                    $switchContainer.find(".onoffswitch-off").text(
                         this.getAttribute("offText") || "OFF");
-                    this.checkbox = switchContainer.find("input");
+                    this.checkbox = $switchContainer.find("input");
                     this.checkbox.on("change", function() {
                         return self.isOn;
                     });
@@ -63,17 +64,6 @@
         };
     }
 
-    // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-    function simpleHash(str) {
-        var hash = 0;
-        for (var i = 0, len = str.length; i < len; i++) {
-            var chr = str.charCodeAt(i);
-            hash  = ((hash << 5) - hash) + chr;
-            hash |= 0; // Convert to 32bit integer
-        }
-        return hash;
-    }
-
     function getNextId(jqResults, prefix) {
         var maxId = 0;
         jqResults.each(function(idx, el) {
@@ -106,29 +96,35 @@
                 }
             });
         } else {
-            window.suggest.setShouldSuggest(false);
+            suggest.setShouldSuggest(false);
         }
     }
 
+    function updateSaveButtons(edited) {
+        if (edited) {
+            $("#fileSaveAndCloseBtn").css("color", "#ff0000");
+            $("#fileSaveBtn").css("color", "#ff0000");
+        } else {
+            $("#fileSaveAndCloseBtn").css("color", "#000000");
+            $("#fileSaveBtn").css("color", "#000000");
+        }
+    }
+
+    function setEditorVal(str) {
+        editor.off("change", updateSaveButtons);
+        editor.setValue(str);
+        editor.gotoLine(0, 0, false);
+        editor.on("change", updateSaveButtons);
+    }
+
     function openEditor(fileId, match, isInjectFile) {
-        $("#fileSaveAndCloseBtn").css("color", "#000000");
-        $("#fileSaveBtn").css("color", "#000000");
+        updateSaveButtons();
         $("#editorOverlay").show();
         if (!editor) {
             editor = ace.edit("editor");
             editor.setTheme("ace/theme/monokai");
 
-            var checkFileForDiffs = debounce(function() {
-                var fileStr = editor.getValue();
-                var newFileHash = simpleHash(fileStr);
-                if (newFileHash !== oldFileHash) {
-                    oldFileHash = newFileHash;
-                    $("#fileSaveAndCloseBtn").css("color", "#ff0000");
-                    $("#fileSaveBtn").css("color", "#ff0000");
-                }
-            }, 100);
-
-            editor.on("change", checkFileForDiffs);
+            editor.on("change", updateSaveButtons);
             editor.commands.addCommand({
                 name: "multiEdit",
                 bindKey: {
@@ -136,10 +132,10 @@
                     mac: "Command-D"
                 },
                 exec: function(editor, line) {
-                    editor.selectMore(1)
+                    editor.selectMore(1);
                 },
                 readOnly: true
-            })
+            });
         }
         match = match || "<Not defined yet>";
         $("#editLabel").text(isInjectFile ? "Editing file:" : "Editing file for match:");
@@ -161,36 +157,34 @@
             editor.getSession().setMode("ace/mode/" + mode);
         });
 
-        var loadSelect = $("#loadSelect");
+        var $loadSelect = $("#loadSelect");
 
         // isNormalTab is defined in options.html -> importContent.js
         // Look there for the reason why it exists.
         if (!window.isNormalTab) {
-            loadSelect.show();
+            $loadSelect.show();
             getTabResources(function(filteredList) {
-                loadSelect.html("<option value=''>Load content from resource...</option>");
+                $loadSelect.html("<option value=''>Load content from resource...</option>");
                 filteredList.forEach(function(url) {
-                    var newOpt = $("<option>");
-                    newOpt.attr("value", url);
-                    newOpt.text(url);
-                    loadSelect.append(newOpt);
+                    var $newOpt = $("<option>");
+                    $newOpt.attr("value", url);
+                    $newOpt.text(url);
+                    $loadSelect.append($newOpt);
                 });
-                loadSelect.val("");
+                $loadSelect.val("");
             });
         } else {
-            loadSelect.hide();
+            $loadSelect.hide();
         }
 
         var fileStr = files[fileId] || "";
-        oldFileHash = simpleHash(fileStr);
-        editor.setValue(fileStr);
-        editor.gotoLine(0, 0, false);
+        setEditorVal(fileStr);
     }
 
     function createSaveFunction(id) {
         return function() {
-            var domain = $("#" + id);
-            var data = getDomainData(domain);
+            var $domain = $("#" + id);
+            var data = getDomainData($domain);
             chrome.extension.sendMessage({action: "saveDomain", data: data});
             skipNextSync = true;
         };
@@ -216,7 +210,7 @@
         savedData = savedData || {};
         saveFunc = saveFunc || function() {};
 
-        var override = instanceTemplate(overrideTemplate);
+        var override = instanceTemplate($overrideTemplate);
         var matchInput = override.find(".matchInput");
         var replaceInput = override.find(".replaceInput");
         var ruleOnOff = override.find(".ruleOnOff");
@@ -261,7 +255,7 @@
         savedData = savedData || {};
         saveFunc = saveFunc || function() {};
 
-        var override = instanceTemplate(fileOverrideTemplate);
+        var override = instanceTemplate($fileOverrideTemplate);
         var matchInput = override.find(".matchInput");
         var editBtn = override.find(".edit-btn");
         var ruleOnOff = override.find(".ruleOnOff");
@@ -317,7 +311,7 @@
         savedData = savedData || {};
         saveFunc = saveFunc || function() {};
 
-        var override = instanceTemplate(fileInjectTemplate);
+        var override = instanceTemplate($fileInjectTemplate);
         var fileName = override.find(".fileName");
         var injectLocation = override.find(".injectLocationSelect");
         var fileType = override.find(".fileTypeSelect");
@@ -376,7 +370,7 @@
 
     function createDomainMarkup(savedData) {
         savedData = savedData || {};
-        var domain = instanceTemplate(domainTemplate);
+        var domain = instanceTemplate($domainTemplate);
         var overrideRulesContainer = domain.find(".overrideRules");
         var addRuleBtn = domain.find(".addRuleBtn");
         var addFileRuleBtn = domain.find(".addFileRuleBtn");
@@ -416,7 +410,7 @@
             var markup = createWebOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
-            window.suggest.init();
+            suggest.init();
         });
 
         domainMatchInput.on("keyup", saveFunc);
@@ -429,7 +423,7 @@
             var markup = createFileOverrideMarkup({}, saveFunc);
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
-            window.suggest.init();
+            suggest.init();
         });
 
         addInjectRuleBtn.on("click", function() {
@@ -498,18 +492,18 @@
     }
 
     function renderData() {
-        var domainList = $("#domainDefs");
+        var $domainList = $("#domainDefs");
         files = {};
-        domainList.children().remove();
+        $domainList.children().remove();
         chrome.extension.sendMessage({action: "getDomains"}, function(domains) {
             if (domains.length) {
                 domains.forEach(function(domain) {
                     var domainMarkup = createDomainMarkup(domain);
-                    domainList.append(domainMarkup);
+                    $domainList.append(domainMarkup);
                 });
             } else {
-                var newDomain = createDomainMarkup({rules: [{type:"normalOverride"}]});
-                domainList.append(newDomain);
+                var newDomain = createDomainMarkup({rules: [{type: "normalOverride"}]});
+                $domainList.append(newDomain);
                 newDomain.find(".domainMatchInput").val("*");
                 chrome.extension.sendMessage({
                     action: "saveDomain",
@@ -517,19 +511,19 @@
                 });
                 skipNextSync = true;
             }
-            window.suggest.init();
+            suggest.init();
             getTabResources(function(res) {
-                window.suggest.fillOptions(res);
+                suggest.fillOptions(res);
             });
         });
     }
 
     function showToast(message) {
-        var toastBox = $("#generalToast");
-        toastBox.html(message);
-        toastBox.fadeIn();
+        var $toastBox = $("#generalToast");
+        $toastBox.html(message);
+        $toastBox.fadeIn();
         setTimeout(function() {
-            toastBox.fadeOut();
+            $toastBox.fadeOut();
         }, 3500);
     }
 
@@ -596,13 +590,13 @@
     }
 
     function init() {
-        domainTemplate = $("#domainTemplate");
-        overrideTemplate = $("#overrideTemplate");
-        fileOverrideTemplate = $("#fileOverrideTemplate");
-        fileInjectTemplate = $("#fileInjectTemplate");
-        onOffSwitchTemplate = $("#onOffSwitchTemplate");
+        $domainTemplate = $("#domainTemplate");
+        $overrideTemplate = $("#overrideTemplate");
+        $fileOverrideTemplate = $("#fileOverrideTemplate");
+        $fileInjectTemplate = $("#fileInjectTemplate");
+        $onOffSwitchTemplate = $("#onOffSwitchTemplate");
 
-        if (domainTemplate.length === 0) {
+        if ($domainTemplate.length === 0) {
             // init was called too early (options page case) so give up.
             return;
         }
@@ -612,12 +606,12 @@
         renderData();
 
         $("#addDomainBtn").on("click", function() {
-            var domainList = $("#domainDefs");
+            var $domainList = $("#domainDefs");
             var newDomain = createDomainMarkup();
             newDomain.find(".domainMatchInput").val("*");
-            domainList.append(newDomain);
+            $domainList.append(newDomain);
             chrome.extension.sendMessage({action: "saveDomain", data: getDomainData(newDomain)});
-            window.suggest.init();
+            suggest.init();
             skipNextSync = true;
         });
 
@@ -628,8 +622,7 @@
         });
 
         $("#fileSaveBtn").on("click", function() {
-            $(this).css("color", "#000000");
-            $("#fileSaveAndCloseBtn").css("color", "#000000");
+            updateSaveButtons();
             files[editingFile] = editor.getValue();
             lastSaveFunc();
         });
@@ -643,14 +636,14 @@
         });
 
         $(window).on("click", function(e) {
-            var popOver = $("#optionsPopOver");
-            var target = $(e.target);
+            var $popOver = $("#optionsPopOver");
+            var $target = $(e.target);
             if (e.target.id === "optionsBtn") {
-                popOver.toggle();
+                $popOver.toggle();
                 $("#helpOverlay").hide();
             } else {
-                if (target.closest("#optionsPopOver").length === 0) {
-                    popOver.hide();
+                if ($target.closest("#optionsPopOver").length === 0) {
+                    $popOver.hide();
                 }
             }
         });
@@ -672,10 +665,8 @@
                 };
                 var mode = fileTypes[ext];
                 chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
-                    editor.setValue(data);
-                    editor.gotoLine(0, 0, false);
-                    $("#fileSaveAndCloseBtn").css("color", "#ff0000");
-                    $("#fileSaveBtn").css("color", "#ff0000");
+                    setEditorVal(data);
+                    updateSaveButtons(true);
                     if (mode) {
                         $("#syntaxSelect").val(mode);
                         editor.getSession().setMode("ace/mode/" + mode);
@@ -693,8 +684,8 @@
         });
 
         $("#beautifyJS").on("click", function() {
-            editor.setValue(js_beautify(editor.getValue()));
-            editor.gotoLine(0, 0, false);
+            setEditorVal(js_beautify(editor.getValue()));
+            updateSaveButtons(true);
         });
 
         if (window.isNormalTab) {
@@ -706,49 +697,49 @@
             }, function(data) {
 
                 if (data !== "true") {
-                    var tabPageNotice = $("#tabPageNotice");
-                    tabPageNotice.find("a").on("click", function(e) {
+                    var $tabPageNotice = $("#tabPageNotice");
+                    $tabPageNotice.find("a").on("click", function(e) {
                         e.preventDefault();
                         chrome.extension.sendMessage({
                             action: "setSetting",
                             setting: "tabPageNotice",
                             value: "true"
                         });
-                        tabPageNotice.fadeOut();
+                        $tabPageNotice.fadeOut();
                     });
-                    tabPageNotice.fadeIn();
+                    $tabPageNotice.fadeIn();
                     setTimeout(function() {
-                        tabPageNotice.fadeOut();
+                        $tabPageNotice.fadeOut();
                     }, 6000);
                 }
             });
         }
 
-        var showDevToolsCB = $("#showDevTools");
-        showDevToolsCB.on("click", function() {
+        var $showDevToolsCB = $("#showDevTools");
+        $showDevToolsCB.on("click", function() {
             chrome.extension.sendMessage({
                 action: "setSetting",
                 setting: "devTools",
-                value: showDevToolsCB.prop("checked")
+                value: $showDevToolsCB.prop("checked")
             });
         });
 
-        var showSuggestions = $("#showSuggestions");
-        showSuggestions.on("click", function() {
+        var $showSuggestions = $("#showSuggestions");
+        $showSuggestions.on("click", function() {
             chrome.extension.sendMessage({
                 action: "setSetting",
                 setting: "showSuggestions",
-                value: showSuggestions.prop("checked")
+                value: $showSuggestions.prop("checked")
             });
-            window.suggest.setShouldSuggest(showSuggestions.prop("checked"));
+            suggest.setShouldSuggest($showSuggestions.prop("checked"));
         });
 
-        var showLogs = $("#showLogs");
-        showLogs.on("click", function() {
+        var $showLogs = $("#showLogs");
+        $showLogs.on("click", function() {
             chrome.extension.sendMessage({
                 action: "setSetting",
                 setting: "showLogs",
-                value: showLogs.prop("checked")
+                value: $showLogs.prop("checked")
             });
         });
 
@@ -765,14 +756,14 @@
         });
 
 
-        var loadRulesInput = $("#loadRulesInput");
+        var $loadRulesInput = $("#loadRulesInput");
         $("#loadRulesLink").on("click", function(e) {
             e.preventDefault();
-            loadRulesInput.click();
+            $loadRulesInput.click();
             $("#optionsPopOver").hide();
         });
 
-        loadRulesInput.on("change", function(e) {
+        $loadRulesInput.on("change", function(e) {
             var reader = new FileReader();
             reader.onload = function() {
                 var text = reader.result;
@@ -783,8 +774,8 @@
                     showToast("Load Failed: Invalid JSON in file.");
                 }
             };
-            reader.readAsText(loadRulesInput[0].files[0]);
-            loadRulesInput.val("");
+            reader.readAsText($loadRulesInput[0].files[0]);
+            $loadRulesInput.val("");
         });
 
         chrome.extension.sendMessage({
@@ -792,7 +783,7 @@
             setting: "devTools"
         }, function(data) {
 
-            showDevToolsCB.prop("checked", data === "true");
+            $showDevToolsCB.prop("checked", data === "true");
         });
 
         chrome.extension.sendMessage({
@@ -800,8 +791,8 @@
             setting: "showSuggestions"
         }, function(data) {
 
-            showSuggestions.prop("checked", data !== "false");
-            window.suggest.setShouldSuggest(data !== "false");
+            $showSuggestions.prop("checked", data !== "false");
+            suggest.setShouldSuggest(data !== "false");
         });
 
         chrome.extension.sendMessage({
@@ -809,7 +800,7 @@
             setting: "showLogs"
         }, function(data) {
 
-            showLogs.prop("checked", data === "true");
+            $showLogs.prop("checked", data === "true");
         });
     }
 
