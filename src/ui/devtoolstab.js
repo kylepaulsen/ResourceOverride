@@ -15,6 +15,24 @@
     var files = {};
     var skipNextSync = false;
 
+    // Check to see if chrome verion is high enough for the devtools check.
+    function checkChromeVersion() {
+        var match = navigator.userAgent.match(/Chrom[^0-9]+([0-9]+)\./);
+        if (match && match.length > 1) {
+            var majorVersion = parseInt(match[1]);
+            if (!isNaN(majorVersion) && majorVersion < 43) {
+                // chrome is not a high enough version.
+                alert("RESOURCE OVERRIDE ERROR: Your version of chrome is too old! " +
+                    "Please update to version 43 or higher. Otherwise, expect crashes.");
+            }
+        }
+    }
+    checkChromeVersion();
+
+    // This check can cause chrome to crash on chrome v42 and lower.
+    // https://code.google.com/p/chromium/issues/detail?id=356133
+    var isExtensionOptionsPage = !chrome.devtools;
+
     document.registerElement("on-off-switch", {
         prototype: Object.create(HTMLElement.prototype, {
             createdCallback: {
@@ -88,7 +106,7 @@
     }
 
     function getTabResources(cb) {
-        if (!window.isNormalTab) {
+        if (!isExtensionOptionsPage) {
             chrome.devtools.inspectedWindow.getResources(function(resourceList) {
                 if (resourceList) {
                     var filteredList = resourceList.filter(function(resource) {
@@ -209,9 +227,7 @@
 
         var $loadSelect = $("#loadSelect");
 
-        // isNormalTab is defined in options.html -> importContent.js
-        // Look there for the reason why it exists.
-        if (!window.isNormalTab) {
+        if (!isExtensionOptionsPage) {
             $loadSelect.show();
             getTabResources(function(filteredList) {
                 $loadSelect.html("<option value=''>Load content from resource...</option>");
@@ -719,7 +735,7 @@
             updateSaveButtons(true);
         });
 
-        if (window.isNormalTab) {
+        if (isExtensionOptionsPage) {
             $("#showSuggestions").hide();
             $("#showSuggestionsText").hide();
             chrome.extension.sendMessage({

@@ -428,6 +428,10 @@ input[type=checkbox] {
     word-break: break-word;
 }
 
+.ace_search {
+    max-width: 330px !important;
+}
+
 .bold {
     font-weight: bold;
 }

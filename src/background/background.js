@@ -145,7 +145,7 @@
     })();
 
     var openOrFocusOptionsPage = function() {
-        var optionsUrl = chrome.extension.getURL("src/ui/options.html");
+        var optionsUrl = chrome.extension.getURL("src/ui/devtoolstab.html");
         chrome.tabs.query({}, function(extensionTabs) {
             var found = false;
             for (var i = 0, len = extensionTabs.length; i < len; i++) {

@@ -13,7 +13,7 @@
     }
   },
   "devtools_page": "src/ui/devtools.html",
-  "options_page": "src/ui/options.html",
+  "options_page": "src/ui/devtoolstab.html",
   "background": {
     "page": "src/background/background.html"
   },
