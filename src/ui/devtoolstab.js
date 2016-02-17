@@ -147,6 +147,17 @@
         });
     }
 
+    function saveFile() {
+        updateSaveButtons();
+        files[editingFile] = editor.getValue();
+        lastSaveFunc();
+    }
+
+    function saveFileAndClose() {
+        saveFile();
+        $("#editorOverlay").hide();
+    }
+
     function openEditor(fileId, match, isInjectFile) {
         updateSaveButtons();
         $("#editorOverlay").css('display', 'flex');
@@ -164,6 +175,28 @@
                 },
                 exec: function(editor, line) {
                     editor.selectMore(1);
+                },
+                readOnly: true
+            });
+            editor.commands.addCommand({
+                name: "save",
+                bindKey: {
+                    win: "Ctrl-S",
+                    mac: "Command-S"
+                },
+                exec: function(editor, line) {
+                    saveFile();
+                },
+                readOnly: true
+            });
+            editor.commands.addCommand({
+                name: "saveAndClose",
+                bindKey: {
+                    win: "Ctrl-Shift-S",
+                    mac: "Command-Shift-S"
+                },
+                exec: function(editor, line) {
+                    saveFileAndClose();
                 },
                 readOnly: true
             });
@@ -632,17 +665,9 @@
             skipNextSync = true;
         });
 
-        $("#fileSaveAndCloseBtn").on("click", function() {
-            $("#editorOverlay").hide();
-            files[editingFile] = editor.getValue();
-            lastSaveFunc();
-        });
+        $("#fileSaveAndCloseBtn").on("click", saveFileAndClose);
 
-        $("#fileSaveBtn").on("click", function() {
-            updateSaveButtons();
-            files[editingFile] = editor.getValue();
-            lastSaveFunc();
-        });
+        $("#fileSaveBtn").on("click", saveFile);
 
         $("#fileCancelBtn").on("click", function() {
             $("#editorOverlay").hide();
