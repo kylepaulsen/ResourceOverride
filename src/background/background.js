@@ -225,11 +225,18 @@
                     var ruleObj = rules[x];
                     if (ruleObj.on) {
                         if (ruleObj.type === "normalOverride") {
-                            var newUrl = matchReplace(ruleObj.match, ruleObj.replace, requestUrl);
-                            if (requestUrl !== newUrl) {
+                            var matchedObj = match(ruleObj.match, requestUrl);
+                            var newUrl = matchReplace(matchedObj, ruleObj.replace, requestUrl);
+                            if (matchedObj.matched) {
                                 logOnTab(tabId, "URL Override Matched: " + requestUrl +
                                     "   to:   " + newUrl + "   match url: " + ruleObj.match, true);
-                                return {redirectUrl: newUrl};
+                                if (requestUrl !== newUrl) {
+                                    return {redirectUrl: newUrl};
+                                } else {
+                                    // allow redirections to the original url (aka do nothing).
+                                    // This allows for "redirect all of these except this."
+                                    return;
+                                }
                             }
                         } else if (ruleObj.type === "fileOverride" &&
                             match(ruleObj.match, requestUrl).matched) {

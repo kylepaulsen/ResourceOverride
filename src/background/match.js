@@ -74,7 +74,13 @@ function replaceAfter(str, idx, match, replace) {
 
 function matchReplace(pattern, replacePattern, str) {
     "use strict";
-    var matchData = match(pattern, str);
+    var matchData;
+    if (pattern.matched !== undefined && pattern.freeVars !== undefined) {
+        // accept match objects.
+        matchData = pattern;
+    } else {
+        matchData = match(pattern, str);
+    }
 
     if (!matchData.matched) {
         // If the pattern didn't match.
