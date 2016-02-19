@@ -32,13 +32,7 @@
                 <input type="input" class="domainMatchInput" placeholder="Tab Match URL">
             </div>
             <div class="addRule">
-                <button class="btn addRuleBtn">Add Web Rule</button>
-            </div>
-            <div class="addFileRule">
-                <button class="btn addFileRuleBtn">Add File Rule</button>
-            </div>
-            <div class="addInjectRule">
-                <button class="btn addInjectRuleBtn">Add Inject Rule</button>
+                <button class="btn addRuleBtn">Add Rule</button>
             </div>
             <div class="switch">
                 <on-off-switch class="domainOnOff"></on-off-switch>
@@ -180,6 +174,13 @@
 
 <div id="addDomain">
     <button id="addDomainBtn" class="btn">Add Tab Group</button>
+</div>
+
+<div id="addRuleDropdown">
+    <button id="addWebRuleBtn" class="btn" title="Redirect resources to other URLs">Add Web Rule</button>
+    <button id="addFileRuleBtn" class="btn" title="Redirect resources to a file you make">Add File Rule</button>
+    <button id="addInjectRuleBtn" class="btn" title="Inject content on a page">Add Inject Rule</button>
+    <!--<button id="addHeaderRuleBtn" class="btn" title="Modify request or response headers">Add Header Rule</button>-->
 </div>
 
 <div id="editorOverlay">

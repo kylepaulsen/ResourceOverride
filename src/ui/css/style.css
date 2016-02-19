@@ -89,6 +89,25 @@ input[type=checkbox] {
     margin-top: 24px;
 }
 
+
+#addRuleDropdown {
+    position: absolute;
+    background: #ffffff;
+    padding: 5px 8px;
+    z-index: 99;
+    width: 150px;
+    border-radius: 5px;
+    border: 2px solid #999999;
+    border-top: 0;
+    overflow: hidden;
+    display: none;
+}
+
+#addRuleDropdown .btn {
+    width: 100%;
+    margin: 3px 0;
+}
+
 #helpOverlay {
     background-color: #ffffff;
     position: fixed;
@@ -215,7 +234,7 @@ input[type=checkbox] {
 }
 
 .domainContainer {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     transition: opacity 0.5s;
 }
 
@@ -226,6 +245,8 @@ input[type=checkbox] {
 
 .domainHeader {
     display: flex;
+    border-bottom: 1px solid #999999;
+    padding-bottom: 4px;
 }
 
 .domainHeader input {
@@ -244,17 +265,7 @@ input[type=checkbox] {
 }
 
 .domainHeader .addRule {
-    flex: 0 0 112px;
-    text-align: center;
-}
-
-.domainHeader .addFileRule {
-    flex: 0 0 102px;
-    text-align: center;
-}
-
-.domainHeader .addInjectRule {
-    flex: 0 0 122px;
+    flex: 0 0 88px;
     text-align: center;
 }
 
@@ -269,7 +280,7 @@ input[type=checkbox] {
 }
 
 .overrideRules {
-    margin: 16px 0 0 40px;
+    margin: 10px 0 0 40px;
 }
 
 .handle {

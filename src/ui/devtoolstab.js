@@ -439,8 +439,6 @@
         var domain = instanceTemplate($domainTemplate);
         var overrideRulesContainer = domain.find(".overrideRules");
         var addRuleBtn = domain.find(".addRuleBtn");
-        var addFileRuleBtn = domain.find(".addFileRuleBtn");
-        var addInjectRuleBtn = domain.find(".addInjectRuleBtn");
         var domainMatchInput = domain.find(".domainMatchInput");
         var onOffBtn = domain.find(".domainOnOff");
         var deleteBtn = domain.find(".deleteBtn");
@@ -472,30 +470,20 @@
             domain.addClass("disabled");
         }
 
-        addRuleBtn.on("click", function() {
-            var markup = createWebOverrideMarkup({}, saveFunc);
+        var addRuleFunction = function(markup) {
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
             suggest.init();
+        };
+
+        addRuleBtn.on("click", function() {
+            showRuleDropdown(addRuleBtn, addRuleFunction, saveFunc);
         });
 
         domainMatchInput.on("keyup", saveFunc);
         onOffBtn.on("click change", function() {
             domain.toggleClass("disabled", !onOffBtn[0].isOn);
             saveFunc();
-        });
-
-        addFileRuleBtn.on("click", function() {
-            var markup = createFileOverrideMarkup({}, saveFunc);
-            mvRules.assignHandleListener(markup.find(".handle")[0]);
-            overrideRulesContainer.append(markup);
-            suggest.init();
-        });
-
-        addInjectRuleBtn.on("click", function() {
-            var markup = createFileInjectMarkup({}, saveFunc);
-            mvRules.assignHandleListener(markup.find(".handle")[0]);
-            overrideRulesContainer.append(markup);
         });
 
         deleteBtn.on("click", function() {
@@ -515,6 +503,30 @@
         });
 
         return domain;
+    }
+
+    var currentAddRuleContext = {};
+    function showRuleDropdown(addBtn, addRuleFunc, saveFunc) {
+        var $addRuleDropdown = $("#addRuleDropdown");
+        if ($addRuleDropdown.is(":visible") && currentAddRuleContext.addRuleFunc === addRuleFunc) {
+            $addRuleDropdown.hide();
+        } else {
+            currentAddRuleContext.addRuleFunc = addRuleFunc;
+            currentAddRuleContext.saveFunc = saveFunc;
+            currentAddRuleContext.addBtn = addBtn;
+            positionRuleDropdown();
+            $addRuleDropdown.show();
+        }
+    }
+
+    function positionRuleDropdown() {
+        if (currentAddRuleContext.addBtn) {
+            var offset = currentAddRuleContext.addBtn.offset();
+            $("#addRuleDropdown").css({
+                top: offset.top + 40 + "px",
+                left: offset.left - 40 + "px"
+            });
+        }
     }
 
     function getDomainData(domain) {
@@ -681,6 +693,26 @@
             skipNextSync = true;
         });
 
+        $("#addWebRuleBtn").on("click", function() {
+            currentAddRuleContext.addRuleFunc(createWebOverrideMarkup({},
+                currentAddRuleContext.saveFunc));
+        });
+
+        $("#addFileRuleBtn").on("click", function() {
+            currentAddRuleContext.addRuleFunc(createFileOverrideMarkup({},
+                currentAddRuleContext.saveFunc));
+        });
+
+        $("#addInjectRuleBtn").on("click", function() {
+            currentAddRuleContext.addRuleFunc(createFileInjectMarkup({},
+                currentAddRuleContext.saveFunc));
+        });
+
+        // $("#addHeaderRuleBtn").on("click", function() {
+        //     currentAddRuleContext.addRuleFunc(createWebOverrideMarkup({},
+        //         currentAddRuleContext.saveFunc));
+        // });
+
         $("#fileSaveAndCloseBtn").on("click", saveFileAndClose);
 
         $("#fileSaveBtn").on("click", saveFile);
@@ -704,7 +736,13 @@
                     $popOver.hide();
                 }
             }
+
+            if (!$target.hasClass("addRuleBtn") && e.target.id !== "addRuleDropdown") {
+                $("#addRuleDropdown").hide();
+            }
         });
+
+        $(window).on("resize", positionRuleDropdown);
 
         $("#helpCloseBtn").on("click", function() {
             $("#helpOverlay").hide();
