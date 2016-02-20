@@ -93,8 +93,8 @@ function moveableRules(parent, handleSelector) {
     document.addEventListener("mousemove", function(e) {
         if (mouseDown) {
             e.preventDefault();
-            currentMovingEl.style.top = e.clientY - offsetY + "px";
-            var mouseParentY = e.pageY - parent.getBoundingClientRect().top;
+            currentMovingEl.style.top = e.pageY - offsetY + "px";
+            var mouseParentY = e.clientY - parent.getBoundingClientRect().top;
             var dropTarget = getElFromGridWithY(mouseParentY);
             if (dropTarget !== lastDropTarget) {
                 setBorders();
@@ -109,7 +109,7 @@ function moveableRules(parent, handleSelector) {
     document.addEventListener("mouseup", function(e) {
         mouseDown = false;
         if (currentMovingEl) {
-            var mouseParentY = e.pageY - parent.getBoundingClientRect().top;
+            var mouseParentY = e.clientY - parent.getBoundingClientRect().top;
             var dropTarget = getElFromGridWithY(mouseParentY) || placeholder;
             var dropIndex = getChildIndex(dropTarget);
             if (dropIndex > currentIndex) {
@@ -117,7 +117,10 @@ function moveableRules(parent, handleSelector) {
             } else {
                 parent.insertBefore(currentMovingEl, dropTarget);
             }
-            remove(placeholder);
+            // this prevents a reflow from changing scroll position.
+            setTimeout(function() {
+                remove(placeholder);
+            }, 1);
 
             currentMovingEl.style.position = "";
             currentMovingEl.style.width = "";
@@ -144,7 +147,7 @@ function moveableRules(parent, handleSelector) {
             el.parentElement.insertBefore(placeholder, el);
             el.style.width = boundingRect.width + "px";
             el.style.height = boundingRect.height + "px";
-            el.style.top = e.clientY - offsetY + "px";
+            el.style.top = e.pageY - offsetY + "px";
             el.style.opacity = 0.5;
             makeGrid();
         });
