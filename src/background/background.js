@@ -280,8 +280,14 @@
                 .catch(simpleError);
             delete ruleDomains[request.id];
         } else if (request.action === "import") {
-            ruleDomains = {};
+            var maxId = 0;
+            for (var id in ruleDomains) {
+                maxId = Math.max(maxId, parseInt(id.substring(1)));
+            }
+            maxId++;
             Promise.all(request.data.map(function(domainData) {
+                // dont overwrite any pre-existing domains.
+                domainData.id = "d" + maxId++;
                 ruleDomains[domainData.id] = domainData;
                 return domainStorage.put(domainData);
             }))
