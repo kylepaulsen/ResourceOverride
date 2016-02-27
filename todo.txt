@@ -1,7 +1,28 @@
-Investigate if checking for chrome.devtools crashes chrome anymore. Sooo need to get rid of importContent.js.
-    - Apparently it has been fixed??? https://code.google.com/p/chromium/issues/detail?id=356133
-Add save keyboard shortcut to editor.
-Add Header Rule???
+Consider adding autocomplete to editor.
+    - might need a way to turn that off.
+
+Fix bug with scripts not being executed first or last in the document.
+    for body scripts: wait for the window 'load' event to inject.
+    http://stackoverflow.com/questions/8965953/how-to-inject-content-script-when-page-loads-while-having-a-popup-page
+    cant really use a static content script.
+    Might have to do something like this:
+        chrome.tabs.executeScript(null, {code: 'eval(decodeURIComponent("' + encodeURIComponent($0.value) + '"));'});
+
+Fix delete button looking like crap on mac.
+
+Don't erase all rules when importing rules. Merge them.
+
+Make example for how to override a buncha stuff except for some things.
+    - do we need a tips popup?
+
+Close editors when we get a sync update.
+
+Maybe make a request url tester that shows what rule it will hit
+
+Add a way to know the rule type after added?
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
 Clean up this disgusting project
+    - make like at least 10 more files
+    - use "fetch all ids" ui technique.
+    - use more es6 (let, const)

@@ -259,6 +259,105 @@
         }
     };
 
+    var makeHeaderHandler = function(type) {
+        return function(details) {
+            var headers = details[type + "Headers"];
+            if (details.tabId > -1 && headers) {
+                var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+                if (tabUrl || (!tabUrl && details.type === "main_frame")) {
+                    if (!tabUrl) {
+                        // a new tab must have just been created.
+                        tabUrl = details.url;
+                    }
+                    return handleHeaders(type, details.url, tabUrl, headers, details.tabId);
+                }
+            }
+        };
+    };
+
+    var parseHeaderDataStr = function(headerDataStr) {
+        var ans = [];
+        var rules = headerDataStr.split(";");
+        var len = rules.length;
+        for (var x = 0; x < len; x++) {
+            var rule = rules[x];
+            var ruleParts = rule.split(": ");
+            if (ruleParts[0].indexOf("set") === 0) {
+                if (ruleParts.length === 2) {
+                    ans.push({
+                        operation: "set",
+                        name: decodeURIComponent(ruleParts[0].substring(4)).toLowerCase(),
+                        value: decodeURIComponent(ruleParts[1])
+                    });
+                }
+            } else if (ruleParts[0].indexOf("remove") === 0) {
+                ans.push({
+                    operation: "remove",
+                    name: decodeURIComponent(ruleParts[0].substring(7)).toLowerCase()
+                });
+            }
+        }
+        return ans;
+    };
+
+    var makeHeadersObject = function(headers) {
+        var ans = {};
+        var len = headers.length;
+        for (var x = 0; x < len; x++) {
+            var header = headers[x];
+            ans[header.name.toLowerCase()] = header;
+        }
+        return ans;
+    };
+
+    var handleHeaders = function(type, requestUrl, tabUrl, headers, tabId) {
+        var headerObjToReturn = {};
+        var headerObjToReturnKey = type + "Headers";
+        headerObjToReturn[headerObjToReturnKey] = headers;
+        for (var key in ruleDomains) {
+            var domainObj = ruleDomains[key];
+            if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
+                var rules = domainObj.rules || [];
+                for (var x = 0, len = rules.length; x < len; ++x) {
+                    var ruleObj = rules[x];
+                    if (ruleObj.on && ruleObj.type === "headerRule") {
+                        if (match(ruleObj.match, requestUrl).matched) {
+                            var rulesStr = ruleObj[type + "Rules"];
+                            logOnTab(tabId, "Header Rule Matched: " + requestUrl +
+                                " applying rules: " + rulesStr, true);
+                            var headerRules = parseHeaderDataStr(rulesStr);
+                            var headersObj = makeHeadersObject(headers);
+                            var numRules = headerRules.length;
+                            for (var t = 0; t < numRules; t++) {
+                                var rule = headerRules[t];
+                                if (rule.operation === "set") {
+                                    headersObj[rule.name] = {
+                                        name: rule.name,
+                                        value: rule.value
+                                    };
+                                } else {
+                                    if (headersObj[rule.name]) {
+                                        headersObj[rule.name] = undefined;
+                                    }
+                                }
+                            }
+                            var newHeaders = [];
+                            for (var headerKey in headersObj) {
+                                var header = headersObj[headerKey];
+                                if (header) {
+                                    newHeaders.push(header);
+                                }
+                            }
+                            headerObjToReturn[headerObjToReturnKey] = newHeaders;
+                            return headerObjToReturn;
+                        }
+                    }
+                }
+            }
+        }
+        return headerObjToReturn;
+    };
+
     // Called when the user clicks on the browser action icon.
     chrome.browserAction.onClicked.addListener(function(tab) {
         openOrFocusOptionsPage();
@@ -323,17 +422,26 @@
             lastRequestId = details.requestId;
             if (details.tabId > -1) {
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-                if (tabUrl) {
+                if (tabUrl || (!tabUrl && details.type === "main_frame")) {
+                    if (!tabUrl) {
+                        // a new tab must have just been created.
+                        tabUrl = details.url;
+                    }
                     return handleRequest(details.url, tabUrl, details.tabId);
-                } else if (!tabUrl && details.type === "main_frame") {
-                    // a new tab must have just been created.
-                    return handleRequest(details.url, details.url, details.tabId);
                 }
             }
         }
     }, {
         urls: ["<all_urls>"]
     }, ["blocking"]);
+
+    chrome.webRequest.onHeadersReceived.addListener(makeHeaderHandler("response"), {
+        urls: ["<all_urls>"]
+    }, ["blocking", "responseHeaders"]);
+
+    chrome.webRequest.onBeforeSendHeaders.addListener(makeHeaderHandler("request"), {
+        urls: ["<all_urls>"]
+    }, ["blocking", "requestHeaders"]);
 
     //init settings
     if (localStorage.devTools === undefined) {

@@ -1,14 +1,19 @@
 (function() {
     "use strict";
 
-    /* globals $, chrome, ace, moveableRules, suggest, js_beautify */
+    /* globals $, chrome, ace, moveableRules, suggest, headersLists, js_beautify */
 
     var $domainTemplate;
     var $overrideTemplate;
     var $fileOverrideTemplate;
     var $fileInjectTemplate;
+    var $headerRuleTemplate;
+    var $headerEditorRuleTemplate;
     var $onOffSwitchTemplate;
 
+    var mainSuggest = suggest();
+    var requestHeadersSuggest = suggest();
+    var responseHeadersSuggest = suggest();
     var editor;
     var editingFile;
     var lastSaveFunc;
@@ -126,7 +131,7 @@
                 }
             });
         } else {
-            suggest.setShouldSuggest(false);
+            mainSuggest.setShouldSuggest(false);
         }
     }
 
@@ -174,11 +179,13 @@
     function saveFileAndClose() {
         saveFile();
         $("#editorOverlay").hide();
+        $("body").css("overflow", "auto");
     }
 
     function openEditor(fileId, match, isInjectFile) {
         updateSaveButtons();
-        $("#editorOverlay").css('display', 'flex');
+        $("#editorOverlay").css("display", "flex");
+        $("body").css("overflow", "hidden");
         if (!editor) {
             editor = ace.edit("editor");
             editor.setTheme("ace/theme/monokai");
@@ -247,6 +254,88 @@
         setEditorVal(fileStr);
     }
 
+    function getHeaderEditRules() {
+        var reqRules = [];
+        var resRules = [];
+        var $requestRules = $("#headerRequestRulesContainer").find(".headerEditorRule");
+        var $responseRules = $("#headerResponseRulesContainer").find(".headerEditorRule");
+        var getRule = function(el) {
+            var $el = $(el);
+            var operation = $el.find(".operationSelect").val();
+            var headerName = encodeURIComponent($el.find(".headerName").val());
+            var headerValue = encodeURIComponent($el.find(".headerValue").val());
+            var nextRule;
+            if (headerName) {
+                if (operation === "set") {
+                    nextRule = "set ";
+                    nextRule += headerName + ": ";
+                    nextRule += headerValue;
+                } else {
+                    nextRule = "remove ";
+                    nextRule += headerName;
+                }
+            }
+            return nextRule;
+        };
+        $requestRules.each(function(idx, el) {
+            var rule = getRule(el);
+            if (rule) {
+                reqRules.push(rule);
+            }
+        });
+        $responseRules.each(function(idx, el) {
+            var rule = getRule(el);
+            if (rule) {
+                resRules.push(rule);
+            }
+        });
+        return {
+            requestRules: reqRules,
+            responseRules: resRules
+        };
+    }
+
+    function parseHeaderDataStr(headerDataStr) {
+        var ans = [];
+        var rules = headerDataStr.split(";");
+        rules.forEach(function(rule) {
+            var ruleParts = rule.split(": ");
+            if (ruleParts[0].indexOf("set") === 0) {
+                if (ruleParts.length === 2) {
+                    ans.push({
+                        operation: "set",
+                        header: decodeURIComponent(ruleParts[0].substring(4)),
+                        value: decodeURIComponent(ruleParts[1])
+                    });
+                }
+            } else if (ruleParts[0].indexOf("remove") === 0) {
+                ans.push({
+                    operation: "remove",
+                    header: decodeURIComponent(ruleParts[0].substring(7))
+                });
+            }
+        });
+        return ans;
+    }
+
+    function openHeaderEditor(requestHeaderDataStr, responseHeaderDataStr, matchRule) {
+        var requestHeadersData = parseHeaderDataStr(requestHeaderDataStr);
+        var responseHeadersData = parseHeaderDataStr(responseHeaderDataStr);
+        var headerRequestRulesContainer = $("#headerRequestRulesContainer");
+        var headerResponseRulesContainer = $("#headerResponseRulesContainer");
+        headerRequestRulesContainer.html("");
+        headerResponseRulesContainer.html("");
+        requestHeadersData.forEach(function(data) {
+            headerRequestRulesContainer.append(createHeaderEditorRuleMarkup(data, lastSaveFunc, "request"));
+        });
+        responseHeadersData.forEach(function(data) {
+            headerResponseRulesContainer.append(createHeaderEditorRuleMarkup(data, lastSaveFunc, "response"));
+        });
+        $("#headerMatchContainer").text(matchRule || "<Not defined yet>");
+        $("#headerRuleOverlay").css("display", "flex");
+        $("body").css("overflow", "hidden");
+    }
+
     function createSaveFunction(id) {
         return function() {
             var $domain = $("#" + id);
@@ -306,8 +395,10 @@
             deleteButtonIsSureReset(deleteBtn);
         });
 
+        mainSuggest.init(matchInput);
+
         matchInput.on("keyup", saveFunc);
-        matchInput.data("saveFunc", saveFunc);
+        matchInput.data("onComplete", saveFunc);
         replaceInput.on("keyup", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
@@ -356,8 +447,10 @@
             deleteButtonIsSureReset(deleteBtn);
         });
 
+        mainSuggest.init(matchInput);
+
         matchInput.on("keyup", saveFunc);
-        matchInput.data("saveFunc", saveFunc);
+        matchInput.data("onComplete", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
             saveFunc();
@@ -434,6 +527,139 @@
         return override;
     }
 
+    function createHeaderRuleMarkup(savedData, saveFunc) {
+        savedData = savedData || {};
+        saveFunc = saveFunc || function() {};
+
+        var override = instanceTemplate($headerRuleTemplate);
+        var matchInput = override.find(".matchInput");
+        var requestRulesInput = override.find(".requestRules");
+        var responseRulesInput = override.find(".responseRules");
+        var editBtn = override.find(".edit-btn");
+        var ruleOnOff = override.find(".ruleOnOff");
+        var deleteBtn = override.find(".sym-btn");
+
+        matchInput.val(savedData.match || "");
+
+        var updateHeaderInput = function(input, ruleStr) {
+            input.val(decodeURIComponent(ruleStr.replace(/\;/g, "; ")));
+            input.attr("title", decodeURIComponent(ruleStr.replace(/\;/g, "\n")));
+            input.data("rules", ruleStr);
+        };
+
+        updateHeaderInput(requestRulesInput, savedData.requestRules || "");
+        updateHeaderInput(responseRulesInput, savedData.responseRules || "");
+
+        ruleOnOff[0].isOn = savedData.on === false ? false : true;
+
+        if (savedData.on === false) {
+            override.addClass("disabled");
+        }
+
+        var editorSaveFunc = function() {
+            var rules = getHeaderEditRules();
+            updateHeaderInput(requestRulesInput, rules.requestRules.join(";"));
+            updateHeaderInput(responseRulesInput, rules.responseRules.join(";"));
+            saveFunc();
+        };
+
+        var editFunc = function() {
+            lastSaveFunc = editorSaveFunc;
+            var reqStr = requestRulesInput.data("rules") || "";
+            var resStr = responseRulesInput.data("rules") || "";
+            openHeaderEditor(reqStr, resStr, matchInput.val());
+        };
+
+        mainSuggest.init(matchInput);
+
+        matchInput.on("keyup", saveFunc);
+        matchInput.data("onComplete", saveFunc);
+
+        override.on("click", function(e) {
+            if ($(e.target).hasClass("headerRuleInput")) {
+                editFunc();
+            }
+        });
+        editBtn.on("click", editFunc);
+
+        deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
+            override.css("transition", "none");
+            override.fadeOut(function() {
+                override.remove();
+                saveFunc();
+            });
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
+        });
+
+        ruleOnOff.on("click change", function() {
+            override.toggleClass("disabled", !ruleOnOff[0].isOn);
+            saveFunc();
+        });
+
+        return override;
+    }
+
+    function createHeaderEditorRuleMarkup(savedData, saveFunc, type) {
+        savedData = savedData || {};
+        saveFunc = saveFunc || function() {};
+
+        var override = instanceTemplate($headerEditorRuleTemplate);
+        var operation = override.find(".operationSelect");
+        var headerName = override.find(".headerName");
+        var headerValue = override.find(".headerValue");
+        var deleteBtn = override.find(".sym-btn");
+
+        operation.val(savedData.operation);
+        headerName.val(savedData.header);
+        headerValue.val(savedData.value || "");
+
+        if (savedData.operation === "remove") {
+            headerValue[0].disabled = true;
+        }
+
+        operation.on("change", function() {
+            if (operation.val() === "remove") {
+                headerValue.val("");
+                headerValue[0].disabled = true;
+            } else {
+                headerValue[0].disabled = false;
+            }
+            saveFunc();
+        });
+        headerName.on("keyup", saveFunc);
+        headerValue.on("keyup", saveFunc);
+        headerName.data("onComplete", saveFunc);
+
+        deleteBtn.on("click", function() {
+            if (!deleteButtonIsSure(deleteBtn)) {
+                return;
+            }
+            override.css("transition", "none");
+            override.fadeOut(function() {
+                override.remove();
+                saveFunc();
+            });
+        });
+
+        deleteBtn.on("mouseout", function() {
+            deleteButtonIsSureReset(deleteBtn);
+        });
+
+        if (type === "request") {
+            requestHeadersSuggest.init(headerName, false, true);
+        } else {
+            responseHeadersSuggest.init(headerName, false, true);
+        }
+
+        return override;
+    }
+
     function createDomainMarkup(savedData) {
         savedData = savedData || {};
         var domain = instanceTemplate($domainTemplate);
@@ -456,6 +682,8 @@
                     overrideRulesContainer.append(createFileOverrideMarkup(rule, saveFunc));
                 } else if (rule.type === "fileInject") {
                     overrideRulesContainer.append(createFileInjectMarkup(rule, saveFunc));
+                } else if (rule.type === "headerRule") {
+                    overrideRulesContainer.append(createHeaderRuleMarkup(rule, saveFunc));
                 }
             });
         }
@@ -470,14 +698,13 @@
             domain.addClass("disabled");
         }
 
-        var addRuleFunction = function(markup) {
+        var addRuleCallback = function(markup) {
             mvRules.assignHandleListener(markup.find(".handle")[0]);
             overrideRulesContainer.append(markup);
-            suggest.init();
         };
 
         addRuleBtn.on("click", function() {
-            showRuleDropdown(addRuleBtn, addRuleFunction, saveFunc);
+            showRuleDropdown(addRuleBtn, addRuleCallback, saveFunc);
         });
 
         domainMatchInput.on("keyup", saveFunc);
@@ -558,6 +785,14 @@
                     injectLocation: $el.find(".injectLocationSelect").val(),
                     on: $el.find(".ruleOnOff")[0].isOn
                 });
+            } else if ($el.hasClass("headerRule")) {
+                rules.push({
+                    type: "headerRule",
+                    match: $el.find(".matchInput").val(),
+                    requestRules: $el.find(".requestRules").data("rules") || "",
+                    responseRules: $el.find(".responseRules").data("rules") || "",
+                    on: $el.find(".ruleOnOff")[0].isOn
+                });
             }
         });
 
@@ -589,9 +824,8 @@
                 });
                 skipNextSync = true;
             }
-            suggest.init();
             getTabResources(function(res) {
-                suggest.fillOptions(res);
+                mainSuggest.fillOptions(res);
             });
         });
     }
@@ -632,8 +866,11 @@
             valid = valid && rule.fileType !== undefined;
             valid = valid && rule.injectLocation !== undefined;
             valid = valid && rule.on !== undefined;
-        } else {
-            return false;
+        } else if (rule.type === "headerRule") {
+            valid = valid && rule.match !== undefined;
+            valid = valid && rule.requestRules !== undefined;
+            valid = valid && rule.responseRules !== undefined;
+            valid = valid && rule.on !== undefined;
         }
         return valid;
     }
@@ -672,12 +909,15 @@
         $overrideTemplate = $("#overrideTemplate");
         $fileOverrideTemplate = $("#fileOverrideTemplate");
         $fileInjectTemplate = $("#fileInjectTemplate");
+        $headerRuleTemplate = $("#headerRuleTemplate");
+        $headerEditorRuleTemplate = $("#headerEditorRuleTemplate");
         $onOffSwitchTemplate = $("#onOffSwitchTemplate");
 
-        if ($domainTemplate.length === 0) {
-            // init was called too early (options page case) so give up.
-            return;
-        }
+        mainSuggest.init();
+        requestHeadersSuggest.init();
+        responseHeadersSuggest.init();
+        requestHeadersSuggest.fillOptions(headersLists.requestHeaders);
+        responseHeadersSuggest.fillOptions(headersLists.responseHeaders);
 
         setupSynchronizeConnection();
 
@@ -689,7 +929,6 @@
             newDomain.find(".domainMatchInput").val("*");
             $domainList.append(newDomain);
             chrome.extension.sendMessage({action: "saveDomain", data: getDomainData(newDomain)});
-            suggest.init();
             skipNextSync = true;
         });
 
@@ -708,10 +947,10 @@
                 currentAddRuleContext.saveFunc));
         });
 
-        // $("#addHeaderRuleBtn").on("click", function() {
-        //     currentAddRuleContext.addRuleFunc(createWebOverrideMarkup({},
-        //         currentAddRuleContext.saveFunc));
-        // });
+        $("#addHeaderRuleBtn").on("click", function() {
+            currentAddRuleContext.addRuleFunc(createHeaderRuleMarkup({},
+                currentAddRuleContext.saveFunc));
+        });
 
         $("#fileSaveAndCloseBtn").on("click", saveFileAndClose);
 
@@ -719,6 +958,47 @@
 
         $("#fileCancelBtn").on("click", function() {
             $("#editorOverlay").hide();
+            $("body").css("overflow", "auto");
+        });
+
+        $("#closeHeaderRuleEditorBtn").on("click", function() {
+            $("#headerRuleOverlay").hide();
+            $("body").css("overflow", "auto");
+        });
+
+        $("#addRequestHeaderBtn").on("click", function() {
+            $("#headerRequestRulesContainer").append(createHeaderEditorRuleMarkup({}, lastSaveFunc, "request"));
+        });
+
+        $("#addResponseHeaderBtn").on("click", function() {
+            $("#headerResponseRulesContainer").append(createHeaderEditorRuleMarkup({}, lastSaveFunc, "response"));
+        });
+
+        var $presetSelect = $("#headerPresetsSelect");
+        $presetSelect.on("change", function() {
+            var preset = $presetSelect.val();
+            $presetSelect.val("");
+            var resPresets = {
+                cors: {
+                    operation: "set",
+                    header: "Access-Control-Allow-Origin",
+                    value: "*"
+                },
+                noInline: {
+                    operation: "set",
+                    header: "Content-Security-Policy",
+                    value: "script-src * 'nonce-ResourceOverride'"
+                },
+                allowFrames: {
+                    operation: "remove",
+                    header: "X-Frame-Options"
+                }
+            };
+            if (resPresets[preset]) {
+                $("#headerResponseRulesContainer").append(
+                    createHeaderEditorRuleMarkup(resPresets[preset], lastSaveFunc, "response"));
+                lastSaveFunc();
+            }
         });
 
         $("#helpBtn").on("click", function() {
@@ -816,7 +1096,7 @@
                 setting: "showSuggestions",
                 value: $showSuggestions.prop("checked")
             });
-            suggest.setShouldSuggest($showSuggestions.prop("checked"));
+            mainSuggest.setShouldSuggest($showSuggestions.prop("checked"));
         });
 
         var $showLogs = $("#showLogs");
@@ -877,7 +1157,7 @@
         }, function(data) {
 
             $showSuggestions.prop("checked", data !== "false");
-            suggest.setShouldSuggest(data !== "false");
+            mainSuggest.setShouldSuggest(data !== "false");
         });
 
         chrome.extension.sendMessage({
@@ -889,7 +1169,6 @@
         });
     }
 
-    window.init = init;
     init();
 
 })();// end script-wide closure

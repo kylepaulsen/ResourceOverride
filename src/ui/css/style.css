@@ -159,14 +159,6 @@ input[type=checkbox] {
 }
 
 #editorOverlay {
-    background-color: #ffffff;
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 100;
-    display: none;
     flex-direction: column;
 }
 
@@ -187,6 +179,53 @@ input[type=checkbox] {
     padding: 7px 16px;
     width: 100%;
     height: 50px;
+}
+
+#headerRuleOverlay {
+    flex-direction: column;
+}
+
+#headerRuleOptions {
+    width: 100%;
+    border-bottom: 1px solid #000000;
+    display: flex;
+    padding-bottom: 10px;
+}
+
+#headerRuleOptions .titleContainer {
+    padding: 20px 0 0 12px;
+    flex: 1 1 200px;
+    max-height: 70px;
+    overflow-y: auto;
+}
+
+#headerRuleOptions .presetsContainer {
+    text-align: center;
+    padding: 17px 0 0 0;
+    flex: 1 1 200px;
+}
+
+#headerRequestRulesContainer, #headerResponseRulesContainer {
+    margin-bottom: 10px;
+}
+
+#headerRuleFooter {
+    border-top: 1px solid #000000;
+    text-align: right;
+    padding: 7px 16px;
+    width: 100%;
+    height: 50px;
+}
+
+.overlay {
+    background-color: #ffffff;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    display: none;
 }
 
 .toast {
@@ -222,6 +261,19 @@ input[type=checkbox] {
     padding: 10px 16px 0 0;
     flex: 1 1 200px;
     text-align: right;
+}
+
+.headerRequestRules {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    border-bottom: 1px solid #000000;
+}
+
+.headerResponseRules {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
 }
 
 .loadContainer {
@@ -383,6 +435,43 @@ input[type=checkbox] {
     display: inline-block;
 }
 
+.headerRule .headerRuleInput {
+    cursor: pointer;
+}
+
+.headerRule .ruleType {
+    flex: 0 0 50px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.headerRule .edit {
+    flex: 0 0 100px;
+    text-align: center;
+}
+
+.headerEditorRule input[disabled] {
+    background: #eeeeee;
+}
+
+.headerEditorRule .operation {
+    padding-top: 8px;
+    text-align: center;
+}
+
+.headerEditorRule .headerLabel {
+    padding: 10px 6px 0 14px;
+}
+
+.headerEditorRule .valueLabel {
+    padding: 10px 6px 0 6px;
+}
+
+.headerEditorRule .headerInputContainer {
+    flex: 1 1 100px;
+    padding: 5px 6px 0 6px;
+}
+
 .disabled {
     opacity: 0.7;
 }
@@ -399,6 +488,7 @@ input[type=checkbox] {
     border-top: 0;
     max-height: 100px;
     overflow: auto;
+    z-index: 200;
 }
 
 .suggestTable {
