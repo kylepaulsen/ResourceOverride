@@ -264,11 +264,11 @@
             var headers = details[type + "Headers"];
             if (details.tabId > -1 && headers) {
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-                if (tabUrl || (!tabUrl && details.type === "main_frame")) {
-                    if (!tabUrl) {
-                        // a new tab must have just been created.
-                        tabUrl = details.url;
-                    }
+                if (details.type === "main_frame") {
+                    // a new tab must have just been created.
+                    tabUrl = details.url;
+                }
+                if (tabUrl) {
                     return handleHeaders(type, details.url, tabUrl, headers, details.tabId);
                 }
             }
@@ -422,11 +422,11 @@
             lastRequestId = details.requestId;
             if (details.tabId > -1) {
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-                if (tabUrl || (!tabUrl && details.type === "main_frame")) {
-                    if (!tabUrl) {
-                        // a new tab must have just been created.
-                        tabUrl = details.url;
-                    }
+                if (details.type === "main_frame") {
+                    // a new tab must have just been created.
+                    tabUrl = details.url;
+                }
+                if (tabUrl) {
                     return handleRequest(details.url, tabUrl, details.tabId);
                 }
             }
