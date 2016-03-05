@@ -1,7 +1,9 @@
 (function() {
     "use strict";
 
-    var requestHeaders = [
+    const app = window.app;
+
+    const requestHeaders = [
         "Accept",
         "Accept-Charset",
         "Accept-Datetime",
@@ -46,7 +48,7 @@
         "X-Http-Method-Override"
     ];
 
-    var responseHeaders = [
+    const responseHeaders = [
         "Accept-Patch",
         "Accept-Ranges",
         "Access-Control-Allow-Origin",
@@ -96,7 +98,7 @@
         "X-XSS-Protection"
     ];
 
-    window.headersLists = {
+    app.headersLists = {
         requestHeaders: requestHeaders,
         responseHeaders: responseHeaders
     };

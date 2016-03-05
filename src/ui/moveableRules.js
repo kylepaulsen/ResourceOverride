@@ -1,162 +1,169 @@
-function moveableRules(parent, handleSelector) {
+(function() {
     "use strict";
-    var children;
-    var handles = Array.prototype.slice.call(parent.querySelectorAll(handleSelector));
-    var mouseDown = false;
-    var currentMovingEl;
-    var offsetX;
-    var offsetY;
-    var currentIndex;
-    var grid;
-    var onMove = function() {};
-    var placeholder = document.createElement("div");
-    placeholder.className = "sortable-placeholder";
 
-    var regetChildren = function() {
-        children = Array.prototype.slice.call(parent.children);
-    };
-    regetChildren();
+    const app = window.app;
 
-    var setBorders = function() {
-        children.forEach(function(el) {
-            el.style.background = "transparent";
-        });
-    };
+    function moveableRules(parent, handleSelector) {
+        const placeholder = document.createElement("div");
+        const handles = Array.prototype.slice.call(parent.querySelectorAll(handleSelector));
+        let children;
+        let mouseDown = false;
+        let currentMovingEl;
+        let offsetY;
+        let currentIndex;
+        let grid;
+        let onMove = function() {};
+        placeholder.className = "sortable-placeholder";
 
-    var getElFullHeight = function(el) {
-        var innerHeight = el.getBoundingClientRect().height;
-        var compStyle = window.getComputedStyle(el);
-        return innerHeight + parseInt(compStyle["margin-top"]);
-    };
-
-    var getChildIndex = function(el) {
-        var children = parent.children;
-        var idx = children.length;
-        while (idx-- > 0) {
-            if (children[idx] === el) {
-                return idx;
-            }
-        }
-        return null;
-    };
-
-    var getQualifiedChild = function(el) {
-        var lastEl;
-        while (el && el !== parent) {
-            lastEl = el;
-            el = el.parentElement;
-        }
-        return lastEl;
-    };
-
-    var after = function(parent, newEl, targetEl) {
-        var nextSib = targetEl.nextElementSibling;
-        if (!nextSib) {
-            parent.appendChild(newEl);
-        } else {
-            parent.insertBefore(newEl, nextSib);
-        }
-    };
-
-    var remove = function(el) {
-        el.parentElement.removeChild(el);
-    };
-
-    var makeGrid = function() {
-        grid = [];
+        const regetChildren = function() {
+            children = Array.prototype.slice.call(parent.children);
+        };
         regetChildren();
-        var currentOffset = 0;
-        children.forEach(function(el) {
-            if (el !== currentMovingEl) {
-                currentOffset += getElFullHeight(el);
-                grid.push({
-                    el: el,
-                    offset: currentOffset
-                });
-            }
-        });
-    };
 
-    var getElFromGridWithY = function(y) {
-        if (y < 0) {
-            return null;
-        }
-        for (var x = 0, len = grid.length; x < len; ++x) {
-            if (y < grid[x].offset) {
-                return grid[x].el;
-            }
-        }
-        return null;
-    };
+        const setBorders = function() {
+            children.forEach(function(el) {
+                el.style.background = "transparent";
+            });
+        };
 
-    var lastDropTarget;
-    document.addEventListener("mousemove", function(e) {
-        if (mouseDown) {
-            e.preventDefault();
-            currentMovingEl.style.top = e.pageY - offsetY + "px";
-            var mouseParentY = e.clientY - parent.getBoundingClientRect().top;
-            var dropTarget = getElFromGridWithY(mouseParentY);
-            if (dropTarget !== lastDropTarget) {
-                setBorders();
-                if (dropTarget) {
-                    dropTarget.style.background = "#dddddd";
+        const getElFullHeight = function(el) {
+            const innerHeight = el.getBoundingClientRect().height;
+            const compStyle = window.getComputedStyle(el);
+            return innerHeight + parseInt(compStyle["margin-top"]);
+        };
+
+        const getChildIndex = function(el) {
+            const children = parent.children;
+            let idx = children.length;
+            while (idx-- > 0) {
+                if (children[idx] === el) {
+                    return idx;
                 }
-                lastDropTarget = dropTarget;
             }
-        }
-    });
+            return null;
+        };
 
-    document.addEventListener("mouseup", function(e) {
-        mouseDown = false;
-        if (currentMovingEl) {
-            var mouseParentY = e.clientY - parent.getBoundingClientRect().top;
-            var dropTarget = getElFromGridWithY(mouseParentY) || placeholder;
-            var dropIndex = getChildIndex(dropTarget);
-            if (dropIndex > currentIndex) {
-                after(parent, currentMovingEl, dropTarget);
+        const getQualifiedChild = function(el) {
+            let lastEl;
+            while (el && el !== parent) {
+                lastEl = el;
+                el = el.parentElement;
+            }
+            return lastEl;
+        };
+
+        const after = function(parent, newEl, targetEl) {
+            const nextSib = targetEl.nextElementSibling;
+            if (!nextSib) {
+                parent.appendChild(newEl);
             } else {
-                parent.insertBefore(currentMovingEl, dropTarget);
+                parent.insertBefore(newEl, nextSib);
             }
-            // this prevents a reflow from changing scroll position.
-            setTimeout(function() {
-                remove(placeholder);
-            }, 1);
+        };
 
-            currentMovingEl.style.position = "";
-            currentMovingEl.style.width = "";
-            currentMovingEl.style.height = "";
-            currentMovingEl.style.opacity = "";
-            currentMovingEl = null;
-            setBorders();
-            onMove();
-        }
-    });
+        const remove = function(el) {
+            el.parentElement.removeChild(el);
+        };
 
-    var assignHandleListener = function(handle) {
-        var el = getQualifiedChild(handle);
-        var compStyle = window.getComputedStyle(el);
+        const makeGrid = function() {
+            grid = [];
+            regetChildren();
+            let currentOffset = 0;
+            children.forEach(function(el) {
+                if (el !== currentMovingEl) {
+                    currentOffset += getElFullHeight(el);
+                    grid.push({
+                        el: el,
+                        offset: currentOffset
+                    });
+                }
+            });
+        };
 
-        handle.addEventListener("mousedown", function(e) {
-            var boundingRect = el.getBoundingClientRect();
-            mouseDown = true;
-            currentMovingEl = el;
-            currentIndex = getChildIndex(el);
-            offsetX = e.offsetX + parseInt(compStyle["margin-left"]);
-            offsetY = e.offsetY + parseInt(compStyle["margin-top"]);
-            el.style.position = "absolute";
-            el.parentElement.insertBefore(placeholder, el);
-            el.style.width = boundingRect.width + "px";
-            el.style.height = boundingRect.height + "px";
-            el.style.top = e.pageY - offsetY + "px";
-            el.style.opacity = 0.5;
-            makeGrid();
+        const getElFromGridWithY = function(y) {
+            if (y < 0) {
+                return null;
+            }
+            for (let x = 0, len = grid.length; x < len; ++x) {
+                if (y < grid[x].offset) {
+                    return grid[x].el;
+                }
+            }
+            return null;
+        };
+
+        let lastDropTarget;
+        document.addEventListener("mousemove", function(e) {
+            if (mouseDown) {
+                e.preventDefault();
+                currentMovingEl.style.top = e.pageY - offsetY + "px";
+                const mouseParentY = e.clientY - parent.getBoundingClientRect().top;
+                const dropTarget = getElFromGridWithY(mouseParentY);
+                if (dropTarget !== lastDropTarget) {
+                    setBorders();
+                    if (dropTarget) {
+                        dropTarget.style.background = "#dddddd";
+                    }
+                    lastDropTarget = dropTarget;
+                }
+            }
         });
-    };
 
-    handles.forEach(assignHandleListener);
+        document.addEventListener("mouseup", function(e) {
+            mouseDown = false;
+            if (currentMovingEl) {
+                const mouseParentY = e.clientY - parent.getBoundingClientRect().top;
+                const dropTarget = getElFromGridWithY(mouseParentY) || placeholder;
+                const dropIndex = getChildIndex(dropTarget);
+                if (dropIndex > currentIndex) {
+                    after(parent, currentMovingEl, dropTarget);
+                } else {
+                    parent.insertBefore(currentMovingEl, dropTarget);
+                }
+                // this prevents a reflow from changing scroll position.
+                setTimeout(function() {
+                    remove(placeholder);
+                }, 1);
 
-    return {
-        assignHandleListener: assignHandleListener,
-        onMove: function(fn) { onMove = fn; }
-    };
-}
+                currentMovingEl.style.position = "";
+                currentMovingEl.style.width = "";
+                currentMovingEl.style.height = "";
+                currentMovingEl.style.opacity = "";
+                currentMovingEl = null;
+                setBorders();
+                onMove();
+            }
+        });
+
+        const assignHandleListener = function(handle) {
+            const el = getQualifiedChild(handle);
+            const compStyle = window.getComputedStyle(el);
+
+            handle.addEventListener("mousedown", function(e) {
+                const boundingRect = el.getBoundingClientRect();
+                mouseDown = true;
+                currentMovingEl = el;
+                currentIndex = getChildIndex(el);
+                offsetY = e.offsetY + parseInt(compStyle["margin-top"]);
+                el.style.position = "absolute";
+                el.parentElement.insertBefore(placeholder, el);
+                el.style.width = boundingRect.width + "px";
+                el.style.height = boundingRect.height + "px";
+                el.style.top = e.pageY - offsetY + "px";
+                el.style.opacity = 0.5;
+                makeGrid();
+            });
+        };
+
+        handles.forEach(assignHandleListener);
+
+        return {
+            assignHandleListener: assignHandleListener,
+            onMove: function(fn) {
+                onMove = fn;
+            }
+        };
+    }
+
+    app.moveableRules = moveableRules;
+})();
