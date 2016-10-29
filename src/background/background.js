@@ -3,7 +3,6 @@
 
     /* globals chrome, unescape, keyvalDB, match, matchReplace */
 
-    var lastRequestId;
     var ruleDomains = {};
     var syncFunctions = [];
 
@@ -417,9 +416,51 @@
         return true;
     });
 
+    var requestIdTracker = (function() {
+        var head;
+        var tail;
+        var length = 0;
+        var tracker = {};
+        var maxSize = 1000;
+
+        function pop() {
+            var val = head.val;
+            head = head.next;
+            length--;
+            delete tracker[val];
+        }
+
+        function push(obj) {
+            var newNode = {
+                val: obj,
+                next: undefined
+            };
+            if (length > 0) {
+                tail.next = newNode;
+                tail = newNode;
+            } else {
+                head = newNode;
+                tail = newNode;
+            }
+            length++;
+            tracker[obj] = true;
+            while (length > maxSize) {
+                pop();
+            }
+        }
+
+        function has(id) {
+            return tracker[id];
+        }
+
+        return {
+            push: push,
+            has: has
+        };
+    })();
+
     chrome.webRequest.onBeforeRequest.addListener(function(details) {
-        if (details.requestId !== lastRequestId) {
-            lastRequestId = details.requestId;
+        if (!requestIdTracker.has(details.requestId)) {
             if (details.tabId > -1) {
                 var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
                 if (details.type === "main_frame") {
@@ -427,7 +468,12 @@
                     tabUrl = details.url;
                 }
                 if (tabUrl) {
-                    return handleRequest(details.url, tabUrl, details.tabId);
+                    var result = handleRequest(details.url, tabUrl, details.tabId);
+                    if (result) {
+                        // make sure we don't try to redirect again.
+                        requestIdTracker.push(details.requestId);
+                    }
+                    return result;
                 }
             }
         }
