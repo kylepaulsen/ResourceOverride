@@ -74,16 +74,17 @@
                         if (code === 38) { // UP
                             e.preventDefault();
                             selectUp(true);
-                        }
-                        if (code === 40) { // DOWN
+                        } else if (code === 40) { // DOWN
                             e.preventDefault();
                             selectDown(true);
-                        }
-                        if (code === 13 || code === 9) { // Enter or Tab
+                        } else if (code === 37) { // LEFT
+                            $suggestBox.scrollLeft($suggestBox.scrollLeft() - 32);
+                        } else if (code === 39) { // RIGHT
+                            $suggestBox.scrollLeft($suggestBox.scrollLeft() + 32);
+                        } else if (code === 13 || code === 9) { // Enter or Tab
                             completeInput($(this));
                             $suggestBox.hide();
-                        }
-                        if (code === 27) { // ESC
+                        } else if (code === 27) { // ESC
                             $suggestBox.hide();
                             hideTillNextFocus = true;
                         }
