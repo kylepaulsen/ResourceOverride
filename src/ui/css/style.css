@@ -114,6 +114,10 @@ input[type=checkbox] {
     margin: 3px 0;
 }
 
+#addRuleDropdown span {
+    font-size: 18px;
+}
+
 #helpOverlay {
     background-color: #ffffff;
     position: fixed;
