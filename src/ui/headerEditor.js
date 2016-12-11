@@ -105,29 +105,39 @@
     });
 
     const resPresets = {
-        cors: {
+        cors: [{
             operation: "set",
             header: "Access-Control-Allow-Origin",
             value: "*"
-        },
-        noInline: {
+        }],
+        noInline: [{
             operation: "set",
             header: "Content-Security-Policy",
             value: "script-src * 'nonce-ResourceOverride'"
-        },
-        allowFrames: {
+        }],
+        allowFrames: [{
             operation: "remove",
             header: "X-Frame-Options"
-        }
+        }],
+        allowContent: [{
+            operation: "remove",
+            header: "Content-Security-Policy"
+        }, {
+            operation: "remove",
+            header: "X-Content-Security-Policy"
+        }]
     };
 
     ui.headerPresetsSelect.on("change", function() {
-        const preset = ui.headerPresetsSelect.val();
+        const presetName = ui.headerPresetsSelect.val();
+        const presets = resPresets[presetName];
         ui.headerPresetsSelect.val("");
-        if (resPresets[preset]) {
+        if (presets) {
             // Right now only response presets are allowed.
-            const markup = app.createHeaderEditorRuleMarkup(resPresets[preset], saveFunc, "response");
-            ui.headerResponseRulesContainer.append(markup);
+            presets.forEach(function(preset) {
+                const markup = app.createHeaderEditorRuleMarkup(preset, saveFunc, "response");
+                ui.headerResponseRulesContainer.append(markup);
+            });
             saveFunc();
         }
     });
