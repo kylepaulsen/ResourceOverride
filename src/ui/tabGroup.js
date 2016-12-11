@@ -7,6 +7,7 @@
     const util = app.util;
     const ui = app.ui;
 
+    let currentAddRuleBtn;
     let currentAddRuleFunc;
     let currentSaveFunc;
 
@@ -16,16 +17,28 @@
             top: offset.top + 40 + "px",
             left: offset.left - 40 + "px"
         });
+
+        const rect = ui.addRuleDropdown[0].getBoundingClientRect();
+        if (rect.top + rect.height > window.innerHeight && offset.top - rect.height > 0) {
+            ui.addRuleDropdown.css({
+                top: offset.top - rect.height + "px",
+                left: offset.left - 40 + "px"
+            });
+            ui.addRuleDropdown.addClass("reverse");
+        } else {
+            ui.addRuleDropdown.removeClass("reverse");
+        }
     }
 
     function showRuleDropdown(addBtn, addRuleFunc, saveFunc) {
         if (ui.addRuleDropdown.is(":visible") && currentAddRuleFunc === addRuleFunc) {
             ui.addRuleDropdown.hide();
         } else {
+            currentAddRuleBtn = addBtn;
             currentAddRuleFunc = addRuleFunc;
             currentSaveFunc = saveFunc;
-            positionRuleDropdown(addBtn);
             ui.addRuleDropdown.show();
+            positionRuleDropdown(addBtn);
         }
     }
 
@@ -174,7 +187,11 @@
         currentAddRuleFunc(app.createHeaderRuleMarkup({}, currentSaveFunc));
     });
 
-    $(window).on("resize", positionRuleDropdown);
+    $(window).on("resize", function() {
+        if (currentAddRuleBtn) {
+            positionRuleDropdown(currentAddRuleBtn);
+        }
+    });
 
     $(window).on("click", function(e) {
         var $target = $(e.target);
