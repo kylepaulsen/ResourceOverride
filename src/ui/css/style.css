@@ -7,6 +7,7 @@ body {
     font-family: Trebuchet, Arial, sans-serif;
     min-width: 650px;
     overflow: auto;
+    background: #ffffff;
 }
 
 input {
