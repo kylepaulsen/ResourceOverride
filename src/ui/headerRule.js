@@ -87,7 +87,7 @@
 
     // This is a header rule that shows up *inside* the editor.
     function createHeaderEditorRuleMarkup(savedData, saveFunc, type) {
-        savedData = savedData || {};
+        savedData = savedData || {operation: "set"};
         saveFunc = saveFunc || function() {};
 
         const override = util.instanceTemplate(ui.headerEditorRuleTemplate);

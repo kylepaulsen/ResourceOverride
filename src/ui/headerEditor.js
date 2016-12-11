@@ -97,11 +97,11 @@
     });
 
     ui.addRequestHeaderBtn.on("click", function() {
-        ui.headerRequestRulesContainer.append(app.createHeaderEditorRuleMarkup({}, saveFunc, "request"));
+        ui.headerRequestRulesContainer.append(app.createHeaderEditorRuleMarkup(undefined, saveFunc, "request"));
     });
 
     ui.addResponseHeaderBtn.on("click", function() {
-        ui.headerResponseRulesContainer.append(app.createHeaderEditorRuleMarkup({}, saveFunc, "response"));
+        ui.headerResponseRulesContainer.append(app.createHeaderEditorRuleMarkup(undefined, saveFunc, "response"));
     });
 
     const resPresets = {
