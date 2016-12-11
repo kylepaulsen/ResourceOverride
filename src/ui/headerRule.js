@@ -21,6 +21,7 @@
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");
+        util.makeFieldRequired(matchInput);
 
         const updateHeaderInput = function(input, ruleStr) {
             input.val(decodeURIComponent(ruleStr.replace(/\;/g, "; ")));
@@ -53,7 +54,6 @@
         app.mainSuggest.init(matchInput);
 
         matchInput.on("keyup", saveFunc);
-        matchInput.data("onComplete", saveFunc);
 
         override.on("click", function(e) {
             if ($(e.target).hasClass("headerRuleInput")) {
@@ -115,7 +115,6 @@
         });
         headerName.on("keyup", saveFunc);
         headerValue.on("keyup", saveFunc);
-        headerName.data("onComplete", saveFunc);
 
         deleteBtn.on("click", function() {
             if (!util.deleteButtonIsSure(deleteBtn)) {

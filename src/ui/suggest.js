@@ -139,10 +139,8 @@
             } else {
                 input.val(selectedText);
             }
-            const onComplete = input.data("onComplete");
-            if (onComplete) {
-                onComplete();
-            }
+            const fakeEvent = new KeyboardEvent("keyup");
+            input[0].dispatchEvent(fakeEvent);
         }
 
         function filterOptions(inputVal, useStars, caseInsensitive) {

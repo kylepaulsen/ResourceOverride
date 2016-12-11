@@ -17,6 +17,8 @@
 
         matchInput.val(savedData.match || "");
         replaceInput.val(savedData.replace || "");
+        util.makeFieldRequired(matchInput);
+        util.makeFieldRequired(replaceInput);
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
         if (savedData.on === false) {
@@ -42,7 +44,6 @@
         app.mainSuggest.init(matchInput);
 
         matchInput.on("keyup", saveFunc);
-        matchInput.data("onComplete", saveFunc);
         replaceInput.on("keyup", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);

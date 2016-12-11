@@ -18,6 +18,7 @@
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");
+        util.makeFieldRequired(matchInput);
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
         if (savedData.on === false) {
@@ -47,7 +48,6 @@
         app.mainSuggest.init(matchInput);
 
         matchInput.on("keyup", saveFunc);
-        matchInput.data("onComplete", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
             saveFunc();

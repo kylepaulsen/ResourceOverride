@@ -50,6 +50,18 @@
         return prefix.charAt(0) + (maxId + 1);
     };
 
+    util.makeFieldRequired = function(input) {
+        const checkRequiredField = function() {
+            if (input.val() === "") {
+                input.css("background", "#ffaaaa");
+            } else {
+                input.css("background", "#ffffff");
+            }
+        };
+        input.on("keyup", checkRequiredField);
+        checkRequiredField();
+    };
+
     util.shortenString = function(str, limit) {
         const over = str.length - limit;
         if (over > 0) {
