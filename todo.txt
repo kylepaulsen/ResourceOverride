@@ -1,16 +1,18 @@
 Consider adding autocomplete to editor.
     - might need a way to turn that off.
 
-Fix bug with scripts not being executed first or last in the document.
+Add in the collapse domain arrows again.
+    - save the state
+
+Bug with scripts not being executed first or last in the document.
     for body scripts: wait for the window 'load' event to inject.
     http://stackoverflow.com/questions/8965953/how-to-inject-content-script-when-page-loads-while-having-a-popup-page
     cant really use a static content script.
     Might have to do something like this:
         chrome.tabs.executeScript(null, {code: 'eval(decodeURIComponent("' + encodeURIComponent($0.value) + '"));'});
+        or consider using this: https://github.com/joliss/js-string-escape
 
 Fix delete button looking like crap on mac.
-
-Don't erase all rules when importing rules. Merge them.
 
 Make example for how to override a buncha stuff except for some things.
     - do we need a tips popup?
@@ -19,10 +21,26 @@ Close editors when we get a sync update.
 
 Maybe make a request url tester that shows what rule it will hit
 
+Bug where suggestions are wrong after navigation
+    - This is kind of a hard one. Need to implement background page -> devtools messaging.
+    - https://developer.chrome.com/extensions/devtools#content-script-to-devtools
+    - Should probably refactor all of messaging.
+    - // on devtools page:
+      var backgroundPagePort = chrome.runtime.connect({name: "asd"});
+      backgroundPagePort.onMessage.addListener(function(data, port) {
+            var func = backgroundPageFuncs[data.action];
+            if (func) {
+                func(data, port);
+            }
+      });
+      // on background page:
+      chrome.runtime.onConnect.addListener(function(port) {
+        // store port with some id. Might need to have devtools page send one.
+      });
+      somePort.postMessage({asd: "Qwe"});
+
 Add a way to know the rule type after added?
 Add ability to drag tab url groups?
 Make help section suck less. No one understands how *s work.
 Clean up this disgusting project
-    - make like at least 10 more files
-    - use "fetch all ids" ui technique.
-    - use more es6 (let, const)
+
