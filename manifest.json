@@ -23,6 +23,7 @@
       "all_frames": true,
       "run_at": "document_start"
   }],
+  "minimum_chrome_version": "43",
   "permissions": ["storage", "webRequest", "webRequestBlocking", "<all_urls>", "tabs"],
   "manifest_version": 2
 }

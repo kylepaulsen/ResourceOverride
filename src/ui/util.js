@@ -75,7 +75,7 @@
     };
 
     util.getTabResources = function(cb) {
-        if (!app.isOptionsPage) {
+        if (chrome.devtools) {
             chrome.devtools.inspectedWindow.getResources(function(resourceList) {
                 if (resourceList) {
                     const filteredList = resourceList.filter(function(resource) {

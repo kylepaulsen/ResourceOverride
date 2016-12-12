@@ -75,7 +75,7 @@
             ui.helpOverlay.hide();
         });
 
-        if (app.isOptionsPage) {
+        if (!chrome.devtools) {
             ui.showSuggestions.hide();
             ui.showSuggestionsText.hide();
             chrome.extension.sendMessage({

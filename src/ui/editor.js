@@ -114,7 +114,7 @@
 
         editorGuessMode(match, app.files[fileId]);
 
-        if (!app.isOptionsPage) {
+        if (chrome.devtools) {
             ui.loadSelect.show();
             util.getTabResources(function(filteredList) {
                 ui.loadSelect.html("<option value=''>Load content from resource...</option>");

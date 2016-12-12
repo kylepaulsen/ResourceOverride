@@ -11,8 +11,7 @@
     });
 
     const app = {
-        ui: ui,
-        isOptionsPage: window.isOptionsPage
+        ui: ui
     };
     window.app = app;
 })();
