@@ -216,6 +216,9 @@
     };
 
     var handleRequest = function(requestUrl, tabUrl, tabId) {
+        console.log(requestUrl);
+        console.log(tabUrl);
+        console.log(tabId);
         for (var key in ruleDomains) {
             var domainObj = ruleDomains[key];
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
@@ -317,6 +320,7 @@
             var domainObj = ruleDomains[key];
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
                 var rules = domainObj.rules || [];
+                console.log("there is a match on domain");
                 for (var x = 0, len = rules.length; x < len; ++x) {
                     var ruleObj = rules[x];
                     if (ruleObj.on && ruleObj.type === "headerRule") {
@@ -460,23 +464,26 @@
     })();
 
     chrome.webRequest.onBeforeRequest.addListener(function(details) {
-        if (!requestIdTracker.has(details.requestId)) {
-            if (details.tabId > -1) {
-                var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-                if (details.type === "main_frame") {
-                    // a new tab must have just been created.
-                    tabUrl = details.url;
-                }
-                if (tabUrl) {
-                    var result = handleRequest(details.url, tabUrl, details.tabId);
-                    if (result) {
-                        // make sure we don't try to redirect again.
-                        requestIdTracker.push(details.requestId);
-                    }
-                    return result;
-                }
-            }
-        }
+        // if (!requestIdTracker.has(details.requestId)) {
+        //     if (details.tabId > -1) {
+        //         var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+        //         if (details.type === "main_frame") {
+        //             // a new tab must have just been created.
+        //             tabUrl = details.url;
+        //         }
+        //         if (tabUrl) {
+        //             console.log("on before request of",details.url);
+        //             var result = handleRequest(details.url, tabUrl, details.tabId);
+        //             //If result (obj), if has a redirect url key within it
+        //             console.log("result",result);
+        //             if (result) {
+        //                 // make sure we don't try to redirect again.
+        //                 requestIdTracker.push(details.requestId);
+        //             }
+        //             return result;
+        //         }
+        //     }
+        // }
     }, {
         urls: ["<all_urls>"]
     }, ["blocking"]);
@@ -488,6 +495,58 @@
     chrome.webRequest.onBeforeSendHeaders.addListener(makeHeaderHandler("request"), {
         urls: ["<all_urls>"]
     }, ["blocking", "requestHeaders"]);
+
+    chrome.webRequest.onResponseStarted.addListener(
+        function(details){
+            console.log("ON response started DETAILS:",details);
+        }, {
+        urls: ["<all_urls>"]
+    });
+
+    chrome.webRequest.onHeadersReceived.addListener(
+        function(details){
+            console.log("headers received details",details);
+            if(details.statusCode===404){
+                console.log("404-evaluating redirect now");
+                if (!requestIdTracker.has(details.requestId)) {
+                    if (details.tabId > -1) {
+                        console.log("made it here");
+                        var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+                        if (details.type === "main_frame") {
+                            // a new tab must have just been created.
+                            tabUrl = details.url;
+                        }
+                        if (tabUrl) {
+                            console.log("on before request of",details.url);
+                            var result = handleRequest(details.url, tabUrl, details.tabId);
+                            //If result (obj), if has a redirect url key within it
+                            console.log("result",result);
+                            if (result) {
+                                // make sure we don't try to redirect again.
+                                requestIdTracker.push(details.requestId);
+                            }
+                            return result;
+                        }
+                    }
+                }
+            }
+        }, {
+        urls: ["<all_urls>"]
+    }, ["blocking", "responseHeaders"]);
+
+    chrome.webRequest.onCompleted.addListener(
+        function(details){
+            console.log("ON COMPLETED DETAILS:",details);
+        }, {
+        urls: ["<all_urls>"]
+    });
+
+    chrome.webRequest.onErrorOccurred.addListener(
+        function(details){
+            console.log("ERROR OCCURRED DETAILS:",details);
+        }, {
+        urls: ["<all_urls>"]
+    });
 
     //init settings
     if (localStorage.devTools === undefined) {
