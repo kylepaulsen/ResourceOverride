@@ -83,6 +83,7 @@
                         console.error(err);
                         rej(err);
                     } else {
+                        console.log("upserting");
                         domainStore.upsert(domainData.id, domainData, function(err) {
                             if (err) {
                                 console.error(err);
@@ -215,7 +216,7 @@
         return {mime: mime, file: file};
     };
 
-    var handleRequest = function(requestUrl, tabUrl, tabId) {
+    var handleRequest = function(requestUrl, tabUrl, tabId, statusCode) {
         console.log(requestUrl);
         console.log(tabUrl);
         console.log(tabId);
@@ -226,7 +227,7 @@
                 for (var x = 0, len = rules.length; x < len; ++x) {
                     var ruleObj = rules[x];
                     if (ruleObj.on) {
-                        if (ruleObj.type === "normalOverride") {
+                        if (ruleObj.type === "normalOverride" && (typeof ruleObj.all === "undefined" || ruleObj.all === true || (statusCode === 404))) {
                             var matchedObj = match(ruleObj.match, requestUrl);
                             var newUrl = matchReplace(matchedObj, ruleObj.replace, requestUrl);
                             if (matchedObj.matched) {
@@ -464,26 +465,26 @@
     })();
 
     chrome.webRequest.onBeforeRequest.addListener(function(details) {
-        // if (!requestIdTracker.has(details.requestId)) {
-        //     if (details.tabId > -1) {
-        //         var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-        //         if (details.type === "main_frame") {
-        //             // a new tab must have just been created.
-        //             tabUrl = details.url;
-        //         }
-        //         if (tabUrl) {
-        //             console.log("on before request of",details.url);
-        //             var result = handleRequest(details.url, tabUrl, details.tabId);
-        //             //If result (obj), if has a redirect url key within it
-        //             console.log("result",result);
-        //             if (result) {
-        //                 // make sure we don't try to redirect again.
-        //                 requestIdTracker.push(details.requestId);
-        //             }
-        //             return result;
-        //         }
-        //     }
-        // }
+        if (!requestIdTracker.has(details.requestId)) {
+            if (details.tabId > -1) {
+                var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+                if (details.type === "main_frame") {
+                    // a new tab must have just been created.
+                    tabUrl = details.url;
+                }
+                if (tabUrl) {
+                    console.log("on before request of",details.url);
+                    var result = handleRequest(details.url, tabUrl, details.tabId);
+                    //If result (obj), if has a redirect url key within it
+                    console.log("result",result);
+                    if (result) {
+                        // make sure we don't try to redirect again.
+                        requestIdTracker.push(details.requestId);
+                    }
+                    return result;
+                }
+            }
+        }
     }, {
         urls: ["<all_urls>"]
     }, ["blocking"]);
@@ -518,7 +519,7 @@
                         }
                         if (tabUrl) {
                             console.log("on before request of",details.url);
-                            var result = handleRequest(details.url, tabUrl, details.tabId);
+                            var result = handleRequest(details.url, tabUrl, details.tabId, details.statusCode);
                             //If result (obj), if has a redirect url key within it
                             console.log("result",result);
                             if (result) {

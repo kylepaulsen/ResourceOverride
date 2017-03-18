@@ -26,6 +26,7 @@
                 const newDomain = app.createDomainMarkup({rules: [{type: "normalOverride"}]});
                 ui.domainDefs.append(newDomain);
                 newDomain.find(".domainMatchInput").val("*");
+                console.log("domain data is here",app.getDomainData(newDomain));
                 chrome.extension.sendMessage({
                     action: "saveDomain",
                     data: app.getDomainData(newDomain)

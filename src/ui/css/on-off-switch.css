@@ -29,7 +29,7 @@ https://proto.io/freebies/onoff/
 }
 .onoffswitch-inner {
     display: block; width: 200%; margin-left: -100%;
-    -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+    -moz-transition: margin 0.3ss ease-in 0s; -webkit-transition: margin 0.3ss ease-in 0s;
     -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
 }
 .onoffswitch-on {
@@ -58,9 +58,12 @@ https://proto.io/freebies/onoff/
     display: block; width: 18px; margin: 6px;
     background: #FFFFFF;
     border: 2px solid #999999; border-radius: 5px;
-    position: absolute; top: 0; bottom: 0; right: 46px;
-    -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+    position: absolute; top: 0; bottom: 0; 
+    right: 46px;
+    /*right:calc(100% - 40);*/
+    /*right:67%;*/
+    -moz-transition: all .3s ease-in 0s; -webkit-transition: all .3s ease-in 0s;
+    -o-transition: all .3s ease-in 0s; transition: all .3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;

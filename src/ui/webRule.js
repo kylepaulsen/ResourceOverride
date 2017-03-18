@@ -13,6 +13,7 @@
         const matchInput = override.find(".matchInput");
         const replaceInput = override.find(".replaceInput");
         const ruleOnOff = override.find(".ruleOnOff");
+        const allOr404Only = override.find(".allOr404Only");
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");
@@ -47,6 +48,9 @@
         replaceInput.on("keyup", saveFunc);
         ruleOnOff.on("click change", function() {
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
+            saveFunc();
+        });
+        allOr404Only.on("click change", function() {
             saveFunc();
         });
 

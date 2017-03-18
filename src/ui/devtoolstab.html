@@ -21,7 +21,6 @@
         </label>
     </div>
 </template>
-
 <template id="domainTemplate">
     <div class="domainContainer">
         <div class="domainHeader">
@@ -65,8 +64,12 @@
             <input type="input" class="replaceInput" placeholder="Replace URL">
         </div>
         <div class="switch">
+            <on-off-switch class="allOr404Only" onText="All" offText="404s"></on-off-switch>
+        </div>
+        <div class="switch">
             <on-off-switch class="ruleOnOff"></on-off-switch>
         </div>
+        
         <div class="delete">
             <button class="btn sym-btn">&#215</button>
         </div>

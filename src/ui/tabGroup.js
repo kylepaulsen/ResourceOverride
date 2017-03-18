@@ -52,15 +52,24 @@
     }
 
     function getDomainData(domain) {
+        console.log("GET DOMAIN DATA");
         const rules = [];
         domain.find(".ruleContainer").each(function(idx, el) {
             const $el = $(el);
             if ($el.hasClass("normalOverride")) {
+                console.log("getdomaindata",{
+                    type: "normalOverride",
+                    match: $el.find(".matchInput").val(),
+                    replace: $el.find(".replaceInput").val(),
+                    on: $el.find(".ruleOnOff")[0].isOn,
+                    all:$el.find(".allOr404Only")[0].isOn
+                });
                 rules.push({
                     type: "normalOverride",
                     match: $el.find(".matchInput").val(),
                     replace: $el.find(".replaceInput").val(),
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".ruleOnOff")[0].isOn,
+                    all:$el.find(".allOr404Only")[0].isOn
                 });
             } else if ($el.hasClass("fileOverride")) {
                 rules.push({
