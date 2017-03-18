@@ -10,15 +10,13 @@
             createdCallback: {
 
                 value: function() {
-                    console.log("this",this);
                     this.createShadowRoot().appendChild(document.importNode(
                         ui.onOffSwitchTemplate[0].content, true));
                     const $switchContainer = $(this.shadowRoot.children[1]);
-                    console.log("switchcontainer", $switchContainer);
                     $switchContainer.find(".onoffswitch-on").text(
                         this.getAttribute("onText") || "ON");
                     $switchContainer.find(".onoffswitch-off").text(
-                        this.getAttribute("offText") ||"OFF");
+                        this.getAttribute("offText") || "OFF");
                     this.checkbox = $switchContainer.find("input");
                 }
             },
