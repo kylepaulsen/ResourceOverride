@@ -21,6 +21,7 @@
         util.makeFieldRequired(matchInput);
         util.makeFieldRequired(replaceInput);
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
+        allOr404Only[0].isOn = savedData.all === false ? false : true;
 
         if (savedData.on === false) {
             override.addClass("disabled");
@@ -51,6 +52,7 @@
             saveFunc();
         });
         allOr404Only.on("click change", function() {
+            override.toggleClass("disabled", !allOr404Only[0].isOn);
             saveFunc();
         });
 
