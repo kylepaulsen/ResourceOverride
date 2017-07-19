@@ -8,6 +8,7 @@
     document.registerElement("on-off-switch", {
         prototype: Object.create(HTMLElement.prototype, {
             createdCallback: {
+
                 value: function() {
                     this.createShadowRoot().appendChild(document.importNode(
                         ui.onOffSwitchTemplate[0].content, true));

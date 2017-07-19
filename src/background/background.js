@@ -215,7 +215,7 @@
         return {mime: mime, file: file};
     };
 
-    var handleRequest = function(requestUrl, tabUrl, tabId) {
+    var handleRequest = function(requestUrl, tabUrl, tabId, statusCode) {
         for (var key in ruleDomains) {
             var domainObj = ruleDomains[key];
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
@@ -223,7 +223,7 @@
                 for (var x = 0, len = rules.length; x < len; ++x) {
                     var ruleObj = rules[x];
                     if (ruleObj.on) {
-                        if (ruleObj.type === "normalOverride") {
+                        if (ruleObj.type === "normalOverride" && (typeof ruleObj.all === "undefined" || ruleObj.all === true || (statusCode === 404))) {
                             var matchedObj = match(ruleObj.match, requestUrl);
                             var newUrl = matchReplace(matchedObj, ruleObj.replace, requestUrl);
                             if (matchedObj.matched) {
@@ -469,6 +469,7 @@
                 }
                 if (tabUrl) {
                     var result = handleRequest(details.url, tabUrl, details.tabId);
+                    //If result (obj), if has a redirect url key within it
                     if (result) {
                         // make sure we don't try to redirect again.
                         requestIdTracker.push(details.requestId);
@@ -488,6 +489,32 @@
     chrome.webRequest.onBeforeSendHeaders.addListener(makeHeaderHandler("request"), {
         urls: ["<all_urls>"]
     }, ["blocking", "requestHeaders"]);
+
+    chrome.webRequest.onHeadersReceived.addListener(
+        function(details){
+            if(details.statusCode===404){
+                if (!requestIdTracker.has(details.requestId)) {
+                    if (details.tabId > -1) {
+                        var tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+                        if (details.type === "main_frame") {
+                            // a new tab must have just been created.
+                            tabUrl = details.url;
+                        }
+                        if (tabUrl) {
+                            var result = handleRequest(details.url, tabUrl, details.tabId, details.statusCode);
+                            //If result (obj), if has a redirect url key within it
+                            if (result) {
+                                // make sure we don't try to redirect again.
+                                requestIdTracker.push(details.requestId);
+                            }
+                            return result;
+                        }
+                    }
+                }
+            }
+        }, {
+        urls: ["<all_urls>"]
+    }, ["blocking", "responseHeaders"]);
 
     //init settings
     if (localStorage.devTools === undefined) {

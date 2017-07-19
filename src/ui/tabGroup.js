@@ -60,7 +60,8 @@
                     type: "normalOverride",
                     match: $el.find(".matchInput").val(),
                     replace: $el.find(".replaceInput").val(),
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".ruleOnOff")[0].isOn,
+                    all:$el.find(".allOr404Only")[0].isOn
                 });
             } else if ($el.hasClass("fileOverride")) {
                 rules.push({
