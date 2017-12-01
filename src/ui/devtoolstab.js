@@ -16,7 +16,7 @@
     function renderData() {
         app.files = {};
         ui.domainDefs.children().remove();
-        chrome.extension.sendMessage({action: "getDomains"}, function(domains) {
+        chrome.runtime.sendMessage({action: "getDomains"}, function(domains) {
             if (domains.length) {
                 domains.forEach(function(domain) {
                     const domainMarkup = app.createDomainMarkup(domain);
@@ -26,7 +26,7 @@
                 const newDomain = app.createDomainMarkup({rules: [{type: "normalOverride"}]});
                 ui.domainDefs.append(newDomain);
                 newDomain.find(".domainMatchInput").val("*");
-                chrome.extension.sendMessage({
+                chrome.runtime.sendMessage({
                     action: "saveDomain",
                     data: app.getDomainData(newDomain)
                 });
@@ -39,7 +39,7 @@
     }
 
     function setupSynchronizeConnection() {
-        chrome.extension.sendMessage({action: "syncMe"}, function() {
+        chrome.runtime.sendMessage({action: "syncMe"}, function() {
             if (!app.skipNextSync) {
                 renderData();
             }
@@ -63,7 +63,7 @@
             const newDomain = app.createDomainMarkup();
             newDomain.find(".domainMatchInput").val("*");
             ui.domainDefs.append(newDomain);
-            chrome.extension.sendMessage({action: "saveDomain", data: app.getDomainData(newDomain)});
+            chrome.runtime.sendMessage({action: "saveDomain", data: app.getDomainData(newDomain)});
             app.skipNextSync = true;
         });
 
@@ -78,7 +78,7 @@
         if (!chrome.devtools) {
             ui.showSuggestions.hide();
             ui.showSuggestionsText.hide();
-            chrome.extension.sendMessage({
+            chrome.runtime.sendMessage({
                 action: "getSetting",
                 setting: "tabPageNotice"
             }, function(data) {
@@ -86,7 +86,7 @@
                 if (data !== "true") {
                     ui.tabPageNotice.find("a").on("click", function(e) {
                         e.preventDefault();
-                        chrome.extension.sendMessage({
+                        chrome.runtime.sendMessage({
                             action: "setSetting",
                             setting: "tabPageNotice",
                             value: "true"

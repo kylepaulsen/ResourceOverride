@@ -29,7 +29,7 @@
     }
 
     function editorGuessMode(fileName, file) {
-        chrome.extension.sendMessage({
+        chrome.runtime.sendMessage({
             action: "extractMimeType",
             file: file,
             fileName: fileName
@@ -147,7 +147,7 @@
         const url = ui.loadSelect.val();
         ui.loadSelect.val("");
         if (url) {
-            chrome.extension.sendMessage({action: "makeGetRequest", url: url}, function(data) {
+            chrome.runtime.sendMessage({action: "makeGetRequest", url: url}, function(data) {
                 setEditorVal(data);
                 updateSaveButtons(true);
                 editorGuessMode(url, data);

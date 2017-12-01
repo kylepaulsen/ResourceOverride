@@ -20,7 +20,7 @@
     });
 
     ui.showDevTools.on("click", function() {
-        chrome.extension.sendMessage({
+        chrome.runtime.sendMessage({
             action: "setSetting",
             setting: "devTools",
             value: ui.showDevTools.prop("checked")
@@ -28,7 +28,7 @@
     });
 
     ui.showSuggestions.on("click", function() {
-        chrome.extension.sendMessage({
+        chrome.runtime.sendMessage({
             action: "setSetting",
             setting: "showSuggestions",
             value: ui.showSuggestions.prop("checked")
@@ -37,7 +37,7 @@
     });
 
     ui.showLogs.on("click", function() {
-        chrome.extension.sendMessage({
+        chrome.runtime.sendMessage({
             action: "setSetting",
             setting: "showLogs",
             value: ui.showLogs.prop("checked")
@@ -78,14 +78,14 @@
         ui.loadRulesInput.val("");
     });
 
-    chrome.extension.sendMessage({
+    chrome.runtime.sendMessage({
         action: "getSetting",
         setting: "devTools"
     }, function(data) {
         ui.showDevTools.prop("checked", data === "true");
     });
 
-    chrome.extension.sendMessage({
+    chrome.runtime.sendMessage({
         action: "getSetting",
         setting: "showSuggestions"
     }, function(data) {
@@ -93,7 +93,7 @@
         app.mainSuggest.setShouldSuggest(data !== "false");
     });
 
-    chrome.extension.sendMessage({
+    chrome.runtime.sendMessage({
         action: "getSetting",
         setting: "showLogs"
     }, function(data) {

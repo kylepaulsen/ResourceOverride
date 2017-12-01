@@ -46,7 +46,7 @@
         // check data first.
         if ($.isArray(data) && data.every(checkDomain)) {
             // this will call the sync function so stuff will get re-rendered.
-            chrome.extension.sendMessage({action: "import", data: data});
+            chrome.runtime.sendMessage({action: "import", data: data});
             util.showToast("Load Succeeded!");
         } else {
             util.showToast("Load Failed: Invalid Resource Override JSON.");

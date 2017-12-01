@@ -144,7 +144,7 @@
     })();
 
     var openOrFocusOptionsPage = function() {
-        var optionsUrl = chrome.extension.getURL("src/ui/devtoolstab.html");
+        var optionsUrl = chrome.runtime.getURL("src/ui/devtoolstab.html");
         chrome.tabs.query({}, function(extensionTabs) {
             var found = false;
             for (var i = 0, len = extensionTabs.length; i < len; i++) {
@@ -362,7 +362,7 @@
         openOrFocusOptionsPage();
     });
 
-    chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (request.action === "saveDomain") {
             domainStorage.put(request.data)
                 .then(syncAllInstances)
