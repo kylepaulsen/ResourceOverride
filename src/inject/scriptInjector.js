@@ -32,11 +32,11 @@
         });
     };
 
-    chrome.extension.sendMessage({action: "getDomains"}, function(domains) {
+    chrome.runtime.sendMessage({action: "getDomains"}, function(domains) {
         domains = domains || [];
         domains.forEach(function(domain) {
             if (domain.on) {
-                chrome.extension.sendMessage({
+                chrome.runtime.sendMessage({
                     action: "match",
                     domainUrl: domain.matchUrl,
                     windowUrl: location.href
@@ -49,7 +49,7 @@
         });
     });
 
-    chrome.extension.onMessage.addListener(function(msg) {
+    chrome.runtime.onMessage.addListener(function(msg) {
         if (msg.action === 'log') {
             var logStyle = "color: #007182; font-weight: bold;";
             if (msg.important) {

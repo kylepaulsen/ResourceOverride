@@ -13,7 +13,9 @@
     }
   },
   "devtools_page": "src/ui/devtools.html",
-  "options_page": "src/ui/devtoolstab.html",
+  "options_ui": {
+    "page": "src/ui/devtoolstab.html"
+  },
   "background": {
     "page": "src/background/background.html"
   },
@@ -23,7 +25,6 @@
       "all_frames": true,
       "run_at": "document_start"
   }],
-  "minimum_chrome_version": "43",
   "permissions": ["storage", "webRequest", "webRequestBlocking", "<all_urls>", "tabs"],
   "manifest_version": 2
 }

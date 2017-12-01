@@ -17,7 +17,7 @@
         const requestRulesInput = override.find(".requestRules");
         const responseRulesInput = override.find(".responseRules");
         const editBtn = override.find(".edit-btn");
-        const ruleOnOff = override.find(".ruleOnOff");
+        const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");

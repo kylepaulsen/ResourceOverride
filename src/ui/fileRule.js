@@ -14,7 +14,7 @@
         const override = util.instanceTemplate(ui.fileOverrideTemplate);
         const matchInput = override.find(".matchInput");
         const editBtn = override.find(".edit-btn");
-        const ruleOnOff = override.find(".ruleOnOff");
+        const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");

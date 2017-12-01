@@ -12,6 +12,7 @@ assert(matchReplace("asd*", "qwe", "asd"), "qwe");
 assert(matchReplace("asd*", "qwe", "asd "), "qwe");
 assert(matchReplace("asd*", "qwe", "asdzxc"), "qwe");
 assert(matchReplace("asd*", "qwe", " asd"), " asd");
+assert(matchReplace("*a", "qwe", "asda"), "asda"); // matching is greedy!
 assert(matchReplace("*asd", "qwe", "asd"), "qwe");
 assert(matchReplace("*asd", "qwe", "asd "), "asd ");
 assert(matchReplace("*asd", "qwe", "zxcasd"), "qwe");

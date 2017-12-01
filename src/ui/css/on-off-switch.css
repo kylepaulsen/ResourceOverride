@@ -7,7 +7,7 @@ https://proto.io/freebies/onoff/
     display: inline-block;
     -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
 }
-.onoffswitch-checkbox {
+input[type="checkbox"].onoffswitch-checkbox {
     margin: 0;
     width: 80px;
     height: 34px;
