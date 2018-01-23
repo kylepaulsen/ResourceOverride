@@ -194,7 +194,7 @@
     });
 
     $(window).on("click", function(e) {
-        var $target = $(e.target);
+        const $target = $(e.target);
         if (!$target.hasClass("addRuleBtn") && e.target.id !== "addRuleDropdown") {
             ui.addRuleDropdown.hide();
         }
