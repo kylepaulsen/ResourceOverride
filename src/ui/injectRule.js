@@ -56,7 +56,10 @@
         injectLocation.on("change", saveFunc);
         fileType.on("change", saveFunc);
 
-        const id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        let id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        if (app.files[id]) {
+            id = util.getNextId($(".ruleContainer"), "f");
+        }
         override[0].id = id;
 
         if (savedData.file) {
