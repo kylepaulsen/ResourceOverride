@@ -44,6 +44,14 @@
         });
     });
 
+    ui.showBadgeCount.on("click", function(e) {
+        chrome.extension.sendMessage({
+            action: "setSetting",
+            setting: "showBadgeCount",
+            value: ui.showBadgeCount.prop("checked")
+        });
+    });
+
     ui.saveRulesLink.on("click", function(e) {
         e.preventDefault();
         const data = app.export();
@@ -98,6 +106,13 @@
         setting: "showLogs"
     }, function(data) {
         ui.showLogs.prop("checked", data === "true");
+    });
+
+    chrome.extension.sendMessage({
+        action: "getSetting",
+        setting: "showBadgeCount"
+    }, function(data) {
+        ui.showBadgeCount.prop("checked", data === "true");
     });
 
 })();
