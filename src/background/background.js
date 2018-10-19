@@ -5,6 +5,7 @@
 
     var ruleDomains = {};
     var syncFunctions = [];
+    var badgeMap = new Map();
 
     var logOnTab = function(tabId, message, important) {
         if (localStorage.showLogs === "true") {
@@ -33,6 +34,8 @@
 
         var updateTabCallback = function(tabId, changeinfo, tab) {
             urls[tabId] = tab.url;
+            badgeMap.set(tabId, 0);
+            updateBadge(tabId, '');
         };
 
         // Not all tabs will fire an update event. If the page is pre-rendered,
@@ -48,6 +51,7 @@
             closeListeners.forEach(function(fn) {
                 fn(urls[tabId]);
             });
+            badgeMap.delete(tabId);
             delete urls[tabId];
         };
 
@@ -227,6 +231,9 @@
                             var matchedObj = match(ruleObj.match, requestUrl);
                             var newUrl = matchReplace(matchedObj, ruleObj.replace, requestUrl);
                             if (matchedObj.matched) {
+                                var badgeCount = badgeMap.get(tabId) || 0;
+                                badgeMap.set(tabId, ++badgeCount);
+                                updateBadge(tabId, '' + badgeCount);
                                 logOnTab(tabId, "URL Override Matched: " + requestUrl +
                                     "   to:   " + newUrl + "   match url: " + ruleObj.match, true);
                                 if (requestUrl !== newUrl) {
@@ -239,6 +246,10 @@
                             }
                         } else if (ruleObj.type === "fileOverride" &&
                             match(ruleObj.match, requestUrl).matched) {
+
+                            var badgeCount = badgeMap.get(tabId) || 0;
+                            badgeMap.set(tabId, ++badgeCount);
+                            updateBadge(tabId, '' + badgeCount);
 
                             logOnTab(tabId, "File Override Matched: " + requestUrl + "   match url: " +
                                 ruleObj.match, true);
@@ -355,6 +366,13 @@
             }
         }
         return headerObjToReturn;
+    };
+
+    var updateBadge = function(tabId, text) {
+        if (localStorage.showBadgeCount === "false") return;
+        var color = '#099';
+        chrome.browserAction.setBadgeText(text && { text, tabId });
+        chrome.browserAction.setBadgeBackgroundColor({ color, tabId });
     };
 
     // Called when the user clicks on the browser action icon.
