@@ -34,6 +34,8 @@
 
         var updateTabCallback = function(tabId, changeinfo, tab) {
             urls[tabId] = tab.url;
+            badgeMap.set(tabId, 0);
+            updateBadge(details.tabId, '');
         };
 
         // Not all tabs will fire an update event. If the page is pre-rendered,
