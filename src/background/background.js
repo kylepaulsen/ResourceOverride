@@ -358,6 +358,13 @@
         return headerObjToReturn;
     };
 
+    var updateBadge = function(tabId, text) {
+        if (localStorage.showBadgeCount === "false") return;
+        var color = '#099';
+        chrome.browserAction.setBadgeText(text && { text, tabId });
+        chrome.browserAction.setBadgeBackgroundColor({ color, tabId });
+    };
+
     // Called when the user clicks on the browser action icon.
     chrome.browserAction.onClicked.addListener(function(tab) {
         openOrFocusOptionsPage();
