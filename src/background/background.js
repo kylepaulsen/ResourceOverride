@@ -5,6 +5,7 @@
 
     var ruleDomains = {};
     var syncFunctions = [];
+    var badgeMap = new Map();
 
     var logOnTab = function(tabId, message, important) {
         if (localStorage.showLogs === "true") {
