@@ -51,6 +51,7 @@
             closeListeners.forEach(function(fn) {
                 fn(urls[tabId]);
             });
+            badgeMap.delete(tabId);
             delete urls[tabId];
         };
 
