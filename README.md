@@ -1,5 +1,9 @@
 # Resource Override
 
-An extension to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content.
+## ~~ This extension is now in maintenance mode!! ~~
+
+See what this means here: [maintenance_notice.md](maintenance_notice.md).
+
+Resource Override is an extension to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content.
 
 [Get the extension here](https://chrome.google.com/webstore/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii).
