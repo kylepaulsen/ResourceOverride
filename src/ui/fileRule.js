@@ -14,7 +14,7 @@
         const override = util.instanceTemplate(ui.fileOverrideTemplate);
         const matchInput = override.find(".matchInput");
         const editBtn = override.find(".edit-btn");
-        const ruleOnOff = override.find(".ruleOnOff");
+        const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");
@@ -53,7 +53,10 @@
             saveFunc();
         });
 
-        const id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        let id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        if (app.files[id]) {
+            id = util.getNextId($(".ruleContainer"), "f");
+        }
         override[0].id = id;
 
         if (savedData.file) {

@@ -46,7 +46,7 @@
         return function() {
             const $domain = $("#" + id);
             const data = app.getDomainData($domain);
-            chrome.extension.sendMessage({action: "saveDomain", data: data});
+            chrome.runtime.sendMessage({action: "saveDomain", data: data});
             app.skipNextSync = true;
         };
     }
@@ -60,7 +60,7 @@
                     type: "normalOverride",
                     match: $el.find(".matchInput").val(),
                     replace: $el.find(".replaceInput").val(),
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".onoffswitch")[0].isOn
                 });
             } else if ($el.hasClass("fileOverride")) {
                 rules.push({
@@ -68,7 +68,7 @@
                     match: $el.find(".matchInput").val(),
                     file: app.files[el.id] || "",
                     fileId: el.id,
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".onoffswitch")[0].isOn
                 });
             } else if ($el.hasClass("fileInject")) {
                 rules.push({
@@ -78,7 +78,7 @@
                     fileId: el.id,
                     fileType: $el.find(".fileTypeSelect").val(),
                     injectLocation: $el.find(".injectLocationSelect").val(),
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".onoffswitch")[0].isOn
                 });
             } else if ($el.hasClass("headerRule")) {
                 rules.push({
@@ -86,7 +86,7 @@
                     match: $el.find(".matchInput").val(),
                     requestRules: $el.find(".requestRules").data("rules") || "",
                     responseRules: $el.find(".responseRules").data("rules") || "",
-                    on: $el.find(".ruleOnOff")[0].isOn
+                    on: $el.find(".onoffswitch")[0].isOn
                 });
             }
         });
@@ -95,7 +95,7 @@
             id: domain[0].id,
             matchUrl: domain.find(".domainMatchInput").val(),
             rules: rules,
-            on: domain.find(".domainOnOff")[0].isOn
+            on: domain.find(".onoffswitch")[0].isOn
         };
     }
 
@@ -105,7 +105,7 @@
         const overrideRulesContainer = domain.find(".overrideRules");
         const addRuleBtn = domain.find(".addRuleBtn");
         const domainMatchInput = domain.find(".domainMatchInput");
-        const onOffBtn = domain.find(".domainOnOff");
+        const onOffBtn = domain.find(".onoffswitch");
         const deleteBtn = domain.find(".deleteBtn");
         const rules = savedData.rules || [];
 
@@ -156,7 +156,7 @@
             if (!util.deleteButtonIsSure(deleteBtn)) {
                 return;
             }
-            chrome.extension.sendMessage({action: "deleteDomain", id: id});
+            chrome.runtime.sendMessage({action: "deleteDomain", id: id});
             domain.css("transition", "none");
             domain.fadeOut(function() {
                 domain.remove();
@@ -194,7 +194,7 @@
     });
 
     $(window).on("click", function(e) {
-        var $target = $(e.target);
+        const $target = $(e.target);
         if (!$target.hasClass("addRuleBtn") && e.target.id !== "addRuleDropdown") {
             ui.addRuleDropdown.hide();
         }

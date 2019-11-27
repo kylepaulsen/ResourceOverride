@@ -10,7 +10,12 @@
     util.instanceTemplate = function(template) {
         // We have to fetch first child (the container element) because
         // document fragments are not supported by JQ
-        return $(document.importNode(template[0].content, true).children[0]);
+        const newDom = document.importNode(template[0].content, true).children[0];
+        const switchDiv = newDom.querySelector(".switch");
+        if (switchDiv) {
+            switchDiv.appendChild(app.createOnOffSwitch());
+        }
+        return $(newDom);
     };
 
     util.deleteButtonIsSure = function(deleteBtn) {
@@ -75,7 +80,7 @@
     };
 
     util.getTabResources = function(cb) {
-        if (chrome.devtools) {
+        if (chrome.devtools && chrome.devtools.inspectedWindow && chrome.devtools.inspectedWindow.getResources) {
             chrome.devtools.inspectedWindow.getResources(function(resourceList) {
                 if (resourceList) {
                     const filteredList = resourceList.filter(function(resource) {

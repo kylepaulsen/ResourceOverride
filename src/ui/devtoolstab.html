@@ -9,13 +9,12 @@
 </head>
 <body id="body">
 <template id="onOffSwitchTemplate">
-    <style>@import "css/on-off-switch.css";</style>
     <div class="onoffswitch">
         <input type="checkbox" class="onoffswitch-checkbox" checked>
         <label class="onoffswitch-label">
             <span class="onoffswitch-inner">
-                <div class="onoffswitch-on"></div>
-                <div class="onoffswitch-off"></div>
+                <div class="onoffswitch-on">ON</div>
+                <div class="onoffswitch-off">OFF</div>
             </span>
             <span class="onoffswitch-switch"></span>
         </label>
@@ -34,9 +33,7 @@
             <div class="addRule">
                 <button class="btn addRuleBtn">Add Rule</button>
             </div>
-            <div class="switch">
-                <on-off-switch class="domainOnOff"></on-off-switch>
-            </div>
+            <div class="switch"></div>
             <div class="delete">
                 <button class="deleteBtn btn sym-btn">&#215</button>
             </div>
@@ -64,9 +61,7 @@
         <div class="rule">
             <input type="input" class="replaceInput" placeholder="Replace URL">
         </div>
-        <div class="switch">
-            <on-off-switch class="ruleOnOff"></on-off-switch>
-        </div>
+        <div class="switch"></div>
         <div class="delete">
             <button class="btn sym-btn">&#215</button>
         </div>
@@ -90,9 +85,7 @@
         <div class="edit">
             <button class="btn edit-btn">Edit File</button>
         </div>
-        <div class="switch">
-            <on-off-switch class="ruleOnOff"></on-off-switch>
-        </div>
+        <div class="switch"></div>
         <div class="delete">
             <button class="btn sym-btn">&#215</button>
         </div>
@@ -131,9 +124,7 @@
         <div class="edit">
             <button class="btn edit-btn">Edit File</button>
         </div>
-        <div class="switch">
-            <on-off-switch class="ruleOnOff"></on-off-switch>
-        </div>
+        <div class="switch"></div>
         <div class="delete">
             <button class="btn sym-btn">&#215</button>
         </div>
@@ -160,9 +151,7 @@
         <div class="edit">
             <button class="btn edit-btn">Edit Headers</button>
         </div>
-        <div class="switch">
-            <on-off-switch class="ruleOnOff"></on-off-switch>
-        </div>
+        <div class="switch"></div>
         <div class="delete">
             <button class="btn sym-btn">&#215</button>
         </div>
@@ -305,6 +294,7 @@
     <div id="helpContent">
         <h1>Help</h1>
         <p>View youtube help video <a href="https://www.youtube.com/watch?v=62QIWAP9mMM" target="_blank">HERE</a>.
+        <p style="color: red">Sometimes browser cache can stop overrides from working! Try reloading while holding shift or empty your cache!</p>
         <p>This extension exists to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content. It does this by comparing url "match rules" to the current tab url and then individual resource urls. If the urls match, then the rules are applied.</p>
         <p>Rules are put into "Tab Groups". A Tab Group has a URL text field that acts as the match pattern for Chrome's current tab. Rules inside the Tab Group wont apply unless the match is successful. This is a good way to make sure overrides only happen on a certain website.</p>
         <h3>Example Tab URL Matches:</h3>

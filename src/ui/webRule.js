@@ -12,7 +12,7 @@
         const override = util.instanceTemplate(ui.overrideTemplate);
         const matchInput = override.find(".matchInput");
         const replaceInput = override.find(".replaceInput");
-        const ruleOnOff = override.find(".ruleOnOff");
+        const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
         matchInput.val(savedData.match || "");

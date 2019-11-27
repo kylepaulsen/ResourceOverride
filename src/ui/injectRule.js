@@ -16,7 +16,7 @@
         const injectLocation = override.find(".injectLocationSelect");
         const fileType = override.find(".fileTypeSelect");
         const editBtn = override.find(".edit-btn");
-        const ruleOnOff = override.find(".ruleOnOff");
+        const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
         fileName.val(savedData.fileName || "");
@@ -56,7 +56,10 @@
         injectLocation.on("change", saveFunc);
         fileType.on("change", saveFunc);
 
-        const id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        let id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        if (app.files[id]) {
+            id = util.getNextId($(".ruleContainer"), "f");
+        }
         override[0].id = id;
 
         if (savedData.file) {
