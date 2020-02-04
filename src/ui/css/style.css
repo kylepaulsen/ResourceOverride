@@ -23,6 +23,10 @@ input[type=checkbox] {
     height: 14px;
 }
 
+div, span {
+    font-size: 12px;
+}
+
 #title {
     background-image: url("../../../icons/icon-48x48.png");
     background-repeat: no-repeat;

@@ -2,7 +2,7 @@ chrome.runtime.sendMessage({action: "getSetting", setting: "devTools"}, function
     if (data === "true") {
         chrome.devtools.panels.create("Overrides",
             "", //image file
-            "src/ui/devtoolstab.html",
+            "/src/ui/devtoolstab.html",
             function(panel) {}
         );
     }

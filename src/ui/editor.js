@@ -114,7 +114,7 @@
 
         editorGuessMode(match, app.files[fileId]);
 
-        if (chrome.devtools) {
+        if (chrome.devtools && util.isChrome()) {
             ui.loadSelect.show();
             util.getTabResources(function(filteredList) {
                 ui.loadSelect.html("<option value=''>Load content from resource...</option>");
@@ -167,6 +167,21 @@
         setEditorVal(js_beautify(editor.getValue()));
         updateSaveButtons(true);
     });
+
+    if (navigator.userAgent.indexOf("Firefox") > -1 && !!chrome.devtools) {
+        // Firefox is really broken with the "/" and "'" keys. They just dont work.
+        // So try to fix them here.. wow.. just wow. I can't believe I'm fixing the ability to type.
+        const brokenKeys = { "/": 1, "?": 1, "'": 1, '"': 1 };
+        window.addEventListener("keydown", e => {
+            const brokenKey = brokenKeys[e.key];
+            const activeEl = document.activeElement;
+            if (brokenKey && activeEl.className === "ace_text-input" && editor) {
+                e.preventDefault();
+                const cursorPosition = editor.getCursorPosition();
+                editor.session.insert(cursorPosition, e.key);
+            }
+        });
+    }
 
     app.editor = {
         open: openEditor

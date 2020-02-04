@@ -36,6 +36,10 @@
         app.mainSuggest.setShouldSuggest(ui.showSuggestions.prop("checked"));
     });
 
+    if (!util.isChrome()) {
+        ui.showSuggestions.closest(".optionRow").remove();
+    }
+
     ui.showLogs.on("click", function() {
         chrome.runtime.sendMessage({
             action: "setSetting",
@@ -70,7 +74,7 @@
             try {
                 const importedObj = JSON.parse(text);
                 app.import(importedObj.data, importedObj.v);
-            } catch(e) {
+            } catch (e) {
                 util.showToast("Load Failed: Invalid JSON in file.");
             }
         };
@@ -89,8 +93,9 @@
         action: "getSetting",
         setting: "showSuggestions"
     }, function(data) {
-        ui.showSuggestions.prop("checked", data !== "false");
-        app.mainSuggest.setShouldSuggest(data !== "false");
+        const shouldSuggest = util.isChrome() && data !== "false";
+        ui.showSuggestions.prop("checked", shouldSuggest);
+        app.mainSuggest.setShouldSuggest(shouldSuggest);
     });
 
     chrome.runtime.sendMessage({

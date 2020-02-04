@@ -110,5 +110,9 @@
         }, 3500);
     };
 
+    util.isChrome = function() {
+        return navigator.userAgent.indexOf("Chrome") > -1;
+    };
+
     app.util = util;
 })();
