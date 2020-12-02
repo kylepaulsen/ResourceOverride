@@ -99,7 +99,7 @@
                     tabUrl = details.url;
                 }
                 if (tabUrl) {
-                    const result = bgapp.handleRequest(details.url, tabUrl, details.tabId);
+                    const result = bgapp.handleRequest(details.url, tabUrl, details.tabId, details.requestId);
                     if (result) {
                         // make sure we don't try to redirect again.
                         bgapp.requestIdTracker.push(details.requestId);
