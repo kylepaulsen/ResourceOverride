@@ -1,7 +1,33 @@
-/* global bgapp, match, matchReplace */
+/* global bgapp, match, matchReplace, browser */
 {
     const logOnTab = bgapp.util.logOnTab;
-    bgapp.handleRequest = function(requestUrl, tabUrl, tabId) {
+
+    const replaceContent = (requestId, mimeAndFile) => {
+        if (browser.webRequest.filterResponseData) {
+            // browsers that support filterResponseData
+            browser.webRequest.filterResponseData(requestId).onstart = e => {
+                const encoder = new TextEncoder();
+                e.target.write(encoder.encode(mimeAndFile.file));
+                e.target.disconnect();
+            };
+            return {
+                responseHeaders: [{
+                    name: "Content-Type",
+                    value: mimeAndFile.mime
+                }]
+            };
+        }
+
+        // browsers that dont support filterResponseData
+        return {
+            // unescape is a easy solution to the utf-8 problem:
+            // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/btoa#Unicode_Strings
+            redirectUrl: "data:" + mimeAndFile.mime + ";charset=UTF-8;base64," +
+                btoa(unescape(encodeURIComponent(mimeAndFile.file)))
+        };
+    };
+
+    bgapp.handleRequest = function(requestUrl, tabUrl, tabId, requestId) {
         for (const key in bgapp.ruleDomains) {
             const domainObj = bgapp.ruleDomains[key];
             if (domainObj.on && match(domainObj.matchUrl, tabUrl).matched) {
@@ -30,10 +56,7 @@
                                 ruleObj.match, true);
 
                             const mimeAndFile = bgapp.extractMimeType(requestUrl, ruleObj.file);
-                            // unescape is a easy solution to the utf-8 problem:
-                            // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/btoa#Unicode_Strings
-                            return {redirectUrl: "data:" + mimeAndFile.mime + ";charset=UTF-8;base64," +
-                                btoa(unescape(encodeURIComponent(mimeAndFile.file)))};
+                            return replaceContent(requestId, mimeAndFile);
                         }
                     }
                 }
