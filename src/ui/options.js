@@ -4,10 +4,20 @@
 
 import {removeEl} from "./microJQuery.js";
 
-import {app, ui} from './init.js';
+import {app, ui, capabilities} from './init.js';
 import {isChrome, showToast} from './util.js';
 import {mainSuggest} from './devtoolstab.js';
 import {importData, exportData} from './importExport.js';
+import {setRemoveIntegrityButtonCorrectState} from './rules/removeIntegrity.js';
+
+chrome.runtime.sendMessage({
+    action: "getCapabilities",
+}, function(gotCapabilities) {
+    Object.assign(capabilities, gotCapabilities);
+    console.log("gotCapabilities", gotCapabilities);
+    console.log("capabilities", capabilities);
+    setRemoveIntegrityButtonCorrectState();
+});
 
 window.addEventListener("click", function(e) {
     const target = e.target;

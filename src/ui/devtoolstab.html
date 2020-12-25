@@ -184,6 +184,24 @@
     </div>
 </template>
 
+<template id="removeIntegrityTemplate">
+    <div class="ruleContainer removeIntegrity">
+        <div class="handle">
+            <div class="arrow-up"></div><div class="arrow-down"></div>
+        </div>
+        <div class="ruleType">
+            Remove <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity">SI</a> For:
+        </div>
+        <div class="rule">
+            <input type="input" class="matchInput" placeholder="Match URL">
+        </div>
+        <div class="switch"></div>
+        <div class="delete">
+            <button class="btn sym-btn">&#215</button>
+        </div>
+    </div>
+</template>
+
 <div id="title">
     <h1>Resource Override</h1>
 </div>
@@ -225,6 +243,7 @@
     <button id="addFileRuleBtn" class="btn" title="Redirect resources to a file you make">URL <span>&rarr;</span> File</button>
     <button id="addInjectRuleBtn" class="btn" title="Inject content on a page">Inject File</button>
     <button id="addHeaderRuleBtn" class="btn" title="Modify request or response headers">Change Headers</button>
+    <button id="addRemoveIntegrityRuleBtn" class="btn" title="Remove Subresource integrity">Remove integrity</button>
 </div>
 
 <div id="editorOverlay" class="overlay">
@@ -376,6 +395,8 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 <script type="module" src="./rules/file.js"></script>
 <script type="module" src="./rules/inject.js"></script>
 <script type="module" src="./rules/header.js"></script>
+<script type="module" src="rules/removeIntegrity.js"></script>
+
 <script type="module" src="./tabGroup.js"></script>
 <script type="module" src="./importExport.js"></script>
 <script type="module" src="./options.js"></script>

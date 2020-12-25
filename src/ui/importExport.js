@@ -2,7 +2,7 @@
 
 /* globals $, chrome */
 
-import {app} from './init.js';
+import {app, capabilities} from './init.js';
 import {getDomainData} from './tabGroup.js';
 import {showToast} from './util.js';
 
@@ -18,6 +18,9 @@ const checkRulesMap = new Map([
     }],
     ["headerRule", (rule) => {
         return (rule.match !== undefined && rule.requestRules !== undefined && rule.responseRules !== undefined && rule.on !== undefined);
+    }],
+    ["removeIntegrity", (rule) => {
+        return capabilities.realtimeRewriteSupported && rule.match !== undefined && rule.on !== undefined;  // ToDo: fix race condition between discovering capabilities and first request
     }],
 ]);
 

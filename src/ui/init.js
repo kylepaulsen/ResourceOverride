@@ -10,5 +10,6 @@ document.querySelectorAll("[id]").forEach(function(el) {
 });
 
 const app = {};
+export const capabilities = {};
 
 export { app, ui };

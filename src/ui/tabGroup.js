@@ -4,7 +4,7 @@
 
 import {removeEl} from "./microJQuery.js";
 
-import {app, ui} from './init.js';
+import {app, ui, capabilities} from './init.js';
 import {files} from './devtoolstab.js';
 import {instanceTemplate, debounce, deleteButtonIsSure, deleteButtonIsSureReset, getNextId} from './util.js';
 import {moveableRules} from './moveableRules.js';
@@ -13,6 +13,7 @@ import {createWebOverrideMarkup} from './rules/web.js';
 import {createFileOverrideMarkup} from './rules/file.js';
 import {createFileInjectMarkup} from './rules/inject.js';
 import {createHeaderRuleMarkup} from './rules/header.js';
+import {createRemoveIntegrityMarkup} from './rules/removeIntegrity.js';
 
 let currentAddRuleBtn;
 let currentAddRuleFunc;
@@ -93,6 +94,13 @@ const domainDataGetterMap = new Map([
             on: el.getElementsByClassName("onoffswitch")[0].isOn
         }
     }],
+    ["removeIntegrity", (el) => {
+        return {
+            type: "removeIntegrity",
+            match: el.getElementsByClassName("matchInput")[0].value,
+            on: el.getElementsByClassName("onoffswitch")[0].isOn
+        };
+    }],
 ]);
 function getDomainData(domain) {
     const rules = [];
@@ -118,6 +126,13 @@ let domainMarkupCreatorMap = new Map([
     ["fileOverride", createFileOverrideMarkup],
     ["fileInject", createFileInjectMarkup],
     ["headerRule", createHeaderRuleMarkup],
+    ["removeIntegrity", (rule, saveFunc) => {
+        if(capabilities.realtimeRewriteSupported){
+             return createRemoveIntegrityMarkup(rule, saveFunc);
+        } else {
+            return "Dynamic rewriting is not supported in this browser. Use something with properly implemented `browser.webRequest.filterResponseData` API."
+        }
+    }]
 ]);
 
 function createDomainMarkup(savedData) {
@@ -130,13 +145,18 @@ function createDomainMarkup(savedData) {
     const deleteBtn = domain.getElementsByClassName("deleteBtn")[0];
     const rules = savedData.rules || [];
 
-    const id = savedData.id || util.getNextId(document.getElementsByClassName("domainContainer"), "d");
+    const id = savedData.id || getNextId(document.getElementsByClassName("domainContainer"), "d");
     domain.id = id;
     const saveFunc = debounce(createSaveFunction(id), 700);
 
     if (rules.length) {
         rules.forEach(function(rule) {
-            overrideRulesContainer.appendChild(domainMarkupCreatorMap.get(rule.type)(rule, saveFunc));
+            let r = domainMarkupCreatorMap.get(rule.type)(rule, saveFunc)
+            if(typeof r == "string"){
+                alert(r);
+            } else {
+                overrideRulesContainer.appendChild(r);
+            }
         });
     }
 
@@ -198,7 +218,11 @@ ui.addHeaderRuleBtn.addEventListener("click", function() {
     currentAddRuleFunc(createHeaderRuleMarkup({}, currentSaveFunc));
 });
 
-window.addEventListener("resize", function() {
+ui.addRemoveIntegrityRuleBtn.addEventListener("click", function() {
+    currentAddRuleFunc(createRemoveIntegrityMarkup({}, currentSaveFunc));
+});
+
+window.addEventListener("resize", function(evt) {
     if (currentAddRuleBtn) {
         positionRuleDropdown(currentAddRuleBtn);
     }

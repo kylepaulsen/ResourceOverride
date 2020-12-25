@@ -112,7 +112,7 @@ function openEditor(fileId, match, isInjectFile, saveFunction) {
     ui.editLabel.textContent = isInjectFile ? "Editing file:" : "Editing file for match:";
     ui.matchContainer.textContent = match;
 
-	editorGuessMode(match, files[fileId]);
+    editorGuessMode(match, files[fileId]);
 
     if (chrome.devtools && util.isChrome()) {
         ui.loadSelect.style.display = "block";

@@ -1,4 +1,5 @@
 /* globals chrome, unescape, match */
+import {capabilities} from "./init.js"
 import {simpleError} from "./util.js"
 import {extractMimeType} from "./extractMime.js"
 import {mainStorage} from "./mainStorage.js"
@@ -94,35 +95,49 @@ const messageEventsProcessors = new Map([
     ["extractMimeType", (request, sender) => {
         return Promise.resolve(extractMimeType(request.fileName, request.file));
     }],
+    ["getCapabilities", () => {return Promise.resolve(capabilities);}],
 ]);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return messageEventsProcessors.get(request.action)(request, sender);
 });
 
-chrome.webRequest.onBeforeRequest.addListener(function(details) {
-    if (!requestIdTracker.has(details.requestId)) {
-        if (details.tabId > -1) {
-            let tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
-            if (details.type === "main_frame") {
-                // a new tab must have just been created.
-                tabUrl = details.url;
-            }
-            if (tabUrl) {
-                const result = handleRequest(details.url, tabUrl, details.tabId, details.requestId);
-                if (result) {
-                    // make sure we don't try to redirect again.
-                    requestIdTracker.push(details.requestId);
-                }
-                return result;
-            }
+
+function processOnlyTabTrackedURIs(details, callback){
+    if (details.tabId > -1) {
+        let tabUrl = tabUrlTracker.getUrlFromId(details.tabId);
+        if (details.type === "main_frame") {
+            // a new tab must have just been created.
+            tabUrl = details.url;
+        }
+        if (tabUrl) {
+            return callback(details, tabUrl);
         }
     }
+}
+
+
+chrome.webRequest.onBeforeRequest.addListener(function(details) {
+    processOnlyTabTrackedURIs(details, (details, tabUrl) => {
+        if (!requestIdTracker.has(details.requestId)) {
+            const result = handleRequest(details, tabUrl);
+            if (result) {
+                // make sure we don't try to redirect again.
+                requestIdTracker.push(details.requestId);
+            }
+            return result;
+        }
+    });
 }, {
     urls: ["<all_urls>"]
 }, ["blocking"]);
 
-chrome.webRequest.onHeadersReceived.addListener(makeHeaderHandler("response"), {
+const responseHeadersHandler = makeHeaderHandler("response");
+chrome.webRequest.onHeadersReceived.addListener((details) => {
+    responseHeadersHandler(details);
+    //processOnlyTabTrackedURIs(details, handleBody);
+    handleBody(details, tabUrlTracker.getUrlFromId(details.tabId));
+}, {
     urls: ["<all_urls>"]
 }, ["blocking", "responseHeaders"]);
 
@@ -149,3 +164,4 @@ mainStorage.getAll().then(function(domains) {
         });
     }
 }).catch(simpleError);
+

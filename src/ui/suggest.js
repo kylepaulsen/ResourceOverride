@@ -253,9 +253,9 @@ function suggest() {
     }
 
     function fixScroll(optionToHighlight) {
-		const optionToHighlightRect = optionToHighlight.getBoundingClientRect();
-		const suggestBoxRect = suggestBox.getBoundingClientRect();
-		const suggestTableRect = suggestTable.getBoundingClientRect();
+        const optionToHighlightRect = optionToHighlight.getBoundingClientRect();
+        const suggestBoxRect = suggestBox.getBoundingClientRect();
+        const suggestTableRect = suggestTable.getBoundingClientRect();
         const heightInDiv = optionToHighlightRect.top - suggestBoxRect.top + suggestBox.scrollTop;
         if (heightInDiv + optionToHighlightRect.height > suggestBox.scrollTop + suggestBoxRect.height) {
             let scrollBarOffset = 0;
