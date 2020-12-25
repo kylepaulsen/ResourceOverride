@@ -8,10 +8,9 @@ import {createHeaderEditorRuleMarkup} from './rules/header.js';
 let saveFunc;
 
 function getRule(el) {
-    const $el = $(el);
-    const operation = $el.find(".operationSelect").val();
-    const headerName = encodeURIComponent($el.find(".headerName").val());
-    const headerValue = encodeURIComponent($el.find(".headerValue").val());
+    const operation = el.getElementsByClassName("operationSelect")[0].value;
+    const headerName = encodeURIComponent(el.getElementsByClassName("headerName")[0].value || "");
+    const headerValue = encodeURIComponent(el.getElementsByClassName("headerValue")[0].value || "");
     let nextRule;
     if (headerName) {
         if (operation === "set") {
@@ -29,16 +28,16 @@ function getRule(el) {
 function getHeaderEditRules() {
     const reqRules = [];
     const resRules = [];
-    const $requestRules = ui.headerRequestRulesContainer.find(".headerEditorRule");
-    const $responseRules = ui.headerResponseRulesContainer.find(".headerEditorRule");
+    const requestRules = ui.headerRequestRulesContainer.getElementsByClassName("headerEditorRule");
+    const responseRules = ui.headerResponseRulesContainer.getElementsByClassName("headerEditorRule");
 
-    $requestRules.each(function(idx, el) {
+    [...requestRules].forEach(function(el) {
         const rule = getRule(el);
         if (rule) {
             reqRules.push(rule);
         }
     });
-    $responseRules.each(function(idx, el) {
+    [...responseRules].forEach(function(el) {
         const rule = getRule(el);
         if (rule) {
             resRules.push(rule);
@@ -77,30 +76,30 @@ function openHeaderEditor(requestHeaderDataStr, responseHeaderDataStr, matchRule
     saveFunc = saveFunction;
     const requestHeadersData = parseHeaderDataStr(requestHeaderDataStr);
     const responseHeadersData = parseHeaderDataStr(responseHeaderDataStr);
-    ui.headerRequestRulesContainer.html("");
-    ui.headerResponseRulesContainer.html("");
+    ui.headerRequestRulesContainer.innerHTML= "";
+    ui.headerResponseRulesContainer.innerHTML= "";
     requestHeadersData.forEach(function(data) {
-        ui.headerRequestRulesContainer.append(createHeaderEditorRuleMarkup(data, saveFunc, "request"));
+        ui.headerRequestRulesContainer.appendChild(createHeaderEditorRuleMarkup(data, saveFunc, "request"));
     });
     responseHeadersData.forEach(function(data) {
-        ui.headerResponseRulesContainer.append(createHeaderEditorRuleMarkup(data, saveFunc, "response"));
+        ui.headerResponseRulesContainer.appendChild(createHeaderEditorRuleMarkup(data, saveFunc, "response"));
     });
-    ui.headerMatchContainer.text(matchRule || "<Not defined yet>");
-    ui.headerRuleOverlay.css("display", "flex");
-    ui.body.css("overflow", "hidden");
+    ui.headerMatchContainer.textContent = matchRule || "<Not defined yet>";
+    ui.headerRuleOverlay.style.display = "flex"
+    ui.body.style.overflow = "hidden"
 }
 
-ui.closeHeaderRuleEditorBtn.on("click", function() {
-    ui.headerRuleOverlay.hide();
-    ui.body.css("overflow", "auto");
+ui.closeHeaderRuleEditorBtn.addEventListener("click", function() {
+    ui.headerRuleOverlay.style.display = "none";
+    ui.body.style.overflow = "auto"
 });
 
-ui.addRequestHeaderBtn.on("click", function() {
-    ui.headerRequestRulesContainer.append(createHeaderEditorRuleMarkup(undefined, saveFunc, "request"));
+ui.addRequestHeaderBtn.addEventListener("click", function() {
+    ui.headerRequestRulesContainer.appendChild(createHeaderEditorRuleMarkup(undefined, saveFunc, "request"));
 });
 
-ui.addResponseHeaderBtn.on("click", function() {
-    ui.headerResponseRulesContainer.append(createHeaderEditorRuleMarkup(undefined, saveFunc, "response"));
+ui.addResponseHeaderBtn.addEventListener("click", function() {
+    ui.headerResponseRulesContainer.appendChild(createHeaderEditorRuleMarkup(undefined, saveFunc, "response"));
 });
 
 const resPresets = {
@@ -127,15 +126,15 @@ const resPresets = {
     }]
 };
 
-ui.headerPresetsSelect.on("change", function() {
-    const presetName = ui.headerPresetsSelect.val();
+ui.headerPresetsSelect.addEventListener("change", function() {
+    const presetName = ui.headerPresetsSelect.value;
     const presets = resPresets[presetName];
-    ui.headerPresetsSelect.val("");
+    ui.headerPresetsSelect.value = "";
     if (presets) {
         // Right now only response presets are allowed.
         presets.forEach(function(preset) {
             const markup = createHeaderEditorRuleMarkup(preset, saveFunc, "response");
-            ui.headerResponseRulesContainer.append(markup);
+            ui.headerResponseRulesContainer.appendChild(markup);
         });
         saveFunc();
     }

@@ -2,6 +2,8 @@
 
 /* globals $, chrome */
 
+import {removeEl} from "./microJQuery.js";
+
 import {app, ui} from './init.js';
 import {files} from './devtoolstab.js';
 import {instanceTemplate, debounce, deleteButtonIsSure, deleteButtonIsSureReset, getNextId} from './util.js';
@@ -17,40 +19,36 @@ let currentAddRuleFunc;
 let currentSaveFunc;
 
 function positionRuleDropdown(addBtn) {
-    const offset = addBtn.offset();
-    ui.addRuleDropdown.css({
-        top: offset.top + 40 + "px",
-        left: offset.left - 40 + "px"
-    });
+    const offset = addBtn.getBoundingClientRect();
+    ui.addRuleDropdown.style.top = offset.top + 40 + "px";
+    ui.addRuleDropdown.style.left = offset.left - 40 + "px";
 
-    const rect = ui.addRuleDropdown[0].getBoundingClientRect();
+    const rect = ui.addRuleDropdown.getBoundingClientRect();
     if (rect.top + rect.height > window.innerHeight && offset.top - rect.height > 0) {
-        ui.addRuleDropdown.css({
-            top: offset.top - rect.height + "px",
-            left: offset.left - 40 + "px"
-        });
-        ui.addRuleDropdown.addClass("reverse");
+        ui.addRuleDropdown.style.top = offset.top - rect.height + "px";
+        ui.addRuleDropdown.style.left = offset.left - 40 + "px";
+        ui.addRuleDropdown.classList.add("reverse");
     } else {
-        ui.addRuleDropdown.removeClass("reverse");
+        ui.addRuleDropdown.classList.remove("reverse");
     }
 }
 
 function showRuleDropdown(addBtn, addRuleFunc, saveFunc) {
-    if (ui.addRuleDropdown.is(":visible") && currentAddRuleFunc === addRuleFunc) {
-        ui.addRuleDropdown.hide();
+    if (ui.addRuleDropdown.style.display != "none" && currentAddRuleFunc === addRuleFunc) {
+        ui.addRuleDropdown.style.display = "none";
     } else {
+        ui.addRuleDropdown.style.display = "block";
         currentAddRuleBtn = addBtn;
         currentAddRuleFunc = addRuleFunc;
         currentSaveFunc = saveFunc;
-        ui.addRuleDropdown.show();
         positionRuleDropdown(addBtn);
     }
 }
 
 function createSaveFunction(id) {
     return function() {
-        const $domain = $("#" + id);
-        const data = getDomainData($domain);
+        const domain = document.getElementById(id);
+        const data = getDomainData(domain);
         chrome.runtime.sendMessage({action: "saveDomain", data: data});
         app.skipNextSync = true;
     };
@@ -58,61 +56,60 @@ function createSaveFunction(id) {
 
 
 const domainDataGetterMap = new Map([
-    ["normalOverride", ($el) => {
+    ["normalOverride", (el) => {
         return {
             type: "normalOverride",
-            match: $el.find(".matchInput").val(),
-            replace: $el.find(".replaceInput").val(),
-            on: $el.find(".onoffswitch")[0].isOn
+            match: el.getElementsByClassName("matchInput")[0].value,
+            replace: el.getElementsByClassName("replaceInput")[0].value,
+            on: el.getElementsByClassName("onoffswitch")[0].isOn
         }
     }],
-    ["fileOverride", ($el) => {
+    ["fileOverride", (el) => {
         return {
             type: "fileOverride",
-            match: $el.find(".matchInput").val(),
+            match: el.getElementsByClassName("matchInput")[0].value,
             file: files[el.id] || "",
             fileId: el.id,
-            on: $el.find(".onoffswitch")[0].isOn
+            on: el.getElementsByClassName("onoffswitch")[0].isOn
         }
     }],
-    ["fileInject", ($el) => {
+    ["fileInject", (el) => {
         return {
             type: "fileInject",
-            fileName: $el.find(".fileName").val(),
+            fileName: el.getElementsByClassName("fileName")[0].value,
             file: files[el.id] || "",
             fileId: el.id,
-            fileType: $el.find(".fileTypeSelect").val(),
-            injectLocation: $el.find(".injectLocationSelect").val(),
-            on: $el.find(".onoffswitch")[0].isOn
+            fileType: el.getElementsByClassName("fileTypeSelect")[0].value,
+            injectLocation: el.getElementsByClassName("injectLocationSelect")[0].value,
+            on: el.getElementsByClassName("onoffswitch")[0].isOn
         }
     }],
-    ["headerRule", ($el) => {
+    ["headerRule", (el) => {
         return {
             type: "headerRule",
-            match: $el.find(".matchInput").val(),
-            requestRules: $el.find(".requestRules").data("rules") || "",
-            responseRules: $el.find(".responseRules").data("rules") || "",
-            on: $el.find(".onoffswitch")[0].isOn
+            match: el.getElementsByClassName("matchInput")[0].value,
+            requestRules: el.getElementsByClassName("requestRules")[0].dataset.rules || "",
+            responseRules: el.getElementsByClassName("responseRules")[0].dataset.rules || "",
+            on: el.getElementsByClassName("onoffswitch")[0].isOn
         }
     }],
 ]);
 function getDomainData(domain) {
     const rules = [];
-    domain.find(".ruleContainer").each(function(idx, el) {
-        const $el = $(el);
+    [...domain.getElementsByClassName("ruleContainer")].forEach(function(el) {
         for(let [cand, domainDataGetter] of domainDataGetterMap){
-            if ($el.hasClass()) {
-                rules.push(domainDataGetter($el));
+            if (el.classList.contains(cand)) {
+                rules.push(domainDataGetter(el));
                 break;
             }
         }
     });
 
     return {
-        id: domain[0].id,
-        matchUrl: domain.find(".domainMatchInput").val(),
+        id: domain.id,
+        matchUrl: domain.getElementsByClassName("domainMatchInput")[0].value,
         rules: rules,
-        on: domain.find(".onoffswitch")[0].isOn
+        on: domain.getElementsByClassName("onoffswitch")[0].isOn
     };
 }
 
@@ -126,94 +123,91 @@ let domainMarkupCreatorMap = new Map([
 function createDomainMarkup(savedData) {
     savedData = savedData || {};
     const domain = instanceTemplate(ui.domainTemplate);
-    const overrideRulesContainer = domain.find(".overrideRules");
-    const addRuleBtn = domain.find(".addRuleBtn");
-    const domainMatchInput = domain.find(".domainMatchInput");
-    const onOffBtn = domain.find(".onoffswitch");
-    const deleteBtn = domain.find(".deleteBtn");
+    const overrideRulesContainer = domain.getElementsByClassName("overrideRules")[0];
+    const addRuleBtn = domain.getElementsByClassName("addRuleBtn")[0];
+    const domainMatchInput = domain.getElementsByClassName("domainMatchInput")[0];
+    const onOffBtn = domain.getElementsByClassName("onoffswitch")[0];
+    const deleteBtn = domain.getElementsByClassName("deleteBtn")[0];
     const rules = savedData.rules || [];
 
-    const id = savedData.id || getNextId($(".domainContainer"), "d");
-    domain[0].id = id;
+    const id = savedData.id || util.getNextId(document.getElementsByClassName("domainContainer"), "d");
+    domain.id = id;
     const saveFunc = debounce(createSaveFunction(id), 700);
 
     if (rules.length) {
         rules.forEach(function(rule) {
-            overrideRulesContainer.append(domainMarkupCreatorMap.get(rule.type)(rule, saveFunc));
+            overrideRulesContainer.appendChild(domainMarkupCreatorMap.get(rule.type)(rule, saveFunc));
         });
     }
 
-    const mvRules = moveableRules(overrideRulesContainer[0], ".handle");
+    const mvRules = moveableRules(overrideRulesContainer, ".handle");
     mvRules.onMove(saveFunc);
 
-    domainMatchInput.val(savedData.matchUrl || "");
-    onOffBtn[0].isOn = savedData.on === false ? false : true;
+    domainMatchInput.value = savedData.matchUrl || "";
+    onOffBtn.isOn = savedData.on === false ? false : true;
 
     if (savedData.on === false) {
-        domain.addClass("disabled");
+        domain.classList.add("disabled");
     }
 
     const addRuleCallback = function(markup) {
-        mvRules.assignHandleListener(markup.find(".handle")[0]);
-        overrideRulesContainer.append(markup);
+        mvRules.assignHandleListener(markup.getElementsByClassName("handle")[0]);
+        overrideRulesContainer.appendChild(markup);
     };
 
-    addRuleBtn.on("click", function() {
+    addRuleBtn.addEventListener("click", function() {
         showRuleDropdown(addRuleBtn, addRuleCallback, saveFunc);
     });
 
-    domainMatchInput.on("keyup", saveFunc);
-    onOffBtn.on("click change", function() {
-        domain.toggleClass("disabled", !onOffBtn[0].isOn);
+    domainMatchInput.addEventListener("keyup", saveFunc);
+    onOffBtn.addEventListener("change", function() {
+        domain.classList.toggle("disabled", !onOffBtn.isOn);
         saveFunc();
     });
 
-    deleteBtn.on("click", function() {
+    deleteBtn.addEventListener("click", function() {
         if (!deleteButtonIsSure(deleteBtn)) {
             return;
         }
         chrome.runtime.sendMessage({action: "deleteDomain", id: id});
-        domain.css("transition", "none");
-        domain.fadeOut(function() {
-            domain.remove();
-        });
+        domain.style.transition = "none";
+        removeEl(domain);
         app.skipNextSync = true;
     });
 
-    deleteBtn.on("mouseout", function() {
+    deleteBtn.addEventListener("mouseout", function() {
         deleteButtonIsSureReset(deleteBtn);
     });
 
     return domain;
 }
 
-ui.addWebRuleBtn.on("click", function() {
+ui.addWebRuleBtn.addEventListener("click", function() {
     currentAddRuleFunc(createWebOverrideMarkup({}, currentSaveFunc));
 });
 
-ui.addFileRuleBtn.on("click", function() {
+ui.addFileRuleBtn.addEventListener("click", function() {
     currentAddRuleFunc(createFileOverrideMarkup({}, currentSaveFunc));
 });
 
-ui.addInjectRuleBtn.on("click", function() {
+ui.addInjectRuleBtn.addEventListener("click", function() {
     currentAddRuleFunc(createFileInjectMarkup({}, currentSaveFunc));
 });
 
-ui.addHeaderRuleBtn.on("click", function() {
+ui.addHeaderRuleBtn.addEventListener("click", function() {
     currentAddRuleFunc(createHeaderRuleMarkup({}, currentSaveFunc));
 });
 
-$(window).on("resize", function() {
+window.addEventListener("resize", function() {
     if (currentAddRuleBtn) {
         positionRuleDropdown(currentAddRuleBtn);
     }
-});
+}, false);
 
-$(window).on("click", function(e) {
-    const $target = $(e.target);
-    if (!$target.hasClass("addRuleBtn") && e.target.id !== "addRuleDropdown") {
-        ui.addRuleDropdown.hide();
+window.addEventListener("click", function(e) {
+    if (!e.target.classList.contains("addRuleBtn") && e.target.id !== "addRuleDropdown") {
+        ui.addRuleDropdown.style.display = "none";
     }
-});
+}, false);
 
-export {createDomainMarkup, getDomainData};
+export {createDomainMarkup, getDomainData, currentAddRuleFunc};

@@ -21,5 +21,5 @@ Object.defineProperty(HTMLElement.prototype, "isOn", {
 });
 
 export function createOnOffSwitch() {
-    return document.importNode(ui.onOffSwitchTemplate[0].content, true);
+    return document.importNode(ui.onOffSwitchTemplate.content, true);
 };

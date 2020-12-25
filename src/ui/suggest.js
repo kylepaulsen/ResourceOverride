@@ -6,9 +6,9 @@ import {app} from './init.js';
 
 function suggest() {
     const suggestTableMaxHeight = 100;
-    let $suggestBox;
-    let $suggestTable;
-    let $currentInput;
+    let suggestBox;
+    let suggestTable;
+    let currentInput;
     let appended = false;
     let selectedIndex = 0;
     let numOptions = 0;
@@ -17,26 +17,30 @@ function suggest() {
     let shouldSuggest = true;
 
     function fillOptions(opts) {
-        $suggestTable.html("");
+        suggestTable.innerHTML = "";
         numOptions = 0;
         opts.forEach(function(option) {
-            const $newRow = $("<tr>");
-            const $newRowContent = $("<td class='suggestOption'>");
-            $newRow.append($newRowContent);
-            $newRowContent.text(option);
-            $newRowContent.on("mousedown", function() {
-                completeInput($currentInput, $(this));
+            const newRow = document.createElement("tr");
+            const newRowContent = document.createElement("tr");
+            newRowContent.className = "suggestOption";
+            newRow.appendChild(newRowContent);
+            newRowContent.textContent = option;
+            newRowContent.addEventListener("mousedown", function(evt) {
+                completeInput(currentInput, evt.target);
             });
-            $suggestTable.append($newRow);
-            options = $suggestTable.find("tr");
+            suggestTable.appendChild(newRow);
+            options = [...suggestTable.getElementsByTagName("tr")];
             ++numOptions;
         });
     }
 
     function init(inputs, useStars, caseInsensitive) {
-        if (!$suggestBox) {
-            $suggestBox = $("<div class='suggestBox'><table class='suggestTable'></table></div>");
-            $suggestTable = $suggestBox.find("table");
+        if (!suggestBox) {
+            suggestBox = document.createElement("DIV");
+            suggestBox.className = "suggestBox";
+            suggestTable = document.createElement("TABLE");
+            suggestTable.className = "suggestTable";
+            suggestBox.appendChild(suggestTable);
         }
 
         const keyUpFunc = function(e) {
@@ -44,88 +48,87 @@ function suggest() {
                 const code = e.which;
                 if ((code < 37 || code > 40) && code !== 13) {
                     // not the arrow keys or enter or ESC.
-                    filterOptions($(this).val(), useStars, caseInsensitive);
+                    filterOptions(e.target.value, useStars, caseInsensitive);
                 }
             }
         };
 
         if (inputs) {
-            inputs.on("focus", function() {
-                if (shouldSuggest) {
-                    const $input = $(this);
-                    const offset = $input.offset();
-                    hideTillNextFocus = false;
-                    $currentInput = $input;
-                    $suggestBox.css({
-                        top: offset.top + $input.height() + 5 + "px",
-                        left: offset.left + "px",
-                        maxWidth: $input.width() + 6 + "px"
-                    });
-                    show();
-                    selectedIndex = 0;
-                    filterOptions($input.val(), useStars, caseInsensitive);
-                }
-            });
-
-            inputs.on("keydown", function(e) {
-                if (shouldSuggest) {
-                    const code = e.which;
-                    if (code === 38) { // UP
-                        e.preventDefault();
-                        selectUp(true);
-                    } else if (code === 40) { // DOWN
-                        e.preventDefault();
-                        selectDown(true);
-                    } else if (code === 37) { // LEFT
-                        $suggestBox.scrollLeft($suggestBox.scrollLeft() - 32);
-                    } else if (code === 39) { // RIGHT
-                        $suggestBox.scrollLeft($suggestBox.scrollLeft() + 32);
-                    } else if (code === 13 || code === 9) { // Enter or Tab
-                        completeInput($(this));
-                        $suggestBox.hide();
-                    } else if (code === 27) { // ESC
-                        $suggestBox.hide();
-                        hideTillNextFocus = true;
+            for(let el of inputs){
+                el.addEventListener("focus", function(evt) {
+                    if (shouldSuggest) {
+                        const input = evt.target;
+                        const offset = input.getBoundingClientRect();
+                        hideTillNextFocus = false;
+                        currentInput = input;
+                        suggestBox.style.top = offset.top + offset.height + 5 + "px";
+                        suggestBox.style.left = offset.left + "px";
+                        suggestBox.style.maxWidth = offset.width + 6 + "px";
+                        show();
+                        selectedIndex = 0;
+                        filterOptions(input.value, useStars, caseInsensitive);
                     }
-                    highlightOption();
-                }
-            });
+                }, false);
 
-            inputs.on("keyup", keyUpFunc);
+                el.addEventListener("keydown", function(e) {
+                    if (shouldSuggest) {
+                        const code = e.which;
+                        if (code === 38) { // UP
+                            e.preventDefault();
+                            selectUp(true);
+                        } else if (code === 40) { // DOWN
+                            e.preventDefault();
+                            selectDown(true);
+                        } else if (code === 37) { // LEFT
+                            suggestBox.scrollLeft(suggestBox.scrollLeft() - 32);
+                        } else if (code === 39) { // RIGHT
+                            suggestBox.scrollLeft(suggestBox.scrollLeft() + 32);
+                        } else if (code === 13 || code === 9) { // Enter or Tab
+                            completeInput(e.target);
+                            suggestBox.style.display = "none";
+                        } else if (code === 27) { // ESC
+                            suggestBox.style.display = "none";
+                            hideTillNextFocus = true;
+                        }
+                        highlightOption();
+                    }
+                }, false);
+
+                el.addEventListener("keyup", keyUpFunc, false);
+            }
         }
 
         if (!appended) {
-            $("body").append($suggestBox);
+            document.body.appendChild(suggestBox);
             appended = true;
 
-            $(window).on("mousedown", function(e) {
-                const $target = $(e.target);
-                if ($target.hasClass("suggestOption") || $target.closest(".suggestBox").length === 0) {
-                    $suggestBox.hide();
+            window.addEventListener("mousedown", function(e) {
+                const target = e.target;
+                if (target.classList.contains("suggestOption") || !target.closest(".suggestBox")) {
+                    suggestBox.style.display = "none";
                 }
-            });
+            }, false);
 
-            $suggestBox.on("mouseup", function() {
-                const scrollTop = $suggestBox.scrollTop();
+            suggestBox.addEventListener("mouseup", function(evt) {
                 const lastShouldSuggest = shouldSuggest;
                 // dont call the focus event handler... just focus the field.
                 shouldSuggest = false;
-                $currentInput.focus();
+                currentInput.focus();
                 shouldSuggest = lastShouldSuggest;
-                $suggestBox.scrollTop(scrollTop);
-            });
+                evt.target.scrollTop = evt.target.scrollTop;
+            }, false);
         }
     }
 
     function show() {
         if (!hideTillNextFocus) {
-            $suggestBox.show();
+            suggestBox.style.display = "block";
         }
     }
 
     function completeInput(input, option) {
-        const selectedText = option ? option.text() : options.eq(selectedIndex).text();
-        const val = input.val().replace(/\*+$/g, "");
+        const selectedText = option ? option.textContent : options[selectedIndex].textContent;
+        const val = input.value.replace(/\*+$/g, "");
         const inputParts = val.split("*");
         let x = inputParts.length - 1;
         let lastPart = inputParts[x];
@@ -135,12 +138,12 @@ function suggest() {
         }
         const lastIndex = selectedText.lastIndexOf(lastPart);
         if (inputParts.length > 1) {
-            input.val(val + selectedText.substring(lastIndex + lastPart.length));
+            input.value = val + selectedText.substring(lastIndex + lastPart.length);
         } else {
-            input.val(selectedText);
+            input.value = selectedText;
         }
         const fakeEvent = new KeyboardEvent("keyup");
-        input[0].dispatchEvent(fakeEvent);
+        input.dispatchEvent(fakeEvent);
     }
 
     function filterOptions(inputVal, useStars, caseInsensitive) {
@@ -167,8 +170,8 @@ function suggest() {
         let x;
         let t = options.length;
         while (t-- > 0) {
-            option = options.eq(t);
-            optionStr = option.text();
+            option = options[t];
+            optionStr = option.textContent;
             if (caseInsensitive) {
                 optionStr = optionStr.toLowerCase();
             }
@@ -188,25 +191,25 @@ function suggest() {
                 }
             }
             if (found || allEmpty) {
-                option.show();
+                option.style.display = "block";
                 allHiding = false;
             } else {
-                option.hide();
+                option.style.display = "none";
             }
         }
         if (allHiding) {
-            $suggestBox.hide();
+            suggestBox.style.display = "none";
         } else {
             show();
         }
-        if (options.eq(selectedIndex).css("display") === "none") {
+        if (options[selectedIndex].style.display === "none") {
             selectUp();
         }
         highlightOption();
-        if ($suggestTable.height() > suggestTableMaxHeight) {
-            $suggestTable.css("margin-right", "18px");
+        if (suggestTable.getBoundingClientRect().height > suggestTableMaxHeight) {
+            suggestTable.style.marginRight = "18px";
         } else {
-            $suggestTable.css("margin-right", "0px");
+            suggestTable.style.marginRight = "0px";
         }
     }
 
@@ -215,7 +218,7 @@ function suggest() {
         let isVisible;
         do {
             selectedIndex = Math.min(selectedIndex + 1, numOptions - 1);
-            isVisible = options.eq(selectedIndex).css("display") !== "none";
+            isVisible = options[selectedIndex].style.display !== "none";
         } while (!isVisible && selectedIndex < numOptions - 1);
 
         if (!isVisible) {
@@ -231,7 +234,7 @@ function suggest() {
         let isVisible;
         do {
             selectedIndex = Math.max(selectedIndex - 1, 0);
-            isVisible = options.eq(selectedIndex).css("display") !== "none";
+            isVisible = options[selectedIndex].style.display !== "none";
         } while (!isVisible && selectedIndex > 0);
 
         if (!isVisible) {
@@ -243,26 +246,26 @@ function suggest() {
     }
 
     function highlightOption() {
-        const optionToHighlight = options.eq(selectedIndex);
-        options.css("background", "#ffffff");
-        optionToHighlight.css("background", "#aaaaaa");
+        const optionToHighlight = options[selectedIndex];
+        options.forEach((e) => {e.style.background = "#fff";});
+        optionToHighlight.style.background = "#aaa";
         fixScroll(optionToHighlight);
     }
 
     function fixScroll(optionToHighlight) {
-        const suggestBoxScrollTop = $suggestBox.scrollTop();
-        const optionToHighlightHeight = optionToHighlight.height();
-        const suggestBoxHeight = $suggestBox.height();
-        const heightInDiv = optionToHighlight.offset().top - $suggestBox.offset().top + suggestBoxScrollTop;
-        if (heightInDiv + optionToHighlightHeight > suggestBoxScrollTop + suggestBoxHeight) {
+		const optionToHighlightRect = optionToHighlight.getBoundingClientRect();
+		const suggestBoxRect = suggestBox.getBoundingClientRect();
+		const suggestTableRect = suggestTable.getBoundingClientRect();
+        const heightInDiv = optionToHighlightRect.top - suggestBoxRect.top + suggestBox.scrollTop;
+        if (heightInDiv + optionToHighlightRect.height > suggestBox.scrollTop + suggestBoxRect.height) {
             let scrollBarOffset = 0;
-            if ($suggestTable.width() > $suggestBox.width()) {
+            if (suggestTableRect.width > suggestBoxRect.width) {
                 scrollBarOffset = 8;
             }
-            $suggestBox.scrollTop(heightInDiv - suggestBoxHeight + optionToHighlightHeight + scrollBarOffset + 8);
+            suggestBox.scrollTop = heightInDiv - suggestBoxRect.height + optionToHighlightRect.height + scrollBarOffset + 8;
         }
-        if (heightInDiv < suggestBoxScrollTop) {
-            $suggestBox.scrollTop(heightInDiv);
+        if (heightInDiv < suggestBox.scrollTop) {
+            suggestBox.scrollTop = heightInDiv;
         }
     }
 

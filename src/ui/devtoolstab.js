@@ -2,6 +2,8 @@
 
 /* globals chrome */
 
+import {removeEl} from "./microJQuery.js";
+
 import {app, ui} from './init.js';
 import {suggest} from './suggest.js';
 import {createDomainMarkup, getDomainData} from './tabGroup.js';
@@ -16,17 +18,17 @@ export let skipNextSync = false;
 
 function renderData() {
     files = {};
-    ui.domainDefs.children().remove();
+    [...ui.domainDefs.children].forEach(removeEl);
     chrome.runtime.sendMessage({action: "getDomains"}, function(domains) {
         if (domains.length) {
             domains.forEach(function(domain) {
                 const domainMarkup = createDomainMarkup(domain);
-                ui.domainDefs.append(domainMarkup);
+                ui.domainDefs.appendChild(domainMarkup);
             });
         } else {
             const newDomain = createDomainMarkup({rules: [{type: "normalOverride"}]});
-            ui.domainDefs.append(newDomain);
-            newDomain.find(".domainMatchInput").val("*");
+            ui.domainDefs.appendChild(newDomain);
+            newDomain.getElementsByClassName("domainMatchInput")[0].value= "*";
             chrome.runtime.sendMessage({
                 action: "saveDomain",
                 data: getDomainData(newDomain)
@@ -49,6 +51,7 @@ function setupSynchronizeConnection() {
     });
 }
 
+
 function init() {
     mainSuggest.init();
     requestHeadersSuggest.init();
@@ -60,43 +63,45 @@ function init() {
 
     renderData();
 
-    ui.addDomainBtn.on("click", function() {
+    ui.addDomainBtn.addEventListener("click", function() {
         const newDomain = createDomainMarkup();
-        newDomain.find(".domainMatchInput").val("*");
-        ui.domainDefs.append(newDomain);
+        newDomain.getElementsByClassName("domainMatchInput")[0].value= "*";
+        ui.domainDefs.appendChild(newDomain);
         chrome.runtime.sendMessage({action: "saveDomain", data: getDomainData(newDomain)});
         app.skipNextSync = true;
     });
 
-    ui.helpBtn.on("click", function() {
-        ui.helpOverlay.toggle();
+    ui.helpBtn.addEventListener("click", function() {
+        ui.helpOverlay.style.display = (ui.helpOverlay.style.display == "none" ? "block" : "none");
     });
 
-    ui.helpCloseBtn.on("click", function() {
-        ui.helpOverlay.hide();
+    ui.helpCloseBtn.addEventListener("click", function() {
+        ui.helpOverlay.style.display = "none";
     });
 
     if (!chrome.devtools) {
-        ui.showSuggestions.hide();
-        ui.showSuggestionsText.hide();
+        ui.showSuggestions.style.display = "none";
+        ui.showSuggestionsText.style.display = "none";
         chrome.runtime.sendMessage({
             action: "getSetting",
             setting: "tabPageNotice"
         }, function(data) {
 
             if (data !== "true") {
-                ui.tabPageNotice.find("a").on("click", function(e) {
-                    e.preventDefault();
-                    chrome.runtime.sendMessage({
-                        action: "setSetting",
-                        setting: "tabPageNotice",
-                        value: "true"
+                [...ui.tabPageNotice.getElementsByTagName("A")].forEach(e => {
+                    e.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        chrome.runtime.sendMessage({
+                            action: "setSetting",
+                            setting: "tabPageNotice",
+                            value: "true"
+                        });
+                        ui.tabPageNotice.style.display = "none";
                     });
-                    ui.tabPageNotice.fadeOut();
                 });
-                ui.tabPageNotice.fadeIn();
+                ui.tabPageNotice.style.display = "block";
                 setTimeout(function() {
-                    ui.tabPageNotice.fadeOut();
+                    ui.tabPageNotice.style.display = "none";
                 }, 6000);
             }
         });

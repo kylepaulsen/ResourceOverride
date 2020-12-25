@@ -15,7 +15,7 @@ export function moveableRules(parent, handleSelector) {
     placeholder.className = "sortable-placeholder";
 
     const regetChildren = function() {
-        children = Array.prototype.slice.call(parent.children);
+        children = [...parent.children];
     };
     regetChildren();
 
@@ -101,7 +101,7 @@ export function moveableRules(parent, handleSelector) {
             if (dropTarget !== lastDropTarget) {
                 setBorders();
                 if (dropTarget) {
-                    dropTarget.style.background = "#dddddd";
+                    dropTarget.style.background = "#ddd";
                 }
                 lastDropTarget = dropTarget;
             }

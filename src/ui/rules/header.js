@@ -2,6 +2,8 @@
 
 /* globals $ */
 
+import {removeEl} from "../microJQuery.js";
+
 import {app, ui} from '../init.js';
 import {instanceTemplate, makeFieldRequired, deleteButtonIsSure, deleteButtonIsSureReset} from '../util.js';
 import {mainSuggest, requestHeadersSuggest, responseHeadersSuggest} from '../devtoolstab.js';
@@ -12,30 +14,30 @@ function createHeaderRuleMarkup(savedData, saveFunc) {
     savedData = savedData || {};
     saveFunc = saveFunc || function() {};
 
-    const override = instanceTemplate(ui.headerRuleTemplate);
-    const matchInput = override.find(".matchInput");
-    const requestRulesInput = override.find(".requestRules");
-    const responseRulesInput = override.find(".responseRules");
-    const editBtn = override.find(".edit-btn");
-    const ruleOnOff = override.find(".onoffswitch");
-    const deleteBtn = override.find(".sym-btn");
+    const override = util.instanceTemplate(ui.headerRuleTemplate);
+    const matchInput = override.getElementsByClassName("matchInput")[0];
+    const requestRulesInput = override.getElementsByClassName("requestRules")[0];
+    const responseRulesInput = override.getElementsByClassName("responseRules")[0];
+    const editBtn = override.getElementsByClassName("edit-btn")[0];
+    const ruleOnOff = override.getElementsByClassName("onoffswitch")[0];
+    const deleteBtn = override.getElementsByClassName("sym-btn")[0];
 
-    matchInput.val(savedData.match || "");
+    matchInput.value = savedData.match || "";
     makeFieldRequired(matchInput);
 
     const updateHeaderInput = function(input, ruleStr) {
-        input.val(decodeURIComponent(ruleStr.replace(/\;/g, "; ")));
-        input.attr("title", decodeURIComponent(ruleStr.replace(/\;/g, "\n")));
-        input.data("rules", ruleStr);
+        input.value = decodeURIComponent(ruleStr.replace(/\;/g, "; "));
+        input.title = decodeURIComponent(ruleStr.replace(/\;/g, "\n"));
+        input.dataset.rules = ruleStr;
     };
 
     updateHeaderInput(requestRulesInput, savedData.requestRules || "");
     updateHeaderInput(responseRulesInput, savedData.responseRules || "");
 
-    ruleOnOff[0].isOn = savedData.on === false ? false : true;
+    ruleOnOff.isOn = savedData.on === false ? false : true;
 
     if (savedData.on === false) {
-        override.addClass("disabled");
+        override.classList.add("disabled");
     }
 
     const editorSaveFunc = function() {
@@ -46,39 +48,37 @@ function createHeaderRuleMarkup(savedData, saveFunc) {
     };
 
     const editFunc = function() {
-        const reqStr = requestRulesInput.data("rules") || "";
-        const resStr = responseRulesInput.data("rules") || "";
-        headerEditor.open(reqStr, resStr, matchInput.val(), editorSaveFunc);
+        const reqStr = requestRulesInput.dataset.rules || "";
+        const resStr = responseRulesInput.dataset.rules || "";
+        headerEditor.open(reqStr, resStr, matchInput.value, editorSaveFunc);
     };
 
-    mainSuggest.init(matchInput);
+    mainSuggest.init([matchInput]);
 
-    matchInput.on("keyup", saveFunc);
+    matchInput.addEventListener("keyup", saveFunc);
 
-    override.on("click", function(e) {
-        if ($(e.target).hasClass("headerRuleInput")) {
+    override.addEventListener("click", function(e) {
+        if (e.target.classList.contains("headerRuleInput")) {
             editFunc();
         }
     });
-    editBtn.on("click", editFunc);
+    editBtn.addEventListener("click", editFunc);
 
-    deleteBtn.on("click", function() {
+    deleteBtn.addEventListener("click", function() {
         if (!deleteButtonIsSure(deleteBtn)) {
             return;
         }
-        override.css("transition", "none");
-        override.fadeOut(function() {
-            override.remove();
-            saveFunc();
-        });
+        override.style.transition = "none"
+        removeEl(override);
+        saveFunc();
     });
 
-    deleteBtn.on("mouseout", function() {
-        deleteButtonIsSureReset(deleteBtn);
+    deleteBtn.addEventListener("mouseout", function() {
+        util.deleteButtonIsSureReset(deleteBtn);
     });
 
-    ruleOnOff.on("click change", function() {
-        override.toggleClass("disabled", !ruleOnOff[0].isOn);
+    ruleOnOff.addEventListener("change", function() {
+        override.classList.toggle("disabled", !ruleOnOff.isOn);
         saveFunc();
     });
 
@@ -91,50 +91,48 @@ function createHeaderEditorRuleMarkup(savedData, saveFunc, type) {
     saveFunc = saveFunc || function() {};
 
     const override = instanceTemplate(ui.headerEditorRuleTemplate);
-    const operation = override.find(".operationSelect");
-    const headerName = override.find(".headerName");
-    const headerValue = override.find(".headerValue");
-    const deleteBtn = override.find(".sym-btn");
+    const operation = override.getElementsByClassName("operationSelect")[0];
+    const headerName = override.getElementsByClassName("headerName")[0];
+    const headerValue = override.getElementsByClassName("headerValue")[0];
+    const deleteBtn = override.getElementsByClassName("sym-btn")[0];
 
-    operation.val(savedData.operation);
-    headerName.val(savedData.header);
-    headerValue.val(savedData.value || "");
+    operation.value = savedData.operation;
+    headerName.value = savedData.header || "";
+    headerValue.value = savedData.value || "";
 
     if (savedData.operation === "remove") {
-        headerValue[0].disabled = true;
+        headerValue.disabled = true;
     }
 
-    operation.on("change", function() {
-        if (operation.val() === "remove") {
-            headerValue.val("");
-            headerValue[0].disabled = true;
+    operation.addEventListener("change", function() {
+        if (operation.value === "remove") {
+            headerValue.value = "";
+            headerValue.disabled = true;
         } else {
-            headerValue[0].disabled = false;
+            headerValue.disabled = false;
         }
         saveFunc();
     });
-    headerName.on("keyup", saveFunc);
-    headerValue.on("keyup", saveFunc);
+    headerName.addEventListener("keyup", saveFunc);
+    headerValue.addEventListener("keyup", saveFunc);
 
-    deleteBtn.on("click", function() {
+    deleteBtn.addEventListener("click", function() {
         if (!deleteButtonIsSure(deleteBtn)) {
             return;
         }
-        override.css("transition", "none");
-        override.fadeOut(function() {
-            override.remove();
-            saveFunc();
-        });
+        override.style.transition = "none"
+        removeEl(override);
+        saveFunc();
     });
 
-    deleteBtn.on("mouseout", function() {
+    deleteBtn.addEventListener("mouseout", function() {
         deleteButtonIsSureReset(deleteBtn);
     });
 
     if (type === "request") {
-        requestHeadersSuggest.init(headerName, false, true);
+        requestHeadersSuggest.init([headerName], false, true);
     } else {
-        responseHeadersSuggest.init(headerName, false, true);
+        responseHeadersSuggest.init([headerName], false, true);
     }
 
     return override;

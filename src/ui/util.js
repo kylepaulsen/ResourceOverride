@@ -10,28 +10,28 @@ import {createOnOffSwitch} from './onOffSwitch.js';
 export function instanceTemplate(template) {
     // We have to fetch first child (the container element) because
     // document fragments are not supported by JQ
-    const newDom = document.importNode(template[0].content, true).children[0];
+    const newDom = document.importNode(template.content, true).children[0];
     const switchDiv = newDom.querySelector(".switch");
     if (switchDiv) {
         switchDiv.appendChild(createOnOffSwitch());
     }
-    return $(newDom);
+    return newDom;
 };
 
 export function deleteButtonIsSure(deleteBtn) {
-    if (!deleteBtn.data("isSure")) {
-        deleteBtn.data("isSure", 1);
-        deleteBtn.css("font-size", "10px");
-        deleteBtn.text("Sure?");
+    if (!deleteBtn.dataset["isSure"]) {
+        deleteBtn.dataset["isSure"] = 1;
+        deleteBtn.style.fontSize = "10px";
+        deleteBtn.textContent = "Sure?";
         return false;
     }
     return true;
 };
 
 export function deleteButtonIsSureReset(deleteBtn) {
-    deleteBtn.text("\u00d7");
-    deleteBtn.css("font-size", "28px");
-    deleteBtn.data("isSure", 0);
+    deleteBtn.textContent = "\u00d7";
+    deleteBtn.style.fontSize = "28px";
+    deleteBtn.dataset["isSure"] = 0;
 };
 
 export function debounce(fn, amt) {
@@ -46,7 +46,7 @@ export function debounce(fn, amt) {
 
 export function getNextId(jqResults, prefix) {
     let maxId = 0;
-    jqResults.each(function(idx, el) {
+    [...jqResults].forEach(function(el) {
         const id = parseInt(el.id.substring(1), 10);
         if (!isNaN(id) && id > maxId) {
             maxId = id;
@@ -57,13 +57,13 @@ export function getNextId(jqResults, prefix) {
 
 export function makeFieldRequired(input) {
     const checkRequiredField = function() {
-        if (input.val() === "") {
-            input.css("background", "#ffaaaa");
+        if (input.value === "") {
+            input.style.background = "#faa";
         } else {
-            input.css("background", "#ffffff");
+            input.style.background = "#fff";
         }
     };
-    input.on("keyup", checkRequiredField);
+    input.addEventListener("keyup", checkRequiredField);
     checkRequiredField();
 };
 
@@ -104,9 +104,9 @@ export function getTabResources(cb) {
 
 export function showToast(message) {
     ui.generalToast.html(message);
-    ui.generalToast.fadeIn();
+    ui.generalToaststyle.display = "block";
     setTimeout(function() {
-        ui.generalToast.fadeOut();
+        ui.generalToast.style.display = "none";
     }, 3500);
 };
 

@@ -5,8 +5,8 @@
 const ui = {};
 
 // pre-fetch all major ui.
-$("[id]").each(function(idx, el) {
-    ui[el.id] = $(el);
+document.querySelectorAll("[id]").forEach(function(el) {
+    ui[el.id] = el;
 });
 
 const app = {};

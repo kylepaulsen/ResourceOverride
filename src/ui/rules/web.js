@@ -1,5 +1,7 @@
 "use strict";
 
+import {removeEl} from "../microJQuery.js";
+
 import {app, ui} from '../init.js';
 import {instanceTemplate, makeFieldRequired, deleteButtonIsSure, deleteButtonIsSureReset} from '../util.js';
 import {mainSuggest} from '../devtoolstab.js';
@@ -9,43 +11,41 @@ function createWebOverrideMarkup(savedData, saveFunc) {
     saveFunc = saveFunc || function() {};
 
     const override = instanceTemplate(ui.overrideTemplate);
-    const matchInput = override.find(".matchInput");
-    const replaceInput = override.find(".replaceInput");
-    const ruleOnOff = override.find(".onoffswitch");
-    const deleteBtn = override.find(".sym-btn");
+    const matchInput = override.getElementsByClassName("matchInput")[0];
+    const replaceInput = override.getElementsByClassName("replaceInput")[0];
+    const ruleOnOff = override.getElementsByClassName("onoffswitch")[0];
+    const deleteBtn = override.getElementsByClassName("sym-btn")[0];
 
-    matchInput.val(savedData.match || "");
-    replaceInput.val(savedData.replace || "");
+    matchInput.value = savedData.match || "";
+    replaceInput.value = savedData.replace || "";
     makeFieldRequired(matchInput);
     makeFieldRequired(replaceInput);
-    ruleOnOff[0].isOn = savedData.on === false ? false : true;
+    ruleOnOff.isOn = savedData.on === false ? false : true;
 
     if (savedData.on === false) {
-        override.addClass("disabled");
+        override.classList.add("disabled");
     }
 
-    deleteBtn.on("click", function() {
+    deleteBtn.addEventListener("click", function() {
         if (!deleteButtonIsSure(deleteBtn)) {
             return;
         }
-        override.css("transition", "none");
-        override.fadeOut(function() {
-            override.remove();
-            saveFunc();
-            app.skipNextSync = true;
-        });
+        override.style.transition = "none"
+        removeEl(override);
+        saveFunc();
+        app.skipNextSync = true;
     });
 
-    deleteBtn.on("mouseout", function() {
+    deleteBtn.addEventListener("mouseout", function() {
         deleteButtonIsSureReset(deleteBtn);
     });
 
-    mainSuggest.init(matchInput);
+    mainSuggest.init([matchInput]);
 
-    matchInput.on("keyup", saveFunc);
-    replaceInput.on("keyup", saveFunc);
-    ruleOnOff.on("click change", function() {
-        override.toggleClass("disabled", !ruleOnOff[0].isOn);
+    matchInput.addEventListener("keyup", saveFunc);
+    replaceInput.addEventListener("keyup", saveFunc);
+    ruleOnOff.addEventListener("change", function() {
+        override.classList.toggle("disabled", !ruleOnOff.isOn);
         saveFunc();
     });
 

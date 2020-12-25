@@ -30,14 +30,14 @@ function checkDomain(domain) {
     let valid = (/^d[0-9]+$/).test(domain.id);
     valid = valid && domain.matchUrl !== undefined;
     valid = valid && domain.on !== undefined;
-    valid = valid && $.isArray(domain.rules);
+    valid = valid && Array.isArray(domain.rules);
     valid = valid && domain.rules.every(checkRule);
     return valid;
 }
 
 export function importData(data, version) {
     // check data first.
-    if ($.isArray(data) && data.every(checkDomain)) {
+    if (Array.isArray(data) && data.every(checkDomain)) {
         // this will call the sync function so stuff will get re-rendered.
         chrome.runtime.sendMessage({action: "import", data: data});
         showToast("Load Succeeded!");
@@ -48,8 +48,8 @@ export function importData(data, version) {
 
 export function exportData() {
     const allData = [];
-    $(".domainContainer").each(function(idx, domain) {
-        allData.push(getDomainData($(domain)));
+    [...document.getElementsByClassName("domainContainer")].forEach(function(domain) {
+        allData.push(getDomainData(domain));
     });
     return {v: 1, data: allData};
 }

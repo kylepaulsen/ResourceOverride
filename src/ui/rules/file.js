@@ -2,6 +2,8 @@
 
 /* globals $ */
 
+import {removeEl} from "../microJQuery.js";
+
 import {app, ui} from '../init.js';
 import {files, mainSuggest} from '../devtoolstab.js';
 import {instanceTemplate, makeFieldRequired, deleteButtonIsSureReset, getNextId, deleteButtonIsSure} from '../util.js';
@@ -11,52 +13,50 @@ function createFileOverrideMarkup(savedData, saveFunc) {
     saveFunc = saveFunc || function() {};
 
     const override = instanceTemplate(ui.fileOverrideTemplate);
-    const matchInput = override.find(".matchInput");
-    const editBtn = override.find(".edit-btn");
-    const ruleOnOff = override.find(".onoffswitch");
-    const deleteBtn = override.find(".sym-btn");
+    const matchInput = override.getElementsByClassName("matchInput")[0];
+    const editBtn = override.getElementsByClassName("edit-btn")[0];
+    const ruleOnOff = override.getElementsByClassName("onoffswitch")[0];
+    const deleteBtn = override.getElementsByClassName("sym-btn")[0];
 
-    matchInput.val(savedData.match || "");
+    matchInput.value = savedData.match || "";
     makeFieldRequired(matchInput);
-    ruleOnOff[0].isOn = savedData.on === false ? false : true;
+    ruleOnOff.isOn = savedData.on === false ? false : true;
 
     if (savedData.on === false) {
-        override.addClass("disabled");
+        override.classList.add("disabled");
     }
 
-    editBtn.on("click", function() {
-        app.editor.open(override[0].id, matchInput.val(), false, saveFunc);
+    editBtn.addEventListener("click", function() {
+        app.editor.open(override.id, matchInput.value, false, saveFunc);
     });
 
-    deleteBtn.on("click", function() {
-        if (!deleteButtonIsSure(deleteBtn)) {
+    deleteBtn.addEventListener("click", function() {
+        if (!util.deleteButtonIsSure(deleteBtn)) {
             return;
         }
-        override.css("transition", "none");
-        override.fadeOut(function() {
-            override.remove();
-            delete files[override[0].id];
-            saveFunc();
-        });
-    });
-
-    deleteBtn.on("mouseout", function() {
-        deleteButtonIsSureReset(deleteBtn);
-    });
-
-    mainSuggest.init(matchInput);
-
-    matchInput.on("keyup", saveFunc);
-    ruleOnOff.on("click change", function() {
-        override.toggleClass("disabled", !ruleOnOff[0].isOn);
+        override.style.transition = "none"
+        removeEl(override);
+        delete files[override.id];
         saveFunc();
     });
 
-    let id = savedData.fileId || getNextId($(".ruleContainer"), "f");
+    deleteBtn.addEventListener("mouseout", function() {
+        deleteButtonIsSureReset(deleteBtn);
+    });
+
+    mainSuggest.init([matchInput]);
+
+    matchInput.addEventListener("keyup", saveFunc);
+    ruleOnOff.addEventListener("change", function() {
+        override.classList.toggle("disabled", !ruleOnOff.isOn);
+        saveFunc();
+    });
+
+    let id = savedData.fileId || getNextId(document.getElementsByClassName("ruleContainer"), "f");
     if (files[id]) {
-        id = getNextId($(".ruleContainer"), "f");
+        id = getNextId(document.getElementsByClassName("ruleContainer"), "f");
     }
-    override[0].id = id;
+    override.id = id;
 
     if (savedData.file) {
         files[id] = savedData.file;
