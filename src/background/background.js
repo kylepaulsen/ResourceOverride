@@ -36,22 +36,25 @@
         bgapp.syncFunctions = [];
     };
 
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-        if (request.action === "saveDomain") {
+    const messageEventsProcessors = new Map([
+        ["saveDomain", (request, sender) => {
             bgapp.mainStorage.put(request.data)
                 .then(syncAllInstances)
                 .catch(simpleError);
             bgapp.ruleDomains[request.data.id] = request.data;
-        } else if (request.action === "getDomains") {
-            bgapp.mainStorage.getAll().then(function(domains) {
-                sendResponse(domains || []);
-            }).catch(simpleError);
-        } else if (request.action === "deleteDomain") {
+        }],
+        ["getDomains", (request, sender) => {
+            return bgapp.mainStorage.getAll().then(function(domains) {
+                return domains || [];
+            });
+        }],
+        ["deleteDomain", (request, sender) => {
             bgapp.mainStorage.delete(request.id)
                 .then(syncAllInstances)
                 .catch(simpleError);
             delete bgapp.ruleDomains[request.id];
-        } else if (request.action === "import") {
+        }],
+        ["import", (request, sender) => {
             let maxId = 0;
             for (const id in bgapp.ruleDomains) {
                 maxId = Math.max(maxId, parseInt(id.substring(1)));
@@ -65,29 +68,31 @@
             }))
             .then(syncAllInstances)
             .catch(simpleError);
-        } else if (request.action === "makeGetRequest") {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", request.url, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    sendResponse(xhr.responseText);
-                }
-            };
-            xhr.send();
-        } else if (request.action === "setSetting") {
+        }],
+        ["makeGetRequest", (request, sender) => {
+            return fetch(request.url, {"headers": {"Origin": null}, "referrer": "no-referrer"}).then(e=>e.text());
+        }],
+        ["setSetting", (request, sender) => {
             localStorage[request.setting] = request.value;
-        } else if (request.action === "getSetting") {
-            sendResponse(localStorage[request.setting]);
-        } else if (request.action === "syncMe") {
-            bgapp.syncFunctions.push(sendResponse);
-        } else if (request.action === "match") {
-            sendResponse(match(request.domainUrl, request.windowUrl).matched);
-        } else if (request.action === "extractMimeType") {
-            sendResponse(bgapp.extractMimeType(request.fileName, request.file));
-        }
+        }],
+        ["getSetting", (request, sender) => {
+            return Promise.resolve(localStorage[request.setting]);
+        }],
+        ["syncMe", (request, sender) => {
+            return new Promise((resolve, reject) => {
+                bgapp.syncFunctions.push(resolve);
+            });
+        }],
+        ["match", (request, sender) => {
+            return Promise.resolve(match(request.domainUrl, request.windowUrl).matched);
+        }],
+        ["extractMimeType", (request, sender) => {
+            return Promise.resolve(bgapp.extractMimeType(request.fileName, request.file));
+        }],
+    ]);
 
-        // !!!Important!!! Need to return true for sendResponse to work.
-        return true;
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+        return messageEventsProcessors.get(request.action)(request, sender);
     });
 
     chrome.webRequest.onBeforeRequest.addListener(function(details) {
