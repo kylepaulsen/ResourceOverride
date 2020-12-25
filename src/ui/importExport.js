@@ -6,31 +6,24 @@
     const app = window.app;
     const util = app.util;
 
+    const checkRulesMap = new Map([
+        ["normalOverride", (rule) => {
+            return (rule.match !== undefined && rule.replace !== undefined && rule.on !== undefined);
+        }],
+        ["fileOverride", (rule) => {
+            return (rule.match !== undefined && rule.file !== undefined && (/^f[0-9]+$/).test(rule.fileId) && rule.on !== undefined);
+        }],
+        ["fileInject", (rule) => {
+            return (rule.fileName !== undefined && rule.file !== undefined && (/^f[0-9]+$/).test(rule.fileId) && rule.fileType !== undefined && rule.injectLocation !== undefined && rule.on !== undefined);
+        }],
+        ["headerRule", (rule) => {
+            return (rule.match !== undefined && rule.requestRules !== undefined && rule.responseRules !== undefined && rule.on !== undefined);
+        }],
+    ]);
+
+
     function checkRule(rule) {
-        let valid = true;
-        if (rule.type === "normalOverride") {
-            valid = valid && rule.match !== undefined;
-            valid = valid && rule.replace !== undefined;
-            valid = valid && rule.on !== undefined;
-        } else if (rule.type === "fileOverride") {
-            valid = valid && rule.match !== undefined;
-            valid = valid && rule.file !== undefined;
-            valid = valid && (/^f[0-9]+$/).test(rule.fileId);
-            valid = valid && rule.on !== undefined;
-        } else if (rule.type === "fileInject") {
-            valid = valid && rule.fileName !== undefined;
-            valid = valid && rule.file !== undefined;
-            valid = valid && (/^f[0-9]+$/).test(rule.fileId);
-            valid = valid && rule.fileType !== undefined;
-            valid = valid && rule.injectLocation !== undefined;
-            valid = valid && rule.on !== undefined;
-        } else if (rule.type === "headerRule") {
-            valid = valid && rule.match !== undefined;
-            valid = valid && rule.requestRules !== undefined;
-            valid = valid && rule.responseRules !== undefined;
-            valid = valid && rule.on !== undefined;
-        }
-        return valid;
+        return checkRulesMap.get(rule.type)(rule);
     }
 
     function checkDomain(domain) {

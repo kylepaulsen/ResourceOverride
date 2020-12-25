@@ -51,43 +51,55 @@
         };
     }
 
+
+    const domainDataGetterMap = new Map([
+        ["normalOverride", ($el) => {
+            return {
+                type: "normalOverride",
+                match: $el.find(".matchInput").val(),
+                replace: $el.find(".replaceInput").val(),
+                on: $el.find(".onoffswitch")[0].isOn
+            }
+        }],
+        ["fileOverride", ($el) => {
+            return {
+                type: "fileOverride",
+                match: $el.find(".matchInput").val(),
+                file: app.files[el.id] || "",
+                fileId: el.id,
+                on: $el.find(".onoffswitch")[0].isOn
+            }
+        }],
+        ["fileInject", ($el) => {
+            return {
+                type: "fileInject",
+                fileName: $el.find(".fileName").val(),
+                file: app.files[el.id] || "",
+                fileId: el.id,
+                fileType: $el.find(".fileTypeSelect").val(),
+                injectLocation: $el.find(".injectLocationSelect").val(),
+                on: $el.find(".onoffswitch")[0].isOn
+            }
+        }],
+        ["headerRule", ($el) => {
+            return {
+                type: "headerRule",
+                match: $el.find(".matchInput").val(),
+                requestRules: $el.find(".requestRules").data("rules") || "",
+                responseRules: $el.find(".responseRules").data("rules") || "",
+                on: $el.find(".onoffswitch")[0].isOn
+            }
+        }],
+    ]);
     function getDomainData(domain) {
         const rules = [];
         domain.find(".ruleContainer").each(function(idx, el) {
             const $el = $(el);
-            if ($el.hasClass("normalOverride")) {
-                rules.push({
-                    type: "normalOverride",
-                    match: $el.find(".matchInput").val(),
-                    replace: $el.find(".replaceInput").val(),
-                    on: $el.find(".onoffswitch")[0].isOn
-                });
-            } else if ($el.hasClass("fileOverride")) {
-                rules.push({
-                    type: "fileOverride",
-                    match: $el.find(".matchInput").val(),
-                    file: app.files[el.id] || "",
-                    fileId: el.id,
-                    on: $el.find(".onoffswitch")[0].isOn
-                });
-            } else if ($el.hasClass("fileInject")) {
-                rules.push({
-                    type: "fileInject",
-                    fileName: $el.find(".fileName").val(),
-                    file: app.files[el.id] || "",
-                    fileId: el.id,
-                    fileType: $el.find(".fileTypeSelect").val(),
-                    injectLocation: $el.find(".injectLocationSelect").val(),
-                    on: $el.find(".onoffswitch")[0].isOn
-                });
-            } else if ($el.hasClass("headerRule")) {
-                rules.push({
-                    type: "headerRule",
-                    match: $el.find(".matchInput").val(),
-                    requestRules: $el.find(".requestRules").data("rules") || "",
-                    responseRules: $el.find(".responseRules").data("rules") || "",
-                    on: $el.find(".onoffswitch")[0].isOn
-                });
+            for(let [cand, domainDataGetter] of domainDataGetterMap){
+                if ($el.hasClass()) {
+                    rules.push(domainDataGetter($el));
+                    break;
+                }
             }
         });
 
@@ -98,6 +110,13 @@
             on: domain.find(".onoffswitch")[0].isOn
         };
     }
+
+    let domainMarkupCreatorMap = new Map([
+        ["normalOverride", app.createWebOverrideMarkup],
+        ["fileOverride", app.createFileOverrideMarkup],
+        ["fileInject", app.createFileInjectMarkup],
+        ["headerRule", app.createHeaderRuleMarkup],
+    ]);
 
     function createDomainMarkup(savedData) {
         savedData = savedData || {};
@@ -115,15 +134,7 @@
 
         if (rules.length) {
             rules.forEach(function(rule) {
-                if (rule.type === "normalOverride") {
-                    overrideRulesContainer.append(app.createWebOverrideMarkup(rule, saveFunc));
-                } else if (rule.type === "fileOverride") {
-                    overrideRulesContainer.append(app.createFileOverrideMarkup(rule, saveFunc));
-                } else if (rule.type === "fileInject") {
-                    overrideRulesContainer.append(app.createFileInjectMarkup(rule, saveFunc));
-                } else if (rule.type === "headerRule") {
-                    overrideRulesContainer.append(app.createHeaderRuleMarkup(rule, saveFunc));
-                }
+                overrideRulesContainer.append(domainMarkupCreatorMap.get(rule.type)(rule, saveFunc));
             });
         }
 
