@@ -1,17 +1,14 @@
-(function() {
-    "use strict";
+"use strict";
 
-    /* globals $ */
+/* globals $ */
 
-    const ui = {};
+const ui = {};
 
-    // pre-fetch all major ui.
-    $("[id]").each(function(idx, el) {
-        ui[el.id] = $(el);
-    });
+// pre-fetch all major ui.
+$("[id]").each(function(idx, el) {
+    ui[el.id] = $(el);
+});
 
-    const app = {
-        ui: ui
-    };
-    window.app = app;
-})();
+const app = {};
+
+export { app, ui };
