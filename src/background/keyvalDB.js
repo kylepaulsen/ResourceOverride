@@ -1,5 +1,6 @@
-var keyvalDB = function(dbName, schemaDef, version, options) {
-    "use strict";
+"use strict";
+
+export function keyvalDB(dbName, schemaDef, version, options) {
     options = options || {};
     var schema = {};
     if (Object.prototype.toString.call(schemaDef) === "[object Array]") {
@@ -203,6 +204,3 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
     };
 };
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = keyvalDB;
-}

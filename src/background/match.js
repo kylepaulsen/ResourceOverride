@@ -72,7 +72,7 @@ function replaceAfter(str, idx, match, replace) {
     return str.substring(0, idx) + str.substring(idx).replace(match, replace);
 }
 
-function matchReplace(pattern, replacePattern, str) {
+export function matchReplace(pattern, replacePattern, str) {
     "use strict";
     var matchData;
     if (pattern.matched !== undefined && pattern.freeVars !== undefined) {
@@ -101,8 +101,4 @@ function matchReplace(pattern, replacePattern, str) {
     });
 
     return replacePattern;
-}
-
-if (typeof module === "object" && module.exports) {
-    module.exports = matchReplace;
 }

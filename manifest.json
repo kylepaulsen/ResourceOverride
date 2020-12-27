@@ -7,6 +7,11 @@
     "48": "icons/icon-48x48.png",
     "128": "icons/icon-128x128.png"
   },
+  "applications" : {
+    "gecko" : {
+      "id" : "{9a253c57-0e95-4589-be64-365b3602c564}"
+    }
+  },
   "browser_action": {
     "default_icon": {
       "16": "icons/icon-16x16.png"

@@ -346,7 +346,7 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 <div id="generalToast" class="toast"></div>
 
 <!-- Library stuff -->
-<script src="../../lib/jquery-3.4.1.min.js"></script>
+<script type="module" src="./microJQuery.js"></script>
 <script src="../../lib/beautify.min.js"></script>
 
 <script src="../../lib/ace/ace.js"></script>
@@ -362,24 +362,33 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 <script src="../../lib/ace/worker-xml.js"></script>
 
 <!-- Main Src -->
-<script src="init.js"></script>
-<script src="util.js"></script>
-<script src="onOffSwitch.js"></script>
+<script type="module" src="./init.js"></script>
+<script type="module" src="./util.js"></script>
+<script type="module" src="./onOffSwitch.js"></script>
 
-<script src="headers.js"></script>
-<script src="moveableRules.js"></script>
-<script src="suggest.js"></script>
+<script type="module" src="./headers.js"></script>
+<script type="module" src="./moveableRules.js"></script>
+<script type="module" src="./suggest.js"></script>
 
-<script src="editor.js"></script>
-<script src="headerEditor.js"></script>
-<script src="webRule.js"></script>
-<script src="fileRule.js"></script>
-<script src="injectRule.js"></script>
-<script src="headerRule.js"></script>
-<script src="tabGroup.js"></script>
-<script src="importExport.js"></script>
-<script src="options.js"></script>
+<script type="module" src="./editor.js"></script>
+<script type="module" src="./headerEditor.js"></script>
+<script type="module" src="./rules/web.js"></script>
+<script type="module" src="./rules/file.js"></script>
+<script type="module" src="./rules/inject.js"></script>
+<script type="module" src="./rules/header.js"></script>
+<script type="module" src="./tabGroup.js"></script>
+<script type="module" src="./importExport.js"></script>
+<script type="module" src="./options.js"></script>
 
-<script src="devtoolstab.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "./": ".",
+    ".rules": "./rules",
+  }
+}
+</script>
+
+<script type="module" src="devtoolstab.js"></script>
 </body>
 </html>
