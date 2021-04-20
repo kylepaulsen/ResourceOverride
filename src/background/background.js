@@ -1,4 +1,4 @@
-/* globals chrome, bgapp, unescape, match */
+/* globals chrome, bgapp, match */
 {
     bgapp.ruleDomains = {};
     bgapp.syncFunctions = [];
