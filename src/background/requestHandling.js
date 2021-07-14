@@ -11,6 +11,7 @@
                 e.target.disconnect();
             };
             return {
+                cancel: true,
                 responseHeaders: [{
                     name: "Content-Type",
                     value: mimeAndFile.mime
