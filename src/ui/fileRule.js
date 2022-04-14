@@ -1,4 +1,4 @@
-(function() {
+(function () {
     "use strict";
 
     /* globals $ */
@@ -13,9 +13,11 @@
 
         const override = util.instanceTemplate(ui.fileOverrideTemplate);
         const matchInput = override.find(".matchInput");
-        const editBtn = override.find(".edit-btn");
         const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
+        const uploadBtn = override.find(".upload-btn");
+        const fileBtn = override.find(".file-btn");
+        const fileName = override.find(".uploadedFileName");
 
         matchInput.val(savedData.match || "");
         util.makeFieldRequired(matchInput);
@@ -25,8 +27,22 @@
             override.addClass("disabled");
         }
 
-        editBtn.on("click", function() {
-            app.editor.open(override[0].id, matchInput.val(), false, saveFunc);
+        uploadBtn.on("click", function () {
+            document.getElementById('file').click();
+        });
+        
+
+        fileBtn.on("change", function () {
+            const selectedFile = document.getElementById('file').files[0];
+
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                app.files[override[0].id] = event.target.result;
+                app.fileNames[override[0].id] = selectedFile.name;
+                saveFunc();
+                fileName.text(selectedFile.name);
+            };
+            reader.readAsText(selectedFile);
         });
 
         deleteBtn.on("click", function() {
@@ -61,6 +77,7 @@
 
         if (savedData.file) {
             app.files[id] = savedData.file;
+            fileName.text(savedData.fileName);
         }
 
         return override;
