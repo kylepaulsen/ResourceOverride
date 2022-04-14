@@ -15,7 +15,9 @@
         };
 
         const updateTabCallback = function(tabId, changeinfo, tab) {
-            urls[tabId] = tab.url;
+            if (changeinfo.url) {
+                urls[tabId] = changeinfo.url;
+            }
         };
 
         // Not all tabs will fire an update event. If the page is pre-rendered,
