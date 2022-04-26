@@ -29,21 +29,21 @@
     }
 
     function editorGuessMode(fileName, file) {
-        chrome.runtime.sendMessage({
-            action: "extractMimeType",
-            file: file,
-            fileName: fileName
-        }, function(data) {
-            const mimeToEditorSyntax = {
-                "text/javascript": "javascript",
-                "text/html": "html",
-                "text/css": "css",
-                "text/xml": "xml"
-            };
-            const mode = mimeToEditorSyntax[data.mime] || "javascript";
-            ui.syntaxSelect.val(mode);
-            editor.getSession().setMode("ace/mode/" + mode);
-        });
+        // chrome.runtime.sendMessage({
+        //     action: "extractMimeType",
+        //     file: file,
+        //     fileName: fileName
+        // }, function(data) {
+        //     const mimeToEditorSyntax = {
+        //         "text/javascript": "javascript",
+        //         "text/html": "html",
+        //         "text/css": "css",
+        //         "text/xml": "xml"
+        //     };
+        //     const mode = mimeToEditorSyntax[data.mime] || "javascript";
+        //     ui.syntaxSelect.val(mode);
+        //     editor.getSession().setMode("ace/mode/" + mode);
+        // });
     }
 
     function saveFile() {
@@ -147,11 +147,11 @@
         const url = ui.loadSelect.val();
         ui.loadSelect.val("");
         if (url) {
-            chrome.runtime.sendMessage({action: "makeGetRequest", url: url}, function(data) {
-                setEditorVal(data);
-                updateSaveButtons(true);
-                editorGuessMode(url, data);
-            });
+            // chrome.runtime.sendMessage({action: "makeGetRequest", url: url}, function(data) {
+            //     setEditorVal(data);
+            //     updateSaveButtons(true);
+            //     editorGuessMode(url, data);
+            // });
         }
     });
 

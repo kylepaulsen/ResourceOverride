@@ -20,19 +20,19 @@
     });
 
     ui.showDevTools.on("click", function() {
-        chrome.runtime.sendMessage({
-            action: "setSetting",
-            setting: "devTools",
-            value: ui.showDevTools.prop("checked")
-        });
+        // chrome.runtime.sendMessage({
+        //     action: "setSetting",
+        //     setting: "devTools",
+        //     value: ui.showDevTools.prop("checked")
+        // });
     });
 
     ui.showSuggestions.on("click", function() {
-        chrome.runtime.sendMessage({
-            action: "setSetting",
-            setting: "showSuggestions",
-            value: ui.showSuggestions.prop("checked")
-        });
+        // chrome.runtime.sendMessage({
+        //     action: "setSetting",
+        //     setting: "showSuggestions",
+        //     value: ui.showSuggestions.prop("checked")
+        // });
         app.mainSuggest.setShouldSuggest(ui.showSuggestions.prop("checked"));
     });
 
@@ -41,11 +41,11 @@
     }
 
     ui.showLogs.on("click", function() {
-        chrome.runtime.sendMessage({
-            action: "setSetting",
-            setting: "showLogs",
-            value: ui.showLogs.prop("checked")
-        });
+        // chrome.runtime.sendMessage({
+        //     action: "setSetting",
+        //     setting: "showLogs",
+        //     value: ui.showLogs.prop("checked")
+        // });
     });
 
     ui.saveRulesLink.on("click", function(e) {
@@ -82,27 +82,27 @@
         ui.loadRulesInput.val("");
     });
 
-    chrome.runtime.sendMessage({
-        action: "getSetting",
-        setting: "devTools"
-    }, function(data) {
-        ui.showDevTools.prop("checked", data === "true");
-    });
+    // chrome.runtime.sendMessage({
+    //     action: "getSetting",
+    //     setting: "devTools"
+    // }, function(data) {
+    //     ui.showDevTools.prop("checked", data === "true");
+    // });
 
-    chrome.runtime.sendMessage({
-        action: "getSetting",
-        setting: "showSuggestions"
-    }, function(data) {
-        const shouldSuggest = util.isChrome() && data !== "false";
-        ui.showSuggestions.prop("checked", shouldSuggest);
-        app.mainSuggest.setShouldSuggest(shouldSuggest);
-    });
+    // chrome.runtime.sendMessage({
+    //     action: "getSetting",
+    //     setting: "showSuggestions"
+    // }, function(data) {
+    //     const shouldSuggest = util.isChrome() && data !== "false";
+    //     ui.showSuggestions.prop("checked", shouldSuggest);
+    //     app.mainSuggest.setShouldSuggest(shouldSuggest);
+    // });
 
-    chrome.runtime.sendMessage({
-        action: "getSetting",
-        setting: "showLogs"
-    }, function(data) {
-        ui.showLogs.prop("checked", data === "true");
-    });
+    // chrome.runtime.sendMessage({
+    //     action: "getSetting",
+    //     setting: "showLogs"
+    // }, function(data) {
+    //     ui.showLogs.prop("checked", data === "true");
+    // });
 
 })();

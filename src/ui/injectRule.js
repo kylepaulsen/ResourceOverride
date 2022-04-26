@@ -12,15 +12,20 @@
         saveFunc = saveFunc || function() {};
 
         const override = util.instanceTemplate(ui.fileInjectTemplate);
+        const rid = savedData.id || util.getNextRuleId(app.export().data);
+        override[0].id = `r${rid}`;
+        const matchInput = override.find(".matchInput");
         const fileName = override.find(".fileName");
-        const injectLocation = override.find(".injectLocationSelect");
+        // const injectLocation = override.find(".injectLocationSelect");
         const fileType = override.find(".fileTypeSelect");
         const editBtn = override.find(".edit-btn");
         const ruleOnOff = override.find(".onoffswitch");
         const deleteBtn = override.find(".sym-btn");
 
+        matchInput.val(savedData.match || "");
+        util.makeFieldRequired(matchInput);
         fileName.val(savedData.fileName || "");
-        injectLocation.val(savedData.injectLocation || "head");
+        // injectLocation.val(savedData.injectLocation || "head");
         fileType.val(savedData.fileType || "js");
         ruleOnOff[0].isOn = savedData.on === false ? false : true;
 
@@ -29,7 +34,7 @@
         }
 
         editBtn.on("click", function() {
-            app.editor.open(override[0].id, fileName.val(), true, saveFunc);
+            app.editor.open(override[0].dataset.fileId, fileName.val(), true, saveFunc);
         });
 
         deleteBtn.on("click", function() {
@@ -53,14 +58,14 @@
             override.toggleClass("disabled", !ruleOnOff[0].isOn);
             saveFunc();
         });
-        injectLocation.on("change", saveFunc);
+        // injectLocation.on("change", saveFunc);
         fileType.on("change", saveFunc);
 
-        let id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        let id = savedData.fileId || util.getNextFileId($(".ruleContainer"));
         if (app.files[id]) {
-            id = util.getNextId($(".ruleContainer"), "f");
+            id = util.getNextFileId($(".ruleContainer"));
         }
-        override[0].id = id;
+        override[0].dataset.fileId = id;
 
         if (savedData.file) {
             app.files[id] = savedData.file;

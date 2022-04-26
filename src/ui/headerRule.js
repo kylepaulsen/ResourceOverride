@@ -13,6 +13,8 @@
         saveFunc = saveFunc || function() {};
 
         const override = util.instanceTemplate(ui.headerRuleTemplate);
+        const id = savedData.id || util.getNextRuleId(app.export().data);
+        override[0].id = `r${id}`;
         const matchInput = override.find(".matchInput");
         const requestRulesInput = override.find(".requestRules");
         const responseRulesInput = override.find(".responseRules");
@@ -69,7 +71,7 @@
             override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
-                saveFunc();
+                saveFunc({ removeIds: [id] });
             });
         });
 

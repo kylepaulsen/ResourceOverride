@@ -320,7 +320,7 @@ div, span {
 }
 
 .domainHeader .domainText {
-    flex: 0 0 55px;
+    flex: 0 0 80px;
     padding-top: 8px;
     text-align: center;
 }
@@ -561,4 +561,13 @@ div, span {
 
 .clearfix {
     clear: both;
+}
+
+.error {
+    background: #faa;
+}
+
+.debugLog {
+    border-bottom: 1px solid #aaa;
+    margin-bottom: 5px;
 }

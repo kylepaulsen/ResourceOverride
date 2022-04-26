@@ -25,10 +25,10 @@
     <div class="domainContainer">
         <div class="domainHeader">
             <div class="domainText">
-                Tab URL:
+                Group Name:
             </div>
             <div class="domain">
-                <input type="input" class="domainMatchInput" placeholder="Tab Match URL">
+                <input type="input" class="domainMatchInput" placeholder="My Common Rules">
             </div>
             <div class="addRule">
                 <button class="btn addRuleBtn">Add Rule</button>
@@ -97,6 +97,12 @@
         <div class="handle">
             <div class="arrow-up"></div><div class="arrow-down"></div>
         </div>
+        <div class="match" style="flex-basis: 56px;">
+            Inject On:
+        </div>
+        <div class="rule">
+            <input type="input" class="matchInput" placeholder="Match URL">
+        </div>
         <div class="match">
             Name:
         </div>
@@ -112,7 +118,7 @@
                 <option value="css">CSS</option>
             </select>
         </div>
-        <div class="injectText">
+        <!-- <div class="injectText">
             Inject into:
         </div>
         <div class="injectLocation">
@@ -120,7 +126,7 @@
                 <option value="head">Head</option>
                 <option value="body">Body</option>
             </select>
-        </div>
+        </div> -->
         <div class="edit">
             <button class="btn edit-btn">Edit File</button>
         </div>
@@ -217,7 +223,7 @@
 <div id="domainDefs"></div>
 
 <div id="addDomain">
-    <button id="addDomainBtn" class="btn">Add Tab Group</button>
+    <button id="addDomainBtn" class="btn">Add Group</button>
 </div>
 
 <div id="addRuleDropdown">
@@ -345,6 +351,8 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 
 <div id="generalToast" class="toast"></div>
 
+<div id="debug"></div>
+
 <!-- Library stuff -->
 <script src="../../lib/jquery-3.4.1.min.js"></script>
 <script src="../../lib/beautify.min.js"></script>
@@ -364,6 +372,10 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 <!-- Main Src -->
 <script src="init.js"></script>
 <script src="util.js"></script>
+<script src="keyvalDB.js"></script>
+<script src="mainStorage.js"></script>
+<script src="extractMime.js"></script>
+<script src="globMatchToDNRRegex.js"></script>
 <script src="onOffSwitch.js"></script>
 
 <script src="headers.js"></script>
@@ -380,6 +392,6 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 <script src="importExport.js"></script>
 <script src="options.js"></script>
 
-<script src="devtoolstab.js"></script>
+<script src="devtoolstab.js" type="module"></script>
 </body>
 </html>

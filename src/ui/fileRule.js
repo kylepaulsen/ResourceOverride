@@ -12,6 +12,8 @@
         saveFunc = saveFunc || function() {};
 
         const override = util.instanceTemplate(ui.fileOverrideTemplate);
+        const rid = savedData.id || util.getNextRuleId(app.export().data);
+        override[0].id = `r${rid}`;
         const matchInput = override.find(".matchInput");
         const editBtn = override.find(".edit-btn");
         const ruleOnOff = override.find(".onoffswitch");
@@ -26,7 +28,7 @@
         }
 
         editBtn.on("click", function() {
-            app.editor.open(override[0].id, matchInput.val(), false, saveFunc);
+            app.editor.open(override[0].dataset.fileId, matchInput.val(), false, saveFunc);
         });
 
         deleteBtn.on("click", function() {
@@ -37,7 +39,7 @@
             override.fadeOut(function() {
                 override.remove();
                 delete app.files[override[0].id];
-                saveFunc();
+                saveFunc({ removeIds: [rid] });
             });
         });
 
@@ -53,11 +55,11 @@
             saveFunc();
         });
 
-        let id = savedData.fileId || util.getNextId($(".ruleContainer"), "f");
+        let id = savedData.fileId || util.getNextFileId($(".ruleContainer"));
         if (app.files[id]) {
-            id = util.getNextId($(".ruleContainer"), "f");
+            id = util.getNextFileId($(".ruleContainer"));
         }
-        override[0].id = id;
+        override[0].dataset.fileId = id;
 
         if (savedData.file) {
             app.files[id] = savedData.file;

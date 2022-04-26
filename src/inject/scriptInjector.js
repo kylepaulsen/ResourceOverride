@@ -1,19 +1,19 @@
 (function() {
     "use strict";
 
-    var fileTypeToTag = {
+    let fileTypeToTag = {
         js: "script",
         css: "style"
     };
 
-    var processDomain = function(domain) {
-        var rules = domain.rules || [];
+    let processRuleGroup = function(ruleGroup) {
+        let rules = ruleGroup.rules || [];
         rules.forEach(function(rule) {
             if (rule.on && rule.type === "fileInject") {
-                var newEl = document.createElement(fileTypeToTag[rule.fileType] || "script");
+                let newEl = document.createElement(fileTypeToTag[rule.fileType] || "script");
                 newEl.appendChild(document.createTextNode(rule.file));
                 if (rule.injectLocation === "head") {
-                    var firstEl = document.head.children[0];
+                    let firstEl = document.head.children[0];
                     if (firstEl) {
                         document.head.insertBefore(newEl, firstEl);
                     } else {
@@ -32,30 +32,13 @@
         });
     };
 
-    chrome.runtime.sendMessage({action: "getDomains"}, function(domains) {
-        domains = domains || [];
-        domains.forEach(function(domain) {
-            if (domain.on) {
-                chrome.runtime.sendMessage({
-                    action: "match",
-                    domainUrl: domain.matchUrl,
-                    windowUrl: location.href
-                }, function(result) {
-                    if (result) {
-                        processDomain(domain);
-                    }
-                });
+    chrome.runtime.sendMessage({action: "getStorage"}, function(ruleGroups) {
+        ruleGroups = ruleGroups || [];
+        console.log("!!!!!!", ruleGroups);
+        ruleGroups.forEach(function(ruleGroup) {
+            if (ruleGroup.on) {
+                processRuleGroup(ruleGroup);
             }
         });
-    });
-
-    chrome.runtime.onMessage.addListener(function(msg) {
-        if (msg.action === 'log') {
-            var logStyle = "color: #007182; font-weight: bold;";
-            if (msg.important) {
-                logStyle += "background: #AAFFFF;";
-            }
-            console.log("%c[Resource Override] " + msg.message, logStyle);
-        }
     });
 })();

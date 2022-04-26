@@ -132,8 +132,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
     function open(cb) {
         cb = cb || function() {};
         if (isDBOpen) {
-            var err = "Db is already open.";
-            console.warn(err);
+            // var err = "Db is already open.";
+            // console.warn(err);
             cb();
             return;
         }
@@ -203,4 +203,6 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
     };
 };
 
-export default keyvalDB;
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = keyvalDB;
+}

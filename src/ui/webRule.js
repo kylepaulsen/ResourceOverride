@@ -10,6 +10,8 @@
         saveFunc = saveFunc || function() {};
 
         const override = util.instanceTemplate(ui.overrideTemplate);
+        const id = savedData.id || util.getNextRuleId(app.export().data);
+        override[0].id = `r${id}`;
         const matchInput = override.find(".matchInput");
         const replaceInput = override.find(".replaceInput");
         const ruleOnOff = override.find(".onoffswitch");
@@ -32,8 +34,8 @@
             override.css("transition", "none");
             override.fadeOut(function() {
                 override.remove();
-                saveFunc();
-                app.skipNextSync = true;
+                saveFunc({ removeIds: [id] });
+                // app.skipNextSync = true;
             });
         });
 

@@ -1,3 +1,9 @@
+Consider adding ^ and $ before and after match regex strings - maybe create special syntax like "/asd/" to not have ^ and $
+update import process to account for old version. - also fixes migration to new format.
+ui and help stuff
+revist all chrome.runtime areas to make sure they are needed. Remove tons of dead code.
+check for todo
+
 Consider adding autocomplete to editor.
     - might need a way to turn that off.
 

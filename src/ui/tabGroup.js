@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    /* globals $, chrome */
+    /* globals $ */
 
     const app = window.app;
     const util = app.util;
@@ -42,12 +42,16 @@
         }
     }
 
-    function createSaveFunction(id) {
-        return function() {
-            const $domain = $("#" + id);
-            const data = app.getDomainData($domain);
-            chrome.runtime.sendMessage({action: "saveDomain", data: data});
-            app.skipNextSync = true;
+    function createSaveFunction(groupId) {
+        return function(opts = {}) {
+            const $domain = $("#" + groupId);
+            if ($domain[0]) {
+                const data = app.getDomainData($domain);
+                app.saveRuleGroup(data, opts.removeIds);
+            } else {
+                app.setupNetRequestRules({ rules: [] }, opts.removeIds);
+                app.mainStorage.delete(groupId);
+            }
         };
     }
 
@@ -57,6 +61,7 @@
             const $el = $(el);
             if ($el.hasClass("normalOverride")) {
                 rules.push({
+                    id: util.parseRuleId($el[0].id),
                     type: "normalOverride",
                     match: $el.find(".matchInput").val(),
                     replace: $el.find(".replaceInput").val(),
@@ -64,24 +69,28 @@
                 });
             } else if ($el.hasClass("fileOverride")) {
                 rules.push({
+                    id: util.parseRuleId($el[0].id),
                     type: "fileOverride",
                     match: $el.find(".matchInput").val(),
-                    file: app.files[el.id] || "",
-                    fileId: el.id,
+                    file: app.files[el.dataset.fileId] || "",
+                    fileId: el.dataset.fileId,
                     on: $el.find(".onoffswitch")[0].isOn
                 });
             } else if ($el.hasClass("fileInject")) {
                 rules.push({
+                    id: util.parseRuleId($el[0].id),
                     type: "fileInject",
+                    match: $el.find(".matchInput").val(),
                     fileName: $el.find(".fileName").val(),
-                    file: app.files[el.id] || "",
-                    fileId: el.id,
+                    file: app.files[el.dataset.fileId] || "",
+                    fileId: el.dataset.fileId,
                     fileType: $el.find(".fileTypeSelect").val(),
-                    injectLocation: $el.find(".injectLocationSelect").val(),
+                    // injectLocation: $el.find(".injectLocationSelect").val(),
                     on: $el.find(".onoffswitch")[0].isOn
                 });
             } else if ($el.hasClass("headerRule")) {
                 rules.push({
+                    id: util.parseRuleId($el[0].id),
                     type: "headerRule",
                     match: $el.find(".matchInput").val(),
                     requestRules: $el.find(".requestRules").data("rules") || "",
@@ -156,10 +165,12 @@
             if (!util.deleteButtonIsSure(deleteBtn)) {
                 return;
             }
-            chrome.runtime.sendMessage({action: "deleteDomain", id: id});
+            // chrome.runtime.sendMessage({action: "deleteDomain", id: id});
             domain.css("transition", "none");
             domain.fadeOut(function() {
                 domain.remove();
+                const rules = savedData.rules || [];
+                saveFunc({ removeIds: rules.map(rule => rule.id) });
             });
             app.skipNextSync = true;
         });
