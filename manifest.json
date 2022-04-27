@@ -12,12 +12,12 @@
       "16": "icons/icon-16x16.png"
     }
   },
-  "devtools_page": "src/ui/devtools.html",
+  "devtools_page": "src/devtools.html",
   "options_ui": {
-    "page": "src/ui/devtoolstab.html"
+    "page": "src/devtoolstab.html"
   },
   "background": {
-    "service_worker": "src/background/background.js",
+    "service_worker": "src/background.js",
     "type": "module"
   },
   "permissions": ["webRequest", "tabs", "declarativeNetRequestWithHostAccess", "storage", "webNavigation", "scripting"],

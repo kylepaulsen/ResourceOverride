@@ -1,5 +1,5 @@
 /* globals chrome */
-import mainStorage from "./mainStorage.js";
+import { mainStorage } from "./mainStorage.js";
 
 const simpleError = (err) => {
     if (err.stack) {
@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.action.onClicked.addListener(function() {
     // open or focus options page.
-    const optionsUrl = chrome.runtime.getURL("src/ui/devtoolstab.html");
+    const optionsUrl = chrome.runtime.getURL("src/devtoolstab.html");
     chrome.tabs.query({}, function(extensionTabs) {
         let found = false;
         for (let i = 0, len = extensionTabs.length; i < len; i++) {

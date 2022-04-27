@@ -1,5 +1,4 @@
-import globMatchToDNRRegex from "../src/ui/globMatchToDNRRegex.js";
-// const globMatchToDNRRegex = require("../src/ui/globMatchToDNRRegex.js");
+import globMatchToDNRRegex from "../src/globMatchToDNRRegex.js";
 
 function assertObj(val, expected) {
     const valKeys = Object.keys(val);
