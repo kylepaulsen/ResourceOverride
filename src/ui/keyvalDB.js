@@ -1,25 +1,25 @@
-var keyvalDB = function(dbName, schemaDef, version, options) {
+const keyvalDB = (dbName, schemaDef, version, options) => {
     "use strict";
     options = options || {};
-    var schema = {};
+    const schema = {};
     if (Object.prototype.toString.call(schemaDef) === "[object Array]") {
-        for (var t = 0, len = schemaDef.length; t < len; ++t) {
+        for (let t = 0, len = schemaDef.length; t < len; ++t) {
             schema[schemaDef[t].store] = schemaDef[t];
         }
     }
-    var db;
-    var isDBOpen = false;
+    let db;
+    let isDBOpen = false;
     version = version || 1;
 
     function storeAccess(dbStoreName, dbKeyName) {
         function getObjectStore(store_name, mode) {
-            var tx = db.transaction(store_name, mode);
+            const tx = db.transaction(store_name, mode);
             return tx.objectStore(store_name);
         }
 
         function clearStore(cb) {
-            var store = getObjectStore(dbStoreName, "readwrite");
-            var req = store.clear();
+            const store = getObjectStore(dbStoreName, "readwrite");
+            const req = store.clear();
             cb = cb || function() {};
             req.onsuccess = function(evt) {
                 cb(null, evt);
@@ -31,8 +31,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         }
 
         function insert(key, obj, cb) {
-            var store = getObjectStore(dbStoreName, "readwrite");
-            var req;
+            const store = getObjectStore(dbStoreName, "readwrite");
+            let req;
             cb = cb || function() {};
 
             obj[dbKeyName] = key;
@@ -48,8 +48,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         }
 
         function update(key, obj, cb) {
-            var store = getObjectStore(dbStoreName, "readwrite");
-            var req;
+            const store = getObjectStore(dbStoreName, "readwrite");
+            let req;
             cb = cb || function() {};
 
             obj[dbKeyName] = key;
@@ -65,8 +65,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         }
 
         function remove(key, cb) {
-            var store = getObjectStore(dbStoreName, "readwrite");
-            var req;
+            const store = getObjectStore(dbStoreName, "readwrite");
+            let req;
             cb = cb || function() {};
 
             req = store.delete(key);
@@ -81,11 +81,11 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         }
 
         function get(key, cb) {
-            var store = getObjectStore(dbStoreName, "readonly");
-            var req = store.get(key);
-            cb = cb || function(e,r) { console.log(e,r); };
+            const store = getObjectStore(dbStoreName, "readonly");
+            const req = store.get(key);
+            cb = cb || ((e, r) => console.log(e, r));
             req.onsuccess = function(evt) {
-                var record = evt.target.result;
+                const record = evt.target.result;
                 cb(null, record);
             };
             req.onerror = function (evt) {
@@ -95,12 +95,12 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         }
 
         function getAll(cb) {
-            var ans = [];
-            var store = getObjectStore(dbStoreName, "readonly");
-            var myCursor = store.openCursor();
-            cb = cb || function(e,r) { console.log(e,r); };
+            const ans = [];
+            const store = getObjectStore(dbStoreName, "readonly");
+            const myCursor = store.openCursor();
+            cb = cb || ((e, r) => console.log(e, r));
             myCursor.onsuccess = function(evt) {
-                var cursor = evt.target.result;
+                const cursor = evt.target.result;
                 if (cursor) {
                     ans.push(cursor.value);
                     cursor.continue();
@@ -114,7 +114,7 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
             };
         }
 
-        var methods = {
+        const methods = {
             insert: insert,
             update: update,
             upsert: update,
@@ -137,7 +137,7 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
             cb();
             return;
         }
-        var req = indexedDB.open(dbName, version);
+        const req = indexedDB.open(dbName, version);
 
         req.onsuccess = function(evt) {
             db = req.result;
@@ -149,8 +149,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
             cb(evt);
         };
         req.onupgradeneeded = function(evt) {
-            var storeNames = req.result.objectStoreNames;
-            for (var name in schema) {
+            const storeNames = req.result.objectStoreNames;
+            for (let name in schema) {
                 if (schema.hasOwnProperty(name) && !storeNames.contains(name)) {
                     evt.currentTarget.result.createObjectStore(name, {keyPath: schema[name].key});
                 }
@@ -173,12 +173,12 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
     function deleteDatabase(cb) {
         cb = cb || function() {};
         if (isDBOpen) {
-            var err = "Can't delete db while it is open! Call close first!";
+            const err = "Can't delete db while it is open! Call close first!";
             console.error(err);
             cb(err);
             return;
         }
-        var req = indexedDB.deleteDatabase(dbName);
+        const req = indexedDB.deleteDatabase(dbName);
 
         req.onsuccess = function(evt) {
             cb(null, evt);
@@ -189,8 +189,8 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
         };
     }
 
-    var usingStore = function(store, key) {
-        var keyName = key || schema[store].key;
+    const usingStore = function(store, key) {
+        const keyName = key || schema[store].key;
         return storeAccess(store, keyName);
     };
 
@@ -206,3 +206,5 @@ var keyvalDB = function(dbName, schemaDef, version, options) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = keyvalDB;
 }
+
+export default keyvalDB;

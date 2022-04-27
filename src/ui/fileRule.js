@@ -1,73 +1,87 @@
-(function() {
-    "use strict";
+import { exportData } from "./importExport.js";
+import { mainSuggest } from "./suggest.js";
+import { openEditor } from "./editor.js";
+import {
+    instanceTemplate,
+    getNextRuleId,
+    getNextFileId,
+    makeFieldRequired,
+    deleteButtonIsSure,
+    deleteButtonIsSureReset,
+    fadeOut
+} from "./util.js";
 
-    /* globals $ */
+const app = window.app;
+const fileOverrideTemplate = document.getElementById("fileOverrideTemplate");
 
-    const app = window.app;
-    const util = app.util;
-    const ui = app.ui;
+const createFileOverrideMarkup = (savedData, saveFunc) => {
+    savedData = savedData || {};
+    saveFunc = saveFunc || (() => {});
 
-    function createFileOverrideMarkup(savedData, saveFunc) {
-        savedData = savedData || {};
-        saveFunc = saveFunc || function() {};
+    const override = instanceTemplate(fileOverrideTemplate);
+    const rid = savedData.id || getNextRuleId(exportData().data);
+    override.id = `r${rid}`;
+    const matchInput = override.querySelector(".matchInput");
+    const editBtn = override.querySelector(".edit-btn");
+    const ruleOnOff = override.querySelector(".onoffswitch-checkbox");
+    const deleteBtn = override.querySelector(".sym-btn");
 
-        const override = util.instanceTemplate(ui.fileOverrideTemplate);
-        const rid = savedData.id || util.getNextRuleId(app.export().data);
-        override[0].id = `r${rid}`;
-        const matchInput = override.find(".matchInput");
-        const editBtn = override.find(".edit-btn");
-        const ruleOnOff = override.find(".onoffswitch");
-        const deleteBtn = override.find(".sym-btn");
+    matchInput.value = savedData.match || "";
+    makeFieldRequired(matchInput);
+    ruleOnOff.checked = savedData.on === false ? false : true;
 
-        matchInput.val(savedData.match || "");
-        util.makeFieldRequired(matchInput);
-        ruleOnOff[0].isOn = savedData.on === false ? false : true;
-
-        if (savedData.on === false) {
-            override.addClass("disabled");
-        }
-
-        editBtn.on("click", function() {
-            app.editor.open(override[0].dataset.fileId, matchInput.val(), false, saveFunc);
-        });
-
-        deleteBtn.on("click", function() {
-            if (!util.deleteButtonIsSure(deleteBtn)) {
-                return;
-            }
-            override.css("transition", "none");
-            override.fadeOut(function() {
-                override.remove();
-                delete app.files[override[0].id];
-                saveFunc({ removeIds: [rid] });
-            });
-        });
-
-        deleteBtn.on("mouseout", function() {
-            util.deleteButtonIsSureReset(deleteBtn);
-        });
-
-        app.mainSuggest.init(matchInput);
-
-        matchInput.on("keyup", saveFunc);
-        ruleOnOff.on("click change", function() {
-            override.toggleClass("disabled", !ruleOnOff[0].isOn);
-            saveFunc();
-        });
-
-        let id = savedData.fileId || util.getNextFileId($(".ruleContainer"));
-        if (app.files[id]) {
-            id = util.getNextFileId($(".ruleContainer"));
-        }
-        override[0].dataset.fileId = id;
-
-        if (savedData.file) {
-            app.files[id] = savedData.file;
-        }
-
-        return override;
+    if (savedData.on === false) {
+        override.classList.add("disabled");
     }
 
-    app.createFileOverrideMarkup = createFileOverrideMarkup;
+    editBtn.addEventListener("click", () => {
+        openEditor(override.dataset.fileId, matchInput.value, false, saveFunc);
+    });
 
-})();
+    deleteBtn.addEventListener("click", () => {
+        if (!deleteButtonIsSure(deleteBtn)) {
+            return;
+        }
+
+        override.style.transition = "none";
+        fadeOut(override);
+        setTimeout(() => {
+            override.remove();
+            delete app.files[override.id];
+            saveFunc({ removeIds: [rid] });
+        }, 300);
+    });
+
+    deleteBtn.addEventListener("mouseout", () => {
+        deleteButtonIsSureReset(deleteBtn);
+    });
+
+    mainSuggest.init(matchInput);
+
+    matchInput.addEventListener("keyup", saveFunc);
+    const changeOnOffSwitch = () => {
+        if (ruleOnOff.checked) {
+            override.classList.remove("disabled");
+        } else {
+            override.classList.add("disabled");
+        }
+        saveFunc();
+    };
+    ruleOnOff.addEventListener("click", changeOnOffSwitch);
+    ruleOnOff.addEventListener("change", changeOnOffSwitch);
+
+    const allRuleContainers = document.querySelectorAll(".ruleContainer");
+    let id = savedData.fileId || getNextFileId(allRuleContainers);
+    if (app.files[id]) {
+        id = getNextFileId(allRuleContainers);
+    }
+    override.dataset.fileId = id;
+
+    if (savedData.file) {
+        app.files[id] = savedData.file;
+    }
+
+    return override;
+};
+
+export default createFileOverrideMarkup;

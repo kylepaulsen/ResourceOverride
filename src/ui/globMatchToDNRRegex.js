@@ -58,6 +58,8 @@ const globMatchToDNRRegex = (globStr, replaceStr = "") => {
     };
 };
 
-if (typeof module === "object" && module.exports) {
-    module.exports = globMatchToDNRRegex;
-}
+// if (typeof module === "object" && module.exports) {
+//     module.exports = globMatchToDNRRegex;
+// }
+
+export default globMatchToDNRRegex;

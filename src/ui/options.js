@@ -1,25 +1,27 @@
-(function() {
-    "use strict";
+import { mainSuggest } from "./suggest.js";
+import { exportData, importData } from "./importExport.js";
+import {
+    getUiElements,
+    showToast,
+    isChrome,
+} from "./util.js";
 
-    /* globals $, chrome */
+const initOptions = () => {
+    const ui = getUiElements(document);
 
-    const app = window.app;
-    const ui = app.ui;
-    const util = app.util;
-
-    $(window).on("click", function(e) {
-        const $target = $(e.target);
-        if (e.target.id === "optionsBtn") {
-            ui.optionsPopOver.toggle();
-            ui.helpOverlay.hide();
+    window.addEventListener("click", (e) => {
+        const target = e.target;
+        if (target.id === "optionsBtn") {
+            ui.optionsPopOver.style.display = ui.optionsPopOver.style.display === "block" ? "none" : "block";
+            ui.helpOverlay.style.display = "none";
         } else {
-            if ($target.closest("#optionsPopOver").length === 0) {
-                ui.optionsPopOver.hide();
+            if (!target.closest("#optionsPopOver")) {
+                ui.optionsPopOver.style.display = "none";
             }
         }
     });
 
-    ui.showDevTools.on("click", function() {
+    ui.showDevTools.addEventListener("click", () => {
         // chrome.runtime.sendMessage({
         //     action: "setSetting",
         //     setting: "devTools",
@@ -27,59 +29,51 @@
         // });
     });
 
-    ui.showSuggestions.on("click", function() {
+    ui.showSuggestions.addEventListener("click", () => {
         // chrome.runtime.sendMessage({
         //     action: "setSetting",
         //     setting: "showSuggestions",
         //     value: ui.showSuggestions.prop("checked")
         // });
-        app.mainSuggest.setShouldSuggest(ui.showSuggestions.prop("checked"));
+        mainSuggest.setShouldSuggest(ui.showSuggestions.prop("checked"));
     });
 
-    if (!util.isChrome()) {
+    if (!isChrome()) {
         ui.showSuggestions.closest(".optionRow").remove();
     }
 
-    ui.showLogs.on("click", function() {
-        // chrome.runtime.sendMessage({
-        //     action: "setSetting",
-        //     setting: "showLogs",
-        //     value: ui.showLogs.prop("checked")
-        // });
-    });
-
-    ui.saveRulesLink.on("click", function(e) {
+    ui.saveRulesLink.addEventListener("click", (e) => {
         e.preventDefault();
-        const data = app.export();
+        const data = exportData();
         const json = JSON.stringify(data);
         const blob = new Blob([json], {type: "text/plain"});
         const downloadLink = document.createElement("a");
         downloadLink.download = "resource_override_rules.json";
         downloadLink.href = window.URL.createObjectURL(blob);
         downloadLink.click();
-        ui.optionsPopOver.hide();
+        ui.optionsPopOver.style.display = "none";
     });
 
 
-    ui.loadRulesLink.on("click", function(e) {
+    ui.loadRulesLink.addEventListener("click", (e) => {
         e.preventDefault();
         ui.loadRulesInput.click();
-        ui.optionsPopOver.hide();
+        ui.optionsPopOver.style.display = "none";
     });
 
-    ui.loadRulesInput.on("change", function(e) {
+    ui.loadRulesInput.addEventListener("change", () => {
         const reader = new FileReader();
         reader.onload = function() {
             const text = reader.result;
             try {
                 const importedObj = JSON.parse(text);
-                app.import(importedObj.data, importedObj.v);
+                importData(importedObj.data, importedObj.v);
             } catch (e) {
-                util.showToast("Load Failed: Invalid JSON in file.");
+                showToast("Load Failed: Invalid JSON in file.");
             }
         };
-        reader.readAsText(ui.loadRulesInput[0].files[0]);
-        ui.loadRulesInput.val("");
+        reader.readAsText(ui.loadRulesInput.files[0]);
+        ui.loadRulesInput.value = "";
     });
 
     // chrome.runtime.sendMessage({
@@ -93,7 +87,7 @@
     //     action: "getSetting",
     //     setting: "showSuggestions"
     // }, function(data) {
-    //     const shouldSuggest = util.isChrome() && data !== "false";
+    //     const shouldSuggest = isChrome() && data !== "false";
     //     ui.showSuggestions.prop("checked", shouldSuggest);
     //     app.mainSuggest.setShouldSuggest(shouldSuggest);
     // });
@@ -104,5 +98,6 @@
     // }, function(data) {
     //     ui.showLogs.prop("checked", data === "true");
     // });
+};
 
-})();
+export default initOptions;

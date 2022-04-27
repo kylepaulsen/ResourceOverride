@@ -207,10 +207,10 @@
             <div class="optionText" id="showSuggestionsText">Show Suggestions:</div>
             <div class="optionCheckbox"><input type="checkbox" id="showSuggestions"></div>
         </div>
-        <div class="optionRow">
+        <!-- <div class="optionRow">
             <div class="optionText">Show Logs:</div>
             <div class="optionCheckbox"><input type="checkbox" id="showLogs"></div>
-        </div>
+        </div> -->
         <div class="optionRow">
             <div class="left"><a id="saveRulesLink" href="#">Save Rules</a></div>
             <div class="right"><a id="loadRulesLink" href="#">Load Rules</a></div>
@@ -345,16 +345,15 @@
     </div>
 </div>
 
-<div id="tabPageNotice" class="toast">
+<div id="tabPageNotice" class="toast fadeOut">
 The devtools tab has more features that aren't avilable on the options page. <a href="#">OK</a>
 </div>
 
-<div id="generalToast" class="toast"></div>
+<div id="generalToast" class="toast fadeOut"></div>
 
 <div id="debug"></div>
 
 <!-- Library stuff -->
-<script src="../../lib/jquery-3.4.1.min.js"></script>
 <script src="../../lib/beautify.min.js"></script>
 
 <script src="../../lib/ace/ace.js"></script>
@@ -371,27 +370,6 @@ The devtools tab has more features that aren't avilable on the options page. <a 
 
 <!-- Main Src -->
 <script src="init.js"></script>
-<script src="util.js"></script>
-<script src="keyvalDB.js"></script>
-<script src="mainStorage.js"></script>
-<script src="extractMime.js"></script>
-<script src="globMatchToDNRRegex.js"></script>
-<script src="onOffSwitch.js"></script>
-
-<script src="headers.js"></script>
-<script src="moveableRules.js"></script>
-<script src="suggest.js"></script>
-
-<script src="editor.js"></script>
-<script src="headerEditor.js"></script>
-<script src="webRule.js"></script>
-<script src="fileRule.js"></script>
-<script src="injectRule.js"></script>
-<script src="headerRule.js"></script>
-<script src="tabGroup.js"></script>
-<script src="importExport.js"></script>
-<script src="options.js"></script>
-
 <script src="devtoolstab.js" type="module"></script>
 </body>
 </html>

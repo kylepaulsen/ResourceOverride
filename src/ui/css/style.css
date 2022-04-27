@@ -251,7 +251,6 @@ div, span {
     font-size: 14px;
     transform: translate(-50%, 0%);
     border-radius: 5px;
-    display: none;
 }
 
 .editorHeader {
@@ -561,6 +560,12 @@ div, span {
 
 .clearfix {
     clear: both;
+}
+
+.fadeOut {
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
 }
 
 .error {

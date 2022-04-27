@@ -1,60 +1,71 @@
-(function() {
-    "use strict";
+import { exportData } from "./importExport.js";
+import { mainSuggest } from "./suggest.js";
+import {
+    instanceTemplate,
+    getNextRuleId,
+    makeFieldRequired,
+    deleteButtonIsSure,
+    deleteButtonIsSureReset,
+    fadeOut
+} from "./util.js";
 
-    const app = window.app;
-    const util = app.util;
-    const ui = app.ui;
+const overrideTemplate = document.getElementById("overrideTemplate");
 
-    function createWebOverrideMarkup(savedData, saveFunc) {
-        savedData = savedData || {};
-        saveFunc = saveFunc || function() {};
+const createWebOverrideMarkup = (savedData, saveFunc) => {
+    savedData = savedData || {};
+    saveFunc = saveFunc || (() => {});
 
-        const override = util.instanceTemplate(ui.overrideTemplate);
-        const id = savedData.id || util.getNextRuleId(app.export().data);
-        override[0].id = `r${id}`;
-        const matchInput = override.find(".matchInput");
-        const replaceInput = override.find(".replaceInput");
-        const ruleOnOff = override.find(".onoffswitch");
-        const deleteBtn = override.find(".sym-btn");
+    const override = instanceTemplate(overrideTemplate);
+    const id = savedData.id || getNextRuleId(exportData().data);
+    override.id = `r${id}`;
+    const matchInput = override.querySelector(".matchInput");
+    const replaceInput = override.querySelector(".replaceInput");
+    const ruleOnOff = override.querySelector(".onoffswitch-checkbox");
+    const deleteBtn = override.querySelector(".sym-btn");
 
-        matchInput.val(savedData.match || "");
-        replaceInput.val(savedData.replace || "");
-        util.makeFieldRequired(matchInput);
-        util.makeFieldRequired(replaceInput);
-        ruleOnOff[0].isOn = savedData.on === false ? false : true;
+    matchInput.value = savedData.match || "";
+    replaceInput.value = savedData.replace || "";
+    makeFieldRequired(matchInput);
+    makeFieldRequired(replaceInput);
+    ruleOnOff.checked = savedData.on === false ? false : true;
 
-        if (savedData.on === false) {
-            override.addClass("disabled");
-        }
-
-        deleteBtn.on("click", function() {
-            if (!util.deleteButtonIsSure(deleteBtn)) {
-                return;
-            }
-            override.css("transition", "none");
-            override.fadeOut(function() {
-                override.remove();
-                saveFunc({ removeIds: [id] });
-                // app.skipNextSync = true;
-            });
-        });
-
-        deleteBtn.on("mouseout", function() {
-            util.deleteButtonIsSureReset(deleteBtn);
-        });
-
-        app.mainSuggest.init(matchInput);
-
-        matchInput.on("keyup", saveFunc);
-        replaceInput.on("keyup", saveFunc);
-        ruleOnOff.on("click change", function() {
-            override.toggleClass("disabled", !ruleOnOff[0].isOn);
-            saveFunc();
-        });
-
-        return override;
+    if (savedData.on === false) {
+        override.classList.add("disabled");
     }
 
-    app.createWebOverrideMarkup = createWebOverrideMarkup;
+    deleteBtn.addEventListener("click", () => {
+        if (!deleteButtonIsSure(deleteBtn)) {
+            return;
+        }
+        override.style.transition = "none";
+        fadeOut(override);
+        setTimeout(() => {
+            override.remove();
+            saveFunc({ removeIds: [id] });
+        }, 300);
+    });
 
-})();
+    deleteBtn.addEventListener("mouseout", () => {
+        deleteButtonIsSureReset(deleteBtn);
+    });
+
+    mainSuggest.init(matchInput);
+
+    matchInput.addEventListener("keyup", saveFunc);
+    replaceInput.addEventListener("keyup", saveFunc);
+
+    const changeOnOffSwitch = () => {
+        if (ruleOnOff.checked) {
+            override.classList.remove("disabled");
+        } else {
+            override.classList.add("disabled");
+        }
+        saveFunc();
+    };
+    ruleOnOff.addEventListener("click", changeOnOffSwitch);
+    ruleOnOff.addEventListener("change", changeOnOffSwitch);
+
+    return override;
+};
+
+export default createWebOverrideMarkup;

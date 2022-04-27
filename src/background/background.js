@@ -58,7 +58,7 @@ chrome.action.onClicked.addListener(function() {
     });
 });
 
-console.log("hi bg9");
+console.log("hi bg4");
 
 // eslint-disable-next-line no-unused-vars
 const urlMatches = (matchStr, url) => {
@@ -75,7 +75,7 @@ chrome.webNavigation.onCommitted.addListener((details) => {
                 if (rule.on && rule.type === "fileInject" && urlMatches(rule.match, details.url)) {
                     if (rule.fileType === "js") {
                         chrome.scripting.executeScript({
-                            target: { tabId: details.tabId },
+                            target: { tabId: details.tabId, frameIds: [details.frameId] },
                             // injectImmediately: true,
                             func: code => {
                                 const el = document.createElement('script');
