@@ -1,9 +1,17 @@
-// chrome.runtime.sendMessage({action: "getSetting", setting: "devTools"}, function(data) {
-//     if (data === "true") {
+/* global chrome */
+
+const init = async () => {
+    const settings = await chrome.storage.local.get({
+        optionDevTools: true,
+    });
+
+    if (settings.optionDevTools) {
         chrome.devtools.panels.create("Overrides",
             "", //image file
             "/src/devtoolstab.html",
-            function(panel) {}
+            (/* panel */) => {}
         );
-//     }
-// });
+    }
+};
+
+init();

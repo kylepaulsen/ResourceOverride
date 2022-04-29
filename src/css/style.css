@@ -565,7 +565,6 @@ div, span {
 .fadeOut {
     opacity: 0;
     pointer-events: none;
-    position: relative;
 }
 
 .error {

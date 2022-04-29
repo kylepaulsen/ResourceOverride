@@ -1,10 +1,10 @@
-import { getUiElements, getTabResources, sendSyncMessage } from "./util.js";
+import { getUiElements, getTabResources, sendSyncMessage, fadeOut, fadeIn } from "./util.js";
 import { mainSuggest, requestHeadersSuggest, responseHeadersSuggest } from "./suggest.js";
 import setupNetRequestRules from "./netRequestRules.js";
 import { mainStorage } from "./mainStorage.js";
 import { requestHeaders, responseHeaders } from "./headers.js";
 import { tabGroupsInit, createDomainMarkup } from "./tabGroup.js";
-import initOptions from "./options.js";
+import initOptions, { updateOptions } from "./options.js";
 
 /* globals chrome */
 const app = window.app;
@@ -13,7 +13,8 @@ const ui = getUiElements(document);
 const saveRuleGroup = (group, removedIds = []) => {
     mainStorage.put(group)
         .then(sendSyncMessage)
-        .catch(() => {}) // sending the sync message can just fail randomly. I have no idea why.
+        // sending the sync message can just fail randomly. I have no idea why.
+        .catch((e) => console.warn("Failed to sync.", e))
         .then(() => setupNetRequestRules(group, removedIds))
         .then((ruleErrors) => {
             app.ruleErrors[group.id] = ruleErrors;
@@ -65,6 +66,12 @@ const renderErrors = () => {
     });
 };
 
+const loadSettings = async () => {
+    app.settings = await chrome.storage.local.get({
+        optionDevTools: true,
+    });
+};
+
 async function init() {
     tabGroupsInit(saveRuleGroup);
     mainSuggest.init();
@@ -73,6 +80,7 @@ async function init() {
     requestHeadersSuggest.fillOptions(requestHeaders);
     responseHeadersSuggest.fillOptions(responseHeaders);
     initOptions();
+    updateOptions();
 
     // app.ruleGroups = await app.mainStorage.getAll();
 
@@ -92,42 +100,50 @@ async function init() {
     });
 
     if (!chrome.devtools) {
-        ui.showSuggestions.style.display = "none";
-        ui.showSuggestionsText.style.display = "none";
-        // chrome.runtime.sendMessage({
-        //     action: "getSetting",
-        //     setting: "tabPageNotice"
-        // }, function(data) {
-
-        //     if (data !== "true") {
-        //         ui.tabPageNotice.find("a").addEventListener("click", function(e) {
-        //             e.preventDefault();
-        //             chrome.runtime.sendMessage({
-        //                 action: "setSetting",
-        //                 setting: "tabPageNotice",
-        //                 value: "true"
-        //             });
-        //             ui.tabPageNotice.fadeOut();
-        //         });
-        //         ui.tabPageNotice.fadeIn();
-        //         setTimeout(function() {
-        //             ui.tabPageNotice.fadeOut();
-        //         }, 6000);
-        //     }
-        // });
+        const storage = await chrome.storage.local.get({ tabPageNotice: false });
+        if (!storage.tabPageNotice) {
+            ui.tabPageNotice.querySelector("a").addEventListener("click", (e) => {
+                e.preventDefault();
+                chrome.storage.local.set({ tabPageNotice: true });
+                fadeOut(ui.tabPageNotice);
+            });
+            fadeIn(ui.tabPageNotice);
+            setTimeout(function() {
+                fadeOut(ui.tabPageNotice);
+            }, 6000);
+        }
     }
 
     const messageActions = {
         sync: () => {
             renderData();
-        }
+        },
     };
 
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         // util.debug('got message! action: ' + request.action);
+        let sentResponse = false;
+        const mySendResponse = (...args) => {
+            sentResponse = true;
+            sendResponse(...args);
+        };
         const action = messageActions[request.action];
         if (action) {
-            action(request, sender, sendResponse);
+            await action(request, sender, mySendResponse);
+            if (!sentResponse) {
+                sendResponse();
+            }
+            // !!!Important!!! Need to return true for sendResponse to work.
+            return true;
+        }
+        console.error(`Message handler: No action named ${request.action}`);
+    });
+
+    chrome.storage.onChanged.addListener(async (changes) => {
+        const optionChanged = Object.keys(changes).find(changeKey => changeKey.includes("option"));
+        if (optionChanged) {
+            await loadSettings();
+            updateOptions();
         }
     });
 
@@ -163,4 +179,4 @@ async function init() {
     });
 }
 
-init();
+loadSettings().then(init);

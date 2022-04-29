@@ -1,10 +1,16 @@
-import { mainSuggest } from "./suggest.js";
 import { exportData, importData } from "./importExport.js";
 import {
     getUiElements,
     showToast,
-    isChrome,
 } from "./util.js";
+
+/* global chrome */
+
+const app = window.app;
+
+export const updateOptions = async () => {
+    document.getElementById("showDevTools").checked = app.settings.optionDevTools;
+};
 
 const initOptions = () => {
     const ui = getUiElements(document);
@@ -21,26 +27,11 @@ const initOptions = () => {
         }
     });
 
-    ui.showDevTools.addEventListener("click", () => {
-        // chrome.runtime.sendMessage({
-        //     action: "setSetting",
-        //     setting: "devTools",
-        //     value: ui.showDevTools.prop("checked")
-        // });
+    ui.showDevTools.addEventListener("click", async () => {
+        chrome.storage.local.set({
+            optionDevTools: ui.showDevTools.checked,
+        });
     });
-
-    ui.showSuggestions.addEventListener("click", () => {
-        // chrome.runtime.sendMessage({
-        //     action: "setSetting",
-        //     setting: "showSuggestions",
-        //     value: ui.showSuggestions.prop("checked")
-        // });
-        mainSuggest.setShouldSuggest(ui.showSuggestions.prop("checked"));
-    });
-
-    if (!isChrome()) {
-        ui.showSuggestions.closest(".optionRow").remove();
-    }
 
     ui.saveRulesLink.addEventListener("click", (e) => {
         e.preventDefault();
@@ -75,29 +66,6 @@ const initOptions = () => {
         reader.readAsText(ui.loadRulesInput.files[0]);
         ui.loadRulesInput.value = "";
     });
-
-    // chrome.runtime.sendMessage({
-    //     action: "getSetting",
-    //     setting: "devTools"
-    // }, function(data) {
-    //     ui.showDevTools.prop("checked", data === "true");
-    // });
-
-    // chrome.runtime.sendMessage({
-    //     action: "getSetting",
-    //     setting: "showSuggestions"
-    // }, function(data) {
-    //     const shouldSuggest = isChrome() && data !== "false";
-    //     ui.showSuggestions.prop("checked", shouldSuggest);
-    //     app.mainSuggest.setShouldSuggest(shouldSuggest);
-    // });
-
-    // chrome.runtime.sendMessage({
-    //     action: "getSetting",
-    //     setting: "showLogs"
-    // }, function(data) {
-    //     ui.showLogs.prop("checked", data === "true");
-    // });
 };
 
 export default initOptions;

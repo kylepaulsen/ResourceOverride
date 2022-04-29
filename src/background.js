@@ -1,5 +1,6 @@
 /* globals chrome */
 import { mainStorage } from "./mainStorage.js";
+import { transformMatchReplace } from "./netRequestRules.js";
 
 const simpleError = (err) => {
     if (err.stack) {
@@ -10,32 +11,35 @@ const simpleError = (err) => {
 };
 
 let allRuleGroups = [];
-mainStorage.getAll().then(function(domains) {
-    allRuleGroups = domains || [];
-}).catch(simpleError);
+const reloadData = () => {
+    mainStorage.getAll().then(function(domains) {
+        allRuleGroups = domains || [];
+    }).catch(simpleError);
+};
+reloadData();
 
 
 const actions = {
-    getStorage: (request, sender, sendResponse) => {
-        mainStorage.getAll().then(function(domains) {
-            allRuleGroups = domains || [];
-            sendResponse(allRuleGroups);
-        }).catch(simpleError);
-        // !!!Important!!! Need to return true for sendResponse to work.
-        return true;
-    },
     sync: () => {
-        mainStorage.getAll().then(function(domains) {
-            allRuleGroups = domains || [];
-        }).catch(simpleError);
+        reloadData();
     }
 };
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("BG ON MESSAGE!", request);
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+    // console.log("BG ON MESSAGE!", request);
+    let sentResponse = false;
+    const mySendResponse = (...args) => {
+        sentResponse = true;
+        sendResponse(...args);
+    };
     const action = actions[request.action];
     if (action) {
-        return action(request, sender, sendResponse);
+        await action(request, sender, mySendResponse);
+        if (!sentResponse) {
+            sendResponse();
+        }
+        // !!!Important!!! Need to return true for sendResponse to work.
+        return true;
     }
     console.error(`BG message handler: No action named ${request.action}`);
 });
@@ -58,12 +62,16 @@ chrome.action.onClicked.addListener(function() {
     });
 });
 
-console.log("hi bg4");
+console.log("hi bg9");
 
 // eslint-disable-next-line no-unused-vars
 const urlMatches = (matchStr, url) => {
-    // TODO: complete this. Also add a "match" property to inject rules.
-    return true;
+    const result = transformMatchReplace(matchStr);
+    let regex;
+    try {
+        regex = new RegExp(result.match);
+    } catch {}
+    return regex && regex.test(url);
 };
 
 // TODO: This code will probably get me denied

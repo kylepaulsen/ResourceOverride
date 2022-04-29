@@ -59,6 +59,7 @@ const createFileInjectMarkup = (savedData, saveFunc) => {
         deleteButtonIsSureReset(deleteBtn);
     });
 
+    matchInput.addEventListener("keyup", saveFunc);
     fileName.addEventListener("keyup", saveFunc);
     const changeOnOffSwitch = () => {
         if (ruleOnOff.checked) {

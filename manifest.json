@@ -20,7 +20,14 @@
     "service_worker": "src/background.js",
     "type": "module"
   },
-  "permissions": ["webRequest", "tabs", "declarativeNetRequestWithHostAccess", "storage", "webNavigation", "scripting"],
+  "permissions": [
+    "declarativeNetRequestWithHostAccess",
+    "scripting",
+    "storage",
+    "tabs",
+    "unlimitedStorage",
+    "webNavigation"
+  ],
   "host_permissions": ["*://*/*"],
   "manifest_version": 3
 }

@@ -145,14 +145,8 @@ ui.loadSelect.addEventListener("change", () => {
             updateSaveButtons(true);
             editorGuessMode(url, data);
         }).catch(e => {
-            console.error("FAILED TO FETCH!!!", e);
+            console.error("Failed to fetch asset...", e);
         });
-        // TODO !!!!!!!!
-        // chrome.runtime.sendMessage({action: "makeGetRequest", url: url}, function(data) {
-        //     setEditorVal(data);
-        //     updateSaveButtons(true);
-        //     editorGuessMode(url, data);
-        // });
     }
 });
 

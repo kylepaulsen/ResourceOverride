@@ -1,5 +1,6 @@
 window.app = {
     files: {},
     ruleGroups: [],
-    ruleErrors: {}
+    ruleErrors: {},
+    settings: {},
 };
