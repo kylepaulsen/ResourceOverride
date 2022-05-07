@@ -1,45 +1,53 @@
-import { getUiElements, getTabResources, sendSyncMessage, fadeOut, fadeIn } from "./util.js";
+import {
+    getUiElements,
+    getTabResources,
+    fadeOut,
+    fadeIn,
+    getNextGroupId,
+    saveDataAndSync
+} from "./util.js";
 import { mainSuggest, requestHeadersSuggest, responseHeadersSuggest } from "./suggest.js";
 import setupNetRequestRules from "./netRequestRules.js";
-import { mainStorage } from "./mainStorage.js";
 import { requestHeaders, responseHeaders } from "./headers.js";
 import { tabGroupsInit, createDomainMarkup } from "./tabGroup.js";
 import initOptions, { updateOptions } from "./options.js";
 
 /* globals chrome */
-const app = window.app;
 const ui = getUiElements(document);
 
-const saveRuleGroup = (group, removedIds = []) => {
-    mainStorage.put(group)
-        .then(sendSyncMessage)
-        // sending the sync message can just fail randomly. I have no idea why.
-        .catch((e) => console.warn("Failed to sync.", e))
-        .then(() => setupNetRequestRules(group, removedIds))
-        .then((ruleErrors) => {
-            app.ruleErrors[group.id] = ruleErrors;
-            renderErrors();
-        });
+let allRuleErrors = {};
+
+const saveRuleGroup = async (group, removedIds = []) => {
+    const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+    const groupIndex = ruleGroups.findIndex(rGroup => rGroup.id === group.id);
+    if (groupIndex > -1) {
+        ruleGroups[groupIndex] = group;
+    } else if (group.id) {
+        ruleGroups.push(group);
+    }
+    await saveDataAndSync({ ruleGroups });
+
+    const ruleErrors = await setupNetRequestRules(group, removedIds);
+    allRuleErrors[group.id] = ruleErrors;
 };
 
 async function renderData() {
-    app.files = {};
     ui.domainDefs.innerHTML = "";
-    app.ruleGroups = await mainStorage.getAll();
+    const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
 
-    if (app.ruleGroups.length) {
-        app.ruleGroups.forEach((group) => {
-            const markup = createDomainMarkup(group);
+    if (ruleGroups.length) {
+        ruleGroups.forEach(async (group) => {
+            const markup = await createDomainMarkup(group);
             ui.domainDefs.appendChild(markup);
         });
     } else {
         const newGroupData = {
-            id: "d1",
-            matchUrl: "",
+            id: 1,
+            name: "",
             rules: [{id: 1, type: "normalOverride"}],
             on: true,
         };
-        const newGroup = createDomainMarkup(newGroupData);
+        const newGroup = await createDomainMarkup(newGroupData);
         ui.domainDefs.appendChild(newGroup);
         saveRuleGroup(newGroupData);
     }
@@ -56,19 +64,13 @@ const renderErrors = () => {
         el.classList.remove("error");
         el.title = "";
     });
-    Object.keys(app.ruleErrors).forEach((groupId) => {
-        const groupRuleErrors = app.ruleErrors[groupId];
+    Object.keys(allRuleErrors).forEach((groupId) => {
+        const groupRuleErrors = allRuleErrors[groupId];
         Object.keys(groupRuleErrors).forEach((key) => {
             const rule = document.querySelector(`#r${key}`);
             rule.classList.add("error");
             rule.title = groupRuleErrors[key];
         });
-    });
-};
-
-const loadSettings = async () => {
-    app.settings = await chrome.storage.local.get({
-        optionDevTools: true,
     });
 };
 
@@ -82,13 +84,18 @@ async function init() {
     initOptions();
     updateOptions();
 
-    // app.ruleGroups = await app.mainStorage.getAll();
-
-    ui.addDomainBtn.addEventListener("click", () => {
-        const newDomain = createDomainMarkup();
-        ui.domainDefs.appendChild(newDomain);
-        // chrome.runtime.sendMessage({action: "saveDomain", data: app.getDomainData(newDomain)});
-        // app.skipNextSync = true;
+    ui.addDomainBtn.addEventListener("click", async () => {
+        const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+        const id = getNextGroupId(ruleGroups);
+        const newGroupData = {
+            id,
+            name: "",
+            rules: [],
+            on: true,
+        };
+        const newGroup = await createDomainMarkup(newGroupData);
+        ui.domainDefs.appendChild(newGroup);
+        saveRuleGroup(newGroupData);
     });
 
     ui.helpBtn.addEventListener("click", () => {
@@ -142,7 +149,6 @@ async function init() {
     chrome.storage.onChanged.addListener(async (changes) => {
         const optionChanged = Object.keys(changes).find(changeKey => changeKey.includes("option"));
         if (optionChanged) {
-            await loadSettings();
             updateOptions();
         }
     });
@@ -169,14 +175,16 @@ async function init() {
     }
 
     await renderData();
-    app.ruleErrors = {};
-    const ruleErrorsPairedWithGroup = await Promise.all(app.ruleGroups.map(
+    allRuleErrors = {};
+
+    const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+    const ruleErrorsPairedWithGroup = await Promise.all(ruleGroups.map(
         (group) => setupNetRequestRules(group).then(ruleErrors => ({ group, ruleErrors }))
     ));
     ruleErrorsPairedWithGroup.forEach(ruleErrorWithGroup => {
-        app.ruleErrors[ruleErrorWithGroup.group.id] = ruleErrorWithGroup.ruleErrors;
+        allRuleErrors[ruleErrorWithGroup.group.id] = ruleErrorWithGroup.ruleErrors;
         renderErrors();
     });
 }
 
-loadSettings().then(init);
+init();

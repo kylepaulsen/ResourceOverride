@@ -1,24 +1,27 @@
-import { exportData } from "./importExport.js";
 import { openEditor } from "./editor.js";
 import {
     instanceTemplate,
     getNextRuleId,
-    getNextFileId,
     makeFieldRequired,
     deleteButtonIsSure,
     deleteButtonIsSureReset,
     fadeOut
 } from "./util.js";
 
-const app = window.app;
+/* globals chrome */
+
 const fileInjectTemplate = document.getElementById("fileInjectTemplate");
 
-const createFileInjectMarkup = (savedData, saveFunc) => {
+const createFileInjectMarkup = async (savedData, saveFunc) => {
     savedData = savedData || {};
     saveFunc = saveFunc || (() => {});
 
+    let rid = savedData.id;
+    if (!rid) {
+        const allData = await chrome.storage.local.get({ ruleGroups: [] });
+        rid = getNextRuleId(allData.ruleGroups);
+    }
     const override = instanceTemplate(fileInjectTemplate);
-    const rid = savedData.id || getNextRuleId(exportData().data);
     override.id = `r${rid}`;
     const matchInput = override.querySelector(".matchInput");
     const fileName = override.querySelector(".fileName");
@@ -38,7 +41,7 @@ const createFileInjectMarkup = (savedData, saveFunc) => {
     }
 
     editBtn.addEventListener("click", () => {
-        openEditor(override.dataset.fileId, fileName.value, true, saveFunc);
+        openEditor(rid, fileName.value, true);
     });
 
     deleteBtn.addEventListener("click", () => {
@@ -50,7 +53,7 @@ const createFileInjectMarkup = (savedData, saveFunc) => {
         fadeOut(override);
         setTimeout(() => {
             override.remove();
-            delete app.files[override.id];
+            chrome.storage.local.remove(`f${rid}`);
             saveFunc();
         }, 300);
     });
@@ -72,17 +75,6 @@ const createFileInjectMarkup = (savedData, saveFunc) => {
     ruleOnOff.addEventListener("click", changeOnOffSwitch);
     ruleOnOff.addEventListener("change", changeOnOffSwitch);
     fileType.addEventListener("change", saveFunc);
-
-    const allRuleContainers = document.querySelectorAll(".ruleContainer");
-    let id = savedData.fileId || getNextFileId(allRuleContainers);
-    if (app.files[id]) {
-        id = getNextFileId(allRuleContainers);
-    }
-    override.dataset.fileId = id;
-
-    if (savedData.file) {
-        app.files[id] = savedData.file;
-    }
 
     return override;
 };

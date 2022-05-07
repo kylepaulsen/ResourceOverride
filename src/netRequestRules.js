@@ -20,7 +20,7 @@ export const transformMatchReplace = (match = "", replace = "") => {
     return result;
 };
 
-const setupNetRequestRules = (group, deletedRuleIds = [], ruleErrors = {}) => {
+const setupNetRequestRules = (group = {}, deletedRuleIds = [], ruleErrors = {}) => {
     const allRuleIds = [];
     const ruleIdToRule = {};
     const rules = group.rules || [];

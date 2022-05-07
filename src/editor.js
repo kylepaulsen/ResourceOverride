@@ -1,13 +1,11 @@
 /* globals chrome, ace, js_beautify */
 import extractMimeType from "./extractMime.js";
-import { getUiElements, createEl, isChrome, getTabResources, shortenString } from "./util.js";
+import { getUiElements, createEl, isChrome, getTabResources, shortenString, saveDataAndSync } from "./util.js";
 
-const app = window.app;
 const ui = getUiElements(document);
 
 let editor;
-let editingFile;
-let saveFunc;
+let fileId;
 
 function updateSaveButtons(edited) {
     if (edited) {
@@ -41,8 +39,7 @@ function editorGuessMode(fileName, file) {
 
 function saveFile() {
     updateSaveButtons();
-    app.files[editingFile] = editor.getValue();
-    saveFunc();
+    saveDataAndSync({ [fileId]: editor.getValue() });
 }
 
 function saveFileAndClose() {
@@ -92,9 +89,8 @@ function setupEditor() {
     });
 }
 
-export const openEditor = (fileId, match, isInjectFile, saveFunction) => {
-    saveFunc = saveFunction;
-    editingFile = fileId;
+export const openEditor = async (ruleId, match, isInjectFile) => {
+    fileId = `f${ruleId}`;
     updateSaveButtons();
     ui.editorOverlay.style.display = "flex";
     ui.body.style.overflow = "hidden";
@@ -105,7 +101,8 @@ export const openEditor = (fileId, match, isInjectFile, saveFunction) => {
     ui.editLabel.textContent = isInjectFile ? "Editing file:" : "Editing file for match:";
     ui.matchContainer.textContent = match;
 
-    editorGuessMode(match, app.files[fileId]);
+    const fileStr = (await chrome.storage.local.get(fileId))[fileId] || "";
+    editorGuessMode(match, fileStr);
 
     if (chrome.devtools && isChrome()) {
         ui.loadSelect.style.display = "block";
@@ -122,7 +119,6 @@ export const openEditor = (fileId, match, isInjectFile, saveFunction) => {
         ui.loadSelect.style.display = "none";
     }
 
-    const fileStr = app.files[fileId] || "";
     setEditorVal(fileStr);
 };
 

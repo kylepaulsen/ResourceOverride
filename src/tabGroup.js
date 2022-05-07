@@ -1,5 +1,4 @@
 import setupNetRequestRules from "./netRequestRules.js";
-import { mainStorage } from "./mainStorage.js";
 import { getDomainData } from "./importExport.js";
 import createWebOverrideMarkup from "./webRule.js";
 import createFileOverrideMarkup from "./fileRule.js";
@@ -10,11 +9,14 @@ import {
     getUiElements,
     fadeOut,
     instanceTemplate,
-    getNextId,
     debounce,
     deleteButtonIsSure,
-    deleteButtonIsSureReset
+    deleteButtonIsSureReset,
+    getNextGroupId,
+    saveDataAndSync
 } from "./util.js";
+
+/* globals chrome */
 
 let ui;
 let saveRuleGroup;
@@ -22,6 +24,7 @@ let saveRuleGroup;
 let currentAddRuleBtn;
 let currentAddRuleFunc;
 let currentSaveFunc;
+
 
 function positionRuleDropdown(addBtn) {
     ui.addRuleDropdown.style.top = (addBtn.offsetTop + 40) + "px";
@@ -50,19 +53,21 @@ function showRuleDropdown(addBtn, addRuleFunc, saveFunc) {
 }
 
 function createSaveFunction(groupId) {
-    return (opts = {}) => {
-        const domain = document.getElementById(groupId);
+    return async (opts = {}) => {
+        const domain = document.getElementById(`d${groupId}`);
         if (domain) {
             const data = getDomainData(domain);
             saveRuleGroup(data, opts.removeIds);
         } else {
             setupNetRequestRules({ rules: [] }, opts.removeIds);
-            mainStorage.delete(groupId);
+            const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+            const newRuleGroups = ruleGroups.filter((g) => g.id !== opts.id);
+            await saveDataAndSync({ ruleGroups: newRuleGroups });
         }
     };
 }
 
-export const createDomainMarkup = (savedData) => {
+export const createDomainMarkup = async (savedData) => {
     savedData = savedData || {};
     const domain = instanceTemplate(ui.domainTemplate);
     const overrideRulesContainer = domain.querySelector(".overrideRules");
@@ -72,26 +77,36 @@ export const createDomainMarkup = (savedData) => {
     const deleteBtn = domain.querySelector(".deleteBtn");
     const rules = savedData.rules || [];
 
-    const id = savedData.id || getNextId(document.querySelectorAll(".domainContainer"), "d");
-    domain.id = id;
+    let id = savedData.id;
+    if (!id) {
+        const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+        id = getNextGroupId(ruleGroups);
+    }
+    domain.id = `d${id}`;
+    addRuleBtn.dataset.gid = id;
     const saveFunc = debounce(createSaveFunction(id), 700);
 
-    rules.forEach((rule) => {
+    for (let idx = 0, len = rules.length; idx < len; idx++) {
+        const rule = rules[idx];
         if (rule.type === "normalOverride") {
-            overrideRulesContainer.appendChild(createWebOverrideMarkup(rule, saveFunc));
+            const el = await createWebOverrideMarkup(rule, saveFunc);
+            overrideRulesContainer.appendChild(el);
         } else if (rule.type === "fileOverride") {
-            overrideRulesContainer.appendChild(createFileOverrideMarkup(rule, saveFunc));
+            const el = await createFileOverrideMarkup(rule, saveFunc);
+            overrideRulesContainer.appendChild(el);
         } else if (rule.type === "fileInject") {
-            overrideRulesContainer.appendChild(createFileInjectMarkup(rule, saveFunc));
+            const el = await createFileInjectMarkup(rule, saveFunc);
+            overrideRulesContainer.appendChild(el);
         } else if (rule.type === "headerRule") {
-            overrideRulesContainer.appendChild(createHeaderRuleMarkup(rule, saveFunc));
+            const el = await createHeaderRuleMarkup(rule, saveFunc);
+            overrideRulesContainer.appendChild(el);
         }
-    });
+    }
 
     const mvRules = moveableRules(overrideRulesContainer, ".handle");
     mvRules.onMove(saveFunc);
 
-    domainMatchInput.value = savedData.matchUrl || "";
+    domainMatchInput.value = savedData.name || "";
     onOffBtn.checked = savedData.on === false ? false : true;
 
     if (savedData.on === false) {
@@ -125,10 +140,15 @@ export const createDomainMarkup = (savedData) => {
             return;
         }
         fadeOut(domain);
-        setTimeout(() => {
+        setTimeout(async () => {
             domain.remove();
-            const rules = savedData.rules || [];
-            saveFunc({ removeIds: rules.map(rule => rule.id) });
+            const ruleGroups = (await chrome.storage.local.get({ ruleGroups: [] })).ruleGroups;
+            const ruleGroup = ruleGroups.find(g => g.id === id);
+            if (ruleGroup) {
+                const rules = ruleGroup.rules || [];
+                chrome.storage.local.remove(rules.map(r => `f${r.id}`));
+                saveFunc({ id, removeIds: rules.map(rule => rule.id) });
+            }
         }, 300);
     });
 
@@ -143,20 +163,28 @@ export const tabGroupsInit = (saveRuleGroupFunc) => {
     ui = getUiElements(document);
     saveRuleGroup = saveRuleGroupFunc;
 
-    ui.addWebRuleBtn.addEventListener("click", () => {
-        currentAddRuleFunc(createWebOverrideMarkup({}, currentSaveFunc));
+    ui.addWebRuleBtn.addEventListener("click", async () => {
+        const el = await createWebOverrideMarkup({}, currentSaveFunc);
+        currentAddRuleFunc(el);
+        createSaveFunction(currentAddRuleBtn.dataset.gid)();
     });
 
-    ui.addFileRuleBtn.addEventListener("click", () => {
-        currentAddRuleFunc(createFileOverrideMarkup({}, currentSaveFunc));
+    ui.addFileRuleBtn.addEventListener("click", async () => {
+        const el = await createFileOverrideMarkup({}, currentSaveFunc);
+        currentAddRuleFunc(el);
+        createSaveFunction(currentAddRuleBtn.dataset.gid)();
     });
 
-    ui.addInjectRuleBtn.addEventListener("click", () => {
-        currentAddRuleFunc(createFileInjectMarkup({}, currentSaveFunc));
+    ui.addInjectRuleBtn.addEventListener("click", async () => {
+        const el = await createFileInjectMarkup({}, currentSaveFunc);
+        currentAddRuleFunc(el);
+        createSaveFunction(currentAddRuleBtn.dataset.gid)();
     });
 
-    ui.addHeaderRuleBtn.addEventListener("click", () => {
-        currentAddRuleFunc(createHeaderRuleMarkup({}, currentSaveFunc));
+    ui.addHeaderRuleBtn.addEventListener("click", async () => {
+        const el = await createHeaderRuleMarkup({}, currentSaveFunc);
+        currentAddRuleFunc(el);
+        createSaveFunction(currentAddRuleBtn.dataset.gid)();
     });
 
     window.addEventListener("resize", () => {

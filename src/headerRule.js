@@ -1,4 +1,3 @@
-import { exportData } from "./importExport.js";
 import { mainSuggest } from "./suggest.js";
 import { openHeaderEditor, getHeaderEditRules } from "./headerEditor.js";
 import {
@@ -10,16 +9,22 @@ import {
     fadeOut
 } from "./util.js";
 
+/* globals chrome */
+
 const headerRuleTemplate = document.getElementById("headerRuleTemplate");
 
 // This is what shows up *outside* the header editor.
-const createHeaderRuleMarkup = (savedData, saveFunc) => {
+const createHeaderRuleMarkup = async (savedData, saveFunc) => {
     savedData = savedData || {};
     saveFunc = saveFunc || (() => {});
 
+    let rid = savedData.id;
+    if (!rid) {
+        const allData = await chrome.storage.local.get({ ruleGroups: [] });
+        rid = getNextRuleId(allData.ruleGroups);
+    }
     const override = instanceTemplate(headerRuleTemplate);
-    const id = savedData.id || getNextRuleId(exportData().data);
-    override.id = `r${id}`;
+    override.id = `r${rid}`;
     const matchInput = override.querySelector(".matchInput");
     const requestRulesInput = override.querySelector(".requestRules");
     const responseRulesInput = override.querySelector(".responseRules");
@@ -77,7 +82,7 @@ const createHeaderRuleMarkup = (savedData, saveFunc) => {
         fadeOut(override);
         setTimeout(() => {
             override.remove();
-            saveFunc({ removeIds: [id] });
+            saveFunc({ removeIds: [rid] });
         }, 300);
     });
 

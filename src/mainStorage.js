@@ -72,7 +72,5 @@ const createDBHandle = (dbName, storeName) => {
 };
 
 export const mainStorage = createDBHandle("OverrideDB", "domains");
-// app.mainStorage = app.createDBHandle("OverrideDB", "rules");
-// app.oldStorage = app.createDBHandle("OverrideDB", "domains");
 
 export default createDBHandle;

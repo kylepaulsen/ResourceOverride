@@ -1,4 +1,3 @@
-import { exportData } from "./importExport.js";
 import { mainSuggest } from "./suggest.js";
 import {
     instanceTemplate,
@@ -9,15 +8,21 @@ import {
     fadeOut
 } from "./util.js";
 
+/* globals chrome */
+
 const overrideTemplate = document.getElementById("overrideTemplate");
 
-const createWebOverrideMarkup = (savedData, saveFunc) => {
+const createWebOverrideMarkup = async (savedData, saveFunc) => {
     savedData = savedData || {};
     saveFunc = saveFunc || (() => {});
 
+    let rid = savedData.id;
+    if (!rid) {
+        const allData = await chrome.storage.local.get({ ruleGroups: [] });
+        rid = getNextRuleId(allData.ruleGroups);
+    }
     const override = instanceTemplate(overrideTemplate);
-    const id = savedData.id || getNextRuleId(exportData().data);
-    override.id = `r${id}`;
+    override.id = `r${rid}`;
     const matchInput = override.querySelector(".matchInput");
     const replaceInput = override.querySelector(".replaceInput");
     const ruleOnOff = override.querySelector(".onoffswitch-checkbox");
@@ -41,7 +46,7 @@ const createWebOverrideMarkup = (savedData, saveFunc) => {
         fadeOut(override);
         setTimeout(() => {
             override.remove();
-            saveFunc({ removeIds: [id] });
+            saveFunc({ removeIds: [rid] });
         }, 300);
     });
 

@@ -6,10 +6,9 @@ import {
 
 /* global chrome */
 
-const app = window.app;
-
 export const updateOptions = async () => {
-    document.getElementById("showDevTools").checked = app.settings.optionDevTools;
+    const options = await chrome.storage.local.get({ optionDevTools: true });
+    document.getElementById("showDevTools").checked = options.optionDevTools;
 };
 
 const initOptions = () => {

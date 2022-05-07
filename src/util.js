@@ -58,15 +58,12 @@ export const debounce = (fn, amt) => {
     };
 };
 
-export const getNextId = (nodeList, prefix) => {
+export const getNextGroupId = (groups) => {
     let maxId = 0;
-    nodeList.forEach((el) => {
-        const id = parseInt(el.id.substring(1), 10);
-        if (!isNaN(id) && id > maxId) {
-            maxId = id;
-        }
+    groups.forEach((group) => {
+        maxId = Math.max(group.id || 0, maxId);
     });
-    return prefix.charAt(0) + (maxId + 1);
+    return maxId + 1;
 };
 
 export const getNextFileId = (nodeList) => {
@@ -204,6 +201,12 @@ export const parseHeaderDataStr = (headerDataStr) => {
 };
 
 export const sendSyncMessage = () => chrome.runtime.sendMessage({ action: "sync" });
+
+export const saveDataAndSync = async (data) => {
+    await chrome.storage.local.set(data);
+    // sending the sync message can just fail randomly. I have no idea why.
+    sendSyncMessage().catch((e) => console.warn("Failed to sync.", e));
+};
 
 export const simpleError = (err) => {
     if (err.stack) {

@@ -1,20 +1,10 @@
 /* globals chrome */
-import { mainStorage } from "./mainStorage.js";
 import { transformMatchReplace } from "./netRequestRules.js";
 
-const simpleError = (err) => {
-    if (err.stack) {
-        console.error("=== Printing Stack ===");
-        console.error(err.stack);
-    }
-    console.error(err);
-};
-
 let allRuleGroups = [];
-const reloadData = () => {
-    mainStorage.getAll().then(function(domains) {
-        allRuleGroups = domains || [];
-    }).catch(simpleError);
+const reloadData = async () => {
+    const existingData = await chrome.storage.local.get({ ruleGroups: [] });
+    allRuleGroups = existingData.ruleGroups;
 };
 reloadData();
 

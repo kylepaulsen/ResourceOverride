@@ -1,25 +1,28 @@
-import { exportData } from "./importExport.js";
 import { mainSuggest } from "./suggest.js";
 import { openEditor } from "./editor.js";
 import {
     instanceTemplate,
     getNextRuleId,
-    getNextFileId,
     makeFieldRequired,
     deleteButtonIsSure,
     deleteButtonIsSureReset,
     fadeOut
 } from "./util.js";
 
-const app = window.app;
+/* globals chrome */
+
 const fileOverrideTemplate = document.getElementById("fileOverrideTemplate");
 
-const createFileOverrideMarkup = (savedData, saveFunc) => {
+const createFileOverrideMarkup = async (savedData, saveFunc) => {
     savedData = savedData || {};
     saveFunc = saveFunc || (() => {});
 
+    let rid = savedData.id;
+    if (!rid) {
+        const allData = await chrome.storage.local.get({ ruleGroups: [] });
+        rid = getNextRuleId(allData.ruleGroups);
+    }
     const override = instanceTemplate(fileOverrideTemplate);
-    const rid = savedData.id || getNextRuleId(exportData().data);
     override.id = `r${rid}`;
     const matchInput = override.querySelector(".matchInput");
     const editBtn = override.querySelector(".edit-btn");
@@ -35,7 +38,7 @@ const createFileOverrideMarkup = (savedData, saveFunc) => {
     }
 
     editBtn.addEventListener("click", () => {
-        openEditor(override.dataset.fileId, matchInput.value, false, saveFunc);
+        openEditor(rid, matchInput.value, false);
     });
 
     deleteBtn.addEventListener("click", () => {
@@ -47,7 +50,7 @@ const createFileOverrideMarkup = (savedData, saveFunc) => {
         fadeOut(override);
         setTimeout(() => {
             override.remove();
-            delete app.files[override.id];
+            chrome.storage.local.remove(`f${rid}`);
             saveFunc({ removeIds: [rid] });
         }, 300);
     });
@@ -69,17 +72,6 @@ const createFileOverrideMarkup = (savedData, saveFunc) => {
     };
     ruleOnOff.addEventListener("click", changeOnOffSwitch);
     ruleOnOff.addEventListener("change", changeOnOffSwitch);
-
-    const allRuleContainers = document.querySelectorAll(".ruleContainer");
-    let id = savedData.fileId || getNextFileId(allRuleContainers);
-    if (app.files[id]) {
-        id = getNextFileId(allRuleContainers);
-    }
-    override.dataset.fileId = id;
-
-    if (savedData.file) {
-        app.files[id] = savedData.file;
-    }
 
     return override;
 };
