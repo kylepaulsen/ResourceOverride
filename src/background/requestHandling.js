@@ -8,10 +8,9 @@
             browser.webRequest.filterResponseData(requestId).onstart = e => {
                 const encoder = new TextEncoder();
                 e.target.write(encoder.encode(mimeAndFile.file));
-                e.target.disconnect();
+                e.target.close();
             };
             return {
-                cancel: true,
                 responseHeaders: [{
                     name: "Content-Type",
                     value: mimeAndFile.mime
