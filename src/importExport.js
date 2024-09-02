@@ -70,18 +70,18 @@ const versionedImports = {
     v1: (data, existingRuleGroups = []) => {
         const ruleGroupFields = ['matchUrl', 'on', 'rules'];
         checkObject({ data }, ['data'], {
-            data: val => Array.isArray(val) && val.forEach(group => checkObject(group, ruleGroupFields, {
-                rules: val => Array.isArray(val) && val.forEach(rule => {
+            data: val => Array.isArray(val) && val.every(group => checkObject(group, ruleGroupFields, {
+                rules: val => Array.isArray(val) && val.every(rule => {
                     if (rule.type === "normalOverride") {
-                        checkObject(rule, ['type', 'match', 'replace', 'on']);
+                        return checkObject(rule, ['type', 'match', 'replace', 'on']);
                     } else if (rule.type === "fileOverride") {
-                        checkObject(rule, ['type', 'match', 'file', 'on']);
+                        return checkObject(rule, ['type', 'match', 'file', 'on']);
                     } else if (rule.type === "fileInject") {
-                        checkObject(rule, ['type', 'fileName', 'file', 'fileType', 'on'], {
+                        return checkObject(rule, ['type', 'fileName', 'file', 'fileType', 'on'], {
                             fileType: val => ['js', 'css'].includes(val)
                         });
                     } else if (rule.type === "headerRule") {
-                        checkObject(rule, ['type', 'match', 'requestRules', 'responseRules', 'on']);
+                        return checkObject(rule, ['type', 'match', 'requestRules', 'responseRules', 'on']);
                     } else {
                         throw new Error('Invalid rule type: ' + rule.type);
                     }
@@ -122,8 +122,59 @@ const versionedImports = {
         return saveDataAndSync(dataToStore);
     },
     v2: (data, existingRuleGroups = []) => {
-        // TODO
-    }
+        const ruleGroupFields = ['id', 'name', 'on', 'rules'];
+        checkObject({ data }, ['data'], {
+            data: val => Array.isArray(val) && val.every(group => checkObject(group, ruleGroupFields, {
+                rules: val => Array.isArray(val) && val.every(rule => {
+                    if (rule.type === "normalOverride") {
+                        return checkObject(rule, ['type', 'match', 'replace', 'on']);
+                    } else if (rule.type === "fileOverride") {
+                        return checkObject(rule, ['type', 'match', 'file', 'on']);
+                    } else if (rule.type === "fileInject") {
+                        return checkObject(rule, ['type', 'match', 'file', 'fileName', 'fileType', 'on'], {
+                            fileType: val => ['js', 'css'].includes(val)
+                        });
+                    } else if (rule.type === "headerRule") {
+                        return checkObject(rule, ['type', 'match', 'requestRules', 'responseRules', 'on']);
+                    } else {
+                        throw new Error('Invalid rule type: ' + rule.type);
+                    }
+                })
+            }))
+        });
+
+        const ruleGroups = existingRuleGroups.slice();
+        const dataToStore = { ruleGroups };
+        let nextRuleId = getNextRuleId(existingRuleGroups);
+        let nextGroupId = getNextGroupId(ruleGroups);
+
+        data.forEach(ruleGroup => {
+            const rules = [];
+            ruleGroup.rules.forEach(rule => {
+                const importedRule = { id: nextRuleId++ };
+                if (rule.type === "normalOverride") {
+                    copyFields(importedRule, rule, ["type", "match", "replace", "on"]);
+                } else if (rule.type === "fileOverride") {
+                    copyFields(importedRule, rule, ["type", "match", "on"]);
+                    dataToStore[`f${importedRule.id}`] = rule.file;
+                } else if (rule.type === "fileInject") {
+                    copyFields(importedRule, rule, ["type", "match", "fileName", "fileType", "on"]);
+                    dataToStore[`f${importedRule.id}`] = rule.file;
+                } else if (rule.type === "headerRule") {
+                    copyFields(importedRule, rule, ["type", "match", "requestRules", "responseRules", "on"]);
+                }
+                rules.push(importedRule);
+            });
+            ruleGroups.push({
+                id: nextGroupId++,
+                name: ruleGroup.name,
+                rules,
+                on: ruleGroup.on
+            });
+        });
+
+        return saveDataAndSync(dataToStore);
+    },
 };
 
 // eslint-disable-next-line no-unused-vars
