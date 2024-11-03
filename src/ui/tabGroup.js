@@ -67,6 +67,7 @@
                     type: "fileOverride",
                     match: $el.find(".matchInput").val(),
                     file: app.files[el.id] || "",
+                    fileName: app.fileNames[el.id] || "No File Selected",
                     fileId: el.id,
                     on: $el.find(".onoffswitch")[0].isOn
                 });

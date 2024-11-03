@@ -86,6 +86,15 @@ div, span {
     float: left;
 }
 
+.uploadBtnContainer {
+    float: left;
+}
+
+.fileNameContainer {
+    float: left;
+    margin-right: 10px;
+}
+
 #domainDefs {
     margin-top: 30px;
 }
@@ -416,6 +425,12 @@ div, span {
     flex: 0 0 55px;
     padding-top: 10px;
     text-align: center;
+}
+
+.uploadedFileName {
+    flex: 0 0 55px;
+    text-align: center;
+    padding-top: 10px;
 }
 
 .ruleContainer .fileType {

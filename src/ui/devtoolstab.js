@@ -11,10 +11,14 @@
     app.requestHeadersSuggest = app.suggest();
     app.responseHeadersSuggest = app.suggest();
     app.files = {};
+    app.fileNames = {};
+
     app.skipNextSync = false;
 
     function renderData() {
         app.files = {};
+        app.fileNames = {};
+
         ui.domainDefs.children().remove();
         chrome.runtime.sendMessage({action: "getDomains"}, function(domains) {
             if (domains.length) {
