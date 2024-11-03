@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="442pt" height="282pt" version="1.0" viewBox="0 0 442 282" xmlns="http://www.w3.org/2000/svg">
+	<defs>
+		<path id="arrow" d="m0.35196 161.18 25.054 9.7225c-8.9142-97.423 103.24-192.65 176.87-123.77l-17.575 16.08 61.7 20.941-1.4958-66.562-21.689 16.08c-101.52-94.025-230.78 28.467-222.87 127.51z" fill="#5cc4c6" style="transform-origin: 0.0046823092 43.959954"/>
+	</defs>
+	<text x="163.4044" y="199.31134" fill="#04788a" font-family="sans-serif" font-size="170px" font-style="italic" font-weight="bold" stroke-width=".75" style="line-height:1.25;mix-blend-mode:normal" xml:space="preserve">R</text>
+	<use x="101" y="12" href="#arrow"/>
+	<use transform="translate(350 280) rotate(180)" href="#arrow"/>
+</svg>
