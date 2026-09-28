@@ -1,0 +1,11 @@
+{
+  "name": "resource-override",
+  "version": "2.0.0",
+  "private": true,
+  "description": "An extension to help you gain full control of any website by redirecting traffic, replacing, editing, or inserting new content.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/globMatchToDNRRegexTest.js && node test/importExportTest.js && node test/clearAllTest.js && node test/netRequestRulesTest.js"
+  }
+}

@@ -1,3 +1,8 @@
+write migration tool.
+write v2 import code.
+ui and help stuff
+check for todo
+
 Consider adding autocomplete to editor.
     - might need a way to turn that off.
 
